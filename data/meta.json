@@ -1,0 +1,17 @@
+{
+  "strategy": "大类资产轮动",
+  "anchor": "2013-06-01",
+  "as_of": "2026-11-05",
+  "last_update": "2026-11-06 18:00:22",
+  "mode": "incremental",
+  "new_points": 0,
+  "overlap_points": 1094,
+  "max_abs_diff_pp": 0.0,
+  "revisions": 0,
+  "missing": 0,
+  "regression": false,
+  "ok": true,
+  "stale": false,
+  "fetch_error": "",
+  "generated_date": "2026-11-06"
+}
