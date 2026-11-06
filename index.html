@@ -589,8 +589,9 @@ function draw(elId, dates, vals, opt){
     let extra="";
     if(opt.extra) extra=`<br><span class="muted">${opt.extra.label}</span> ${fmt(opt.extra.values[i],opt.unit,opt.digits)}`;
     if(opt.context){
-      extra+=`<br><span class="muted">累计</span> ${fmt(opt.context.ret[i],"%",2)}`+
-             `　<span class="muted">回撤</span> ${fmt(opt.context.dd[i],"%",2)}`+
+      extra+=`<br><span class="muted">区间</span> ${fmt(opt.context.ret[i],"%",2)}`+
+             `　<span class="muted">锚点累计</span> ${fmt(opt.context.anchor[i],"%",2)}`+
+             `<br><span class="muted">回撤</span> ${fmt(opt.context.dd[i],"%",2)}`+
              `　<span class="muted">仓位</span> ${fmtPlain(opt.context.pos[i]*100,"%",1)}`;
     }
     tip.innerHTML=`<b>${dates[i]}</b><br>${opt.label} ${fmt(vals[i],opt.unit,opt.digits)}${extra}`;
@@ -605,10 +606,13 @@ function draw(elId, dates, vals, opt){
   hit.addEventListener("pointercancel",hide);
 }
 
-function renderViewStats(nv,ix){
-  const nav=pick(nv.nav,ix), dd=pick(nv.drawdown,ix), pos=pick(nv.position,ix);
-  const rangeRet=(nav[nav.length-1]/nav[0]-1)*100;
-  const maxDD=Math.min.apply(null,dd), lastPos=pos[pos.length-1]*100;
+function localDrawdown(nav){
+  let peak=-Infinity;
+  return nav.map(v=>{ peak=Math.max(peak,v); return (v/peak-1)*100; });
+}
+function renderViewStats(nv,ix,retView,ddView,pos){
+  const rangeRet=retView[retView.length-1];
+  const maxDD=Math.min.apply(null,ddView), lastPos=pos[pos.length-1]*100;
   $("#viewStats").innerHTML=
     `<div><span>当前视图涨幅（按首点归一化）</span><b class="${cls(rangeRet)}">${fmt(rangeRet,"%",2)}</b></div>
      <div><span>视图内最大回撤</span><b class="down">${fmt(maxDD,"%",2)}</b></div>
@@ -622,11 +626,12 @@ function renderViewStats(nv,ix){
 function drawAll(){
   const nv=S.nav; if(!nv) return;
   const ix=viewIdx(nv);
-  const dates=pick(nv.dates,ix), ret=pick(nv.ret,ix), dd=pick(nv.drawdown,ix), pos=pick(nv.position,ix);
-  const ctx={ret,dd,pos};
-  renderViewStats(nv,ix);
-  draw("c_eq",dates,ret,{color:"#d93025",label:"累计收益",unit:"%",digits:2,zeroBase:true,context:ctx});
-  draw("c_dd",dates,dd,{color:"#0f9d58",label:"回撤",unit:"%",digits:2,ceilingZero:true,context:ctx});
+  const dates=pick(nv.dates,ix), nav=pick(nv.nav,ix), anchor=pick(nv.ret,ix), pos=pick(nv.position,ix);
+  const retView=nav.map(v=>(v/nav[0]-1)*100), ddView=localDrawdown(nav);
+  const ctx={ret:retView,anchor,dd:ddView,pos};
+  renderViewStats(nv,ix,retView,ddView,pos);
+  draw("c_eq",dates,retView,{color:"#d93025",label:"区间累计收益",unit:"%",digits:2,zeroBase:true,context:ctx});
+  draw("c_dd",dates,ddView,{color:"#0f9d58",label:"区间回撤",unit:"%",digits:2,ceilingZero:true,context:ctx});
   draw("c_pos",dates,pos.map(v=>v*100),{color:"#2563eb",label:"股票仓位",unit:"%",digits:1,zeroBase:true,maxCap:100,context:ctx});
 }
 function drawFeed(){
