@@ -2,150 +2,432 @@
 <html lang="zh-CN">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>大类资产轮动 · 策略回测净值看板</title>
-<meta name="description" content="云端每日收盘后自动更新的大类资产轮动策略净值、回撤、仓位与分年统计看板">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>大类资产轮动 · 策略研究看板</title>
+<meta name="description" content="大类资产轮动策略净值、回撤、仓位、策略介绍与每日数据接口研究看板">
+<meta name="theme-color" content="#0b1533">
 <style>
   :root{
-    --bg:#f4f6fa; --card:#fff; --ink:#1b2340; --muted:#6b7488; --line:#e6e9f0;
-    --brand:#21305e; --up:#d93025; --down:#0f9d58; --pos:#1a73e8; --ref:#6f5499;
-    --warn:#b26a00; --ok:#0f9d58;
+    --bg:#f4f6fb; --card:#fff; --ink:#111a33; --muted:#64708a; --line:#e4e9f2;
+    --navy:#0b1533; --navy2:#172554; --brand:#4f46e5; --brand2:#7c6cf6;
+    --gold:#d6ad55; --up:#d93025; --down:#0f9d58; --pos:#2563eb; --ref:#7c5cb1;
+    --warn:#b26a00; --ok:#0f9d58; --shadow:0 12px 34px rgba(16,28,62,.07);
+    --radius:16px; --chart-h:340px;
   }
   *{box-sizing:border-box}
+  html{scroll-behavior:smooth;scroll-padding-top:72px}
   body{margin:0;background:var(--bg);color:var(--ink);
-       font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;
-       font-size:14px;line-height:1.6}
+       font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;
+       font-size:14px;line-height:1.6;-webkit-font-smoothing:antialiased;overflow-x:hidden}
   a{color:var(--pos);text-decoration:none} a:hover{text-decoration:underline}
-  .wrap{max-width:1180px;margin:0 auto;padding:0 20px 56px}
-  header{background:linear-gradient(120deg,#21305e 0%,#39477f 58%,#6f5499 100%);color:#fff;padding:26px 0 22px}
-  header .wrap{padding-bottom:0}
-  h1{font-size:24px;margin:0 0 4px;font-weight:600;letter-spacing:.5px}
-  .sub{opacity:.82;font-size:13px}
-  .badges{margin-top:14px;display:flex;flex-wrap:wrap;gap:8px}
-  .badge{background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.22);
-         border-radius:20px;padding:4px 12px;font-size:12px}
-  .badge.warn{background:rgba(255,193,7,.22);border-color:rgba(255,193,7,.55)}
-  .badge.err{background:rgba(217,48,37,.28);border-color:rgba(255,120,110,.6)}
-  .card{background:var(--card);border:1px solid var(--line);border-radius:10px;
-        box-shadow:0 1px 3px rgba(20,30,60,.05);margin-top:18px;overflow:hidden}
-  .card h2{font-size:16px;margin:0;padding:15px 20px;border-bottom:1px solid var(--line);font-weight:600}
-  .card .body{padding:18px 20px}
-  .kpis{display:grid;grid-template-columns:repeat(6,1fr);gap:0}
-  .kpi{padding:16px 18px;border-right:1px solid var(--line);border-bottom:1px solid var(--line)}
+  button{font-family:inherit}
+  .wrap{max-width:1200px;margin:0 auto;padding:0 22px 60px}
+  .topnav{position:sticky;top:0;z-index:20;background:rgba(11,21,51,.92);backdrop-filter:blur(14px);
+          -webkit-backdrop-filter:blur(14px);border-bottom:1px solid rgba(255,255,255,.10)}
+  .topnav .wrap{display:flex;align-items:center;gap:26px;padding-top:0;padding-bottom:0;height:54px}
+  .brand{display:flex;align-items:center;gap:10px;color:#fff;font-weight:650;white-space:nowrap;letter-spacing:.3px}
+  .brand .mark{width:26px;height:26px;border-radius:8px;background:linear-gradient(135deg,var(--gold),#f3dc9a);
+               display:grid;place-items:center;color:var(--navy);font-weight:800;font-size:13px}
+  .navlinks{display:flex;gap:4px;overflow-x:auto;scrollbar-width:none;white-space:nowrap}
+  .navlinks::-webkit-scrollbar{display:none}
+  .navlinks a{color:rgba(255,255,255,.72);font-size:13px;padding:7px 11px;border-radius:8px}
+  .navlinks a:hover{color:#fff;background:rgba(255,255,255,.10);text-decoration:none}
+  .live{margin-left:auto;display:flex;align-items:center;gap:7px;color:#dbe4ff;font-size:12px;white-space:nowrap}
+  .live i{width:7px;height:7px;border-radius:50%;background:#55d39a;box-shadow:0 0 0 4px rgba(85,211,154,.14)}
+  header{position:relative;overflow:hidden;background:
+          radial-gradient(circle at 84% 18%,rgba(124,108,246,.36),transparent 35%),
+          radial-gradient(circle at 18% 100%,rgba(214,173,85,.16),transparent 32%),
+          linear-gradient(120deg,#0b1533 0%,#18265a 58%,#3b3478 100%);color:#fff;padding:42px 0 38px}
+  header:before{content:"";position:absolute;inset:0;opacity:.16;
+    background-image:linear-gradient(rgba(255,255,255,.12) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.12) 1px,transparent 1px);
+    background-size:42px 42px;mask-image:linear-gradient(to bottom,#000,transparent 86%)}
+  header .wrap{position:relative;padding-bottom:0}
+  .hero{display:grid;grid-template-columns:minmax(0,1.55fr) minmax(280px,.75fr);gap:36px;align-items:end}
+  .eyebrow{display:inline-flex;align-items:center;gap:8px;font-size:12px;letter-spacing:1.6px;
+           color:#e4d6aa;text-transform:uppercase;margin-bottom:12px}
+  .eyebrow:before{content:"";width:26px;height:1px;background:var(--gold)}
+  h1{font-size:34px;line-height:1.25;margin:0 0 12px;font-weight:680;letter-spacing:.5px}
+  .lede{max-width:680px;color:rgba(255,255,255,.78);font-size:15px;margin:0}
+  .badges{margin-top:20px;display:flex;flex-wrap:wrap;gap:8px}
+  .badge{background:rgba(255,255,255,.10);border:1px solid rgba(255,255,255,.20);
+         border-radius:999px;padding:5px 12px;font-size:12px;color:#eef2ff;backdrop-filter:blur(6px)}
+  .badge.ok{border-color:rgba(85,211,154,.45);background:rgba(85,211,154,.12)}
+  .badge.warn{border-color:rgba(246,190,84,.55);background:rgba(246,190,84,.14);color:#ffe9b6}
+  .badge.err{border-color:rgba(255,120,110,.6);background:rgba(217,48,37,.24);color:#ffd9d6}
+  .heroSide{background:rgba(255,255,255,.09);border:1px solid rgba(255,255,255,.18);border-radius:16px;
+            padding:18px 20px;backdrop-filter:blur(10px)}
+  .heroSide .label{font-size:12px;color:rgba(255,255,255,.65);letter-spacing:.5px}
+  .heroSide .big{font-size:28px;font-weight:680;margin:3px 0 2px;letter-spacing:-.5px}
+  .heroSide .meta{font-size:12px;color:rgba(255,255,255,.70)}
+  .heroSide hr{border:0;border-top:1px solid rgba(255,255,255,.16);margin:14px 0}
+  .heroSide .row{display:flex;justify-content:space-between;gap:12px;font-size:12px;margin:7px 0;color:rgba(255,255,255,.72)}
+  .heroSide .row b{color:#fff;font-weight:600}
+  .section{scroll-margin-top:72px}
+  .section-head{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;margin:34px 0 14px}
+  .section-head h2{font-size:20px;margin:0;font-weight:680;letter-spacing:.2px}
+  .section-head .hint{color:var(--muted);font-size:12px;text-align:right}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);
+        box-shadow:var(--shadow);overflow:hidden}
+  .card h3{font-size:16px;margin:0;padding:16px 20px;border-bottom:1px solid var(--line);font-weight:650}
+  .card .body{padding:20px}
+  .kpis{display:grid;grid-template-columns:repeat(6,1fr)}
+  .kpi{padding:18px 20px;border-right:1px solid var(--line);position:relative}
   .kpi:nth-child(6n){border-right:0}
-  .kpi:nth-last-child(-n+6){border-bottom:0}
-  .kpi .k{font-size:12px;color:var(--muted);margin-bottom:6px}
-  .kpi .v{font-size:21px;font-weight:650;letter-spacing:-.4px}
+  .kpi:before{content:"";position:absolute;left:20px;top:0;width:30px;height:3px;border-radius:0 0 3px 3px;background:var(--brand)}
+  .kpi:nth-child(3):before,.kpi:nth-child(6):before{background:var(--gold)}
+  .kpi .k{font-size:12px;color:var(--muted);margin-bottom:7px}
+  .kpi .v{font-size:23px;font-weight:700;letter-spacing:-.6px;line-height:1.25}
+  .kpi .s{font-size:11px;color:var(--muted);margin-top:4px}
   .up{color:var(--up)} .down{color:var(--down)} .flat{color:var(--ink)}
-  .tabs{display:flex;gap:4px;padding:12px 20px 0;border-bottom:1px solid var(--line);flex-wrap:wrap}
-  .tab{border:0;background:none;padding:9px 16px;cursor:pointer;font-size:13px;color:var(--muted);
-       border-bottom:2px solid transparent;margin-bottom:-1px}
-  .tab.on{color:var(--brand);border-bottom-color:var(--brand);font-weight:600}
-  .range{margin-left:auto;display:flex;gap:4px;align-items:center;padding-bottom:8px}
-  .range button{border:1px solid var(--line);background:#fff;border-radius:6px;padding:4px 10px;
-                font-size:12px;cursor:pointer;color:var(--muted)}
-  .range button.on{background:var(--brand);border-color:var(--brand);color:#fff}
-  .chart{position:relative;padding:8px 12px 14px;min-height:340px}
-  .chart svg{width:100%;height:340px;display:block}
-  .tip{position:absolute;pointer-events:none;background:rgba(27,35,64,.94);color:#fff;
-       padding:7px 10px;border-radius:6px;font-size:12px;white-space:nowrap;display:none;z-index:5}
+  .note{color:var(--muted);font-size:12px;line-height:1.75}
+  .note strong{color:var(--ink);font-weight:600}
+  .strategy-grid{display:grid;grid-template-columns:minmax(0,1.05fr) minmax(0,.95fr);gap:0}
+  .strategy-grid>div{padding:22px 24px}
+  .strategy-grid>div+div{border-left:1px solid var(--line);background:#fafbfe}
+  .strategy-grid p{margin:0 0 12px;color:#3d4860}
+  .tagrow{display:flex;flex-wrap:wrap;gap:8px;margin:16px 0}
+  .tag{font-size:12px;color:var(--navy2);background:#eef1fb;border:1px solid #dbe1f5;
+       border-radius:999px;padding:5px 11px}
+  .steps{list-style:none;padding:0;margin:0;display:grid;gap:12px}
+  .steps li{display:grid;grid-template-columns:30px 1fr;gap:12px;align-items:start}
+  .steps .n{width:28px;height:28px;border-radius:9px;background:var(--navy);color:#fff;
+            display:grid;place-items:center;font-size:12px;font-weight:700}
+  .steps b{display:block;font-size:13px;margin-bottom:2px}
+  .steps span{color:var(--muted);font-size:12px}
+  .facts{display:grid;grid-template-columns:repeat(4,1fr);border-top:1px solid var(--line)}
+  .facts div{padding:15px 18px;border-right:1px solid var(--line)}
+  .facts div:nth-child(4n){border-right:0}
+  .facts span{display:block;color:var(--muted);font-size:11px;margin-bottom:4px}
+  .facts b{font-size:14px}
+  .riskbox{margin:0 20px 20px;border:1px solid #eadfbd;background:#fffaf0;border-radius:12px;
+           padding:12px 14px;color:#6b552e;font-size:12px;display:flex;gap:10px;align-items:flex-start}
+  .riskbox .ic{flex:0 0 20px;height:20px;border-radius:6px;background:#f2dfae;color:#7a5a14;
+               display:grid;place-items:center;font-weight:800;font-size:12px}
+  .chartcard{margin-top:0}
+  .charthead{padding:18px 20px 0;border-bottom:0}
+  .charthead .titleline{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+  .charthead h3{border:0;padding:0;font-size:17px}
+  .chartmeta{font-size:12px;color:var(--muted)}
+  .tabs{display:flex;gap:4px;padding:10px 16px 0;border-bottom:1px solid var(--line);flex-wrap:wrap}
+  .tab{border:0;background:none;padding:10px 15px;cursor:pointer;font-size:13px;color:var(--muted);
+       border-bottom:2px solid transparent;margin-bottom:-1px;border-radius:8px 8px 0 0}
+  .tab:hover{background:#f7f8fc;color:var(--ink)}
+  .tab.on{color:var(--brand);border-bottom-color:var(--brand);font-weight:650;background:#f7f7ff}
+  .controls{display:flex;gap:18px;flex-wrap:wrap;align-items:center;padding:12px 20px 6px;border-bottom:1px solid var(--line)}
+  .control{display:flex;align-items:center;gap:8px}
+  .control .lab{font-size:12px;color:var(--muted);white-space:nowrap}
+  .segment{display:flex;gap:4px;background:#f2f4f9;padding:3px;border-radius:10px;overflow-x:auto;scrollbar-width:none}
+  .segment::-webkit-scrollbar{display:none}
+  .segment button{border:0;background:transparent;color:var(--muted);border-radius:8px;padding:6px 11px;
+                  font-size:12px;cursor:pointer;white-space:nowrap;min-height:32px}
+  .segment button:hover{color:var(--ink)}
+  .segment button.on{background:#fff;color:var(--brand);font-weight:650;box-shadow:0 1px 5px rgba(20,30,60,.10)}
+  .viewstats{display:grid;grid-template-columns:repeat(4,1fr);border-bottom:1px solid var(--line);background:#fbfcff}
+  .viewstats div{padding:11px 20px;border-right:1px solid var(--line)}
+  .viewstats div:nth-child(4n){border-right:0}
+  .viewstats span{display:block;color:var(--muted);font-size:11px}
+  .viewstats b{font-size:16px;font-weight:680}
+  .pane{display:none} .pane.on{display:block}
+  .chart{position:relative;padding:8px 12px 14px;min-height:300px}
+  .chart svg{display:block;width:100%;height:auto;touch-action:pan-y}
   .grid line{stroke:var(--line);stroke-width:1}
   .axis text{fill:var(--muted);font-size:11px}
-  .pane{display:none} .pane.on{display:block}
-  table{width:100%;border-collapse:collapse;font-size:13px}
-  th,td{padding:9px 12px;border-bottom:1px solid var(--line);text-align:right}
+  .cross{stroke:#94a3b8;stroke-width:1;stroke-dasharray:4 4;display:none}
+  .marker{stroke:#fff;stroke-width:2;display:none}
+  .tip{position:absolute;pointer-events:none;background:rgba(11,21,51,.95);color:#fff;
+       padding:8px 10px;border-radius:8px;font-size:12px;line-height:1.55;display:none;z-index:5;
+       max-width:min(250px,78vw);box-shadow:0 8px 20px rgba(0,0,0,.20)}
+  .tip b{font-weight:650} .tip .muted{color:#b9c4df}
+  .legend{display:flex;gap:16px;flex-wrap:wrap;font-size:12px;color:var(--muted);padding:2px 8px 6px}
+  .legend i{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:6px}
+  .chartfoot{padding:0 20px 18px}
+  .stat{display:grid;grid-template-columns:repeat(5,1fr);gap:0;margin-bottom:8px;border:1px solid var(--line);border-radius:12px;overflow:hidden}
+  .stat div{padding:12px 14px;border-right:1px solid var(--line)}
+  .stat div:last-child{border-right:0}
+  .stat span{display:block;color:var(--muted);font-size:11px}
+  .stat b{font-size:17px;font-weight:680}
+  .stat b.small{font-size:13px}
+  .tablewrap{overflow-x:auto;-webkit-overflow-scrolling:touch}
+  table{width:100%;border-collapse:collapse;font-size:13px;min-width:720px}
+  th,td{padding:11px 14px;border-bottom:1px solid var(--line);text-align:right;white-space:nowrap}
   th:first-child,td:first-child,th:nth-child(2),td:nth-child(2){text-align:left}
-  thead th{background:#f8f9fc;color:var(--muted);font-weight:600;font-size:12px}
-  tbody tr:hover{background:#fafbfe}
-  .note{color:var(--muted);font-size:12px;margin-top:10px}
-  .api{display:grid;grid-template-columns:repeat(2,1fr);gap:8px 24px}
-  .api div{padding:7px 0;border-bottom:1px dashed var(--line);font-size:13px}
-  .api code{background:#f2f4f9;padding:2px 6px;border-radius:4px;font-size:12px}
-  .stat{display:flex;flex-wrap:wrap;gap:26px;margin-bottom:6px}
-  .stat div span{display:block;color:var(--muted);font-size:12px}
-  .stat div b{font-size:19px;font-weight:650}
-  footer{color:var(--muted);font-size:12px;text-align:center;padding:22px 20px 0}
-  .loading{padding:60px;text-align:center;color:var(--muted)}
-  @media(max-width:820px){.kpis{grid-template-columns:repeat(2,1fr)}.kpi:nth-child(2n){border-right:0}
-    .kpi:nth-last-child(-n+6){border-bottom:1px solid var(--line)}.api{grid-template-columns:1fr}}
+  thead th{background:#f7f9fd;color:var(--muted);font-weight:600;font-size:12px;position:sticky;top:0}
+  tbody tr:hover{background:#fafbff}
+  .quality{display:grid;grid-template-columns:repeat(5,1fr)}
+  .quality div{padding:16px 18px;border-right:1px solid var(--line)}
+  .quality div:nth-child(5n){border-right:0}
+  .quality span{display:block;color:var(--muted);font-size:11px;margin-bottom:5px}
+  .quality b{font-size:15px}
+  .api{display:grid;grid-template-columns:repeat(2,1fr);gap:0 26px}
+  .api div{padding:11px 0;border-bottom:1px dashed var(--line);font-size:13px}
+  .api code{background:#f1f4fa;padding:2px 6px;border-radius:5px;font-size:12px;color:#334155}
+  .api .desc{color:var(--muted);font-size:12px;margin-top:3px}
+  .loading{padding:56px 20px;text-align:center;color:var(--muted)}
+  footer{color:var(--muted);font-size:12px;text-align:center;padding:28px 20px 0;border-top:1px solid var(--line);margin-top:34px}
+  @media(max-width:980px){
+    .hero{grid-template-columns:1fr;gap:24px}.heroSide{max-width:480px}
+    .kpis{grid-template-columns:repeat(3,1fr)}
+    .kpi:nth-child(3n){border-right:0}.kpi:nth-child(6n){border-right:1px solid var(--line)}
+    .kpi:nth-child(-n+3){border-bottom:1px solid var(--line)}
+    .strategy-grid{grid-template-columns:1fr}.strategy-grid>div+div{border-left:0;border-top:1px solid var(--line)}
+    .facts{grid-template-columns:repeat(2,1fr)}.facts div:nth-child(2n){border-right:0}
+    .facts div:nth-child(-n+2){border-bottom:1px solid var(--line)}
+    .stat{grid-template-columns:repeat(3,1fr)}.stat div:nth-child(3n){border-right:0}
+    .quality{grid-template-columns:repeat(3,1fr)}.quality div:nth-child(3n){border-right:0}
+    .api{grid-template-columns:1fr}
+  }
+  @media(max-width:640px){
+    .wrap{padding-left:13px;padding-right:13px;padding-bottom:42px}
+    .topnav .wrap{height:50px;gap:14px}.brand{font-size:13px}.live{display:none}
+    header{padding:30px 0 28px}h1{font-size:25px}.lede{font-size:13px}
+    .badge{font-size:11px;padding:4px 10px}
+    .heroSide{padding:15px 16px}.heroSide .big{font-size:23px}
+    .section-head{margin-top:26px;align-items:flex-start;flex-direction:column;gap:4px}
+    .section-head h2{font-size:18px}.section-head .hint{text-align:left}
+    .kpis{grid-template-columns:repeat(2,1fr)}
+    .kpi{padding:14px 14px;border-right:1px solid var(--line);border-bottom:1px solid var(--line)}
+    .kpi:nth-child(2n){border-right:0}.kpi:nth-last-child(-n+2){border-bottom:0}
+    .kpi .v{font-size:19px}.kpi .s{font-size:10px}
+    .card h3{padding:14px 16px}.card .body{padding:16px}
+    .charthead{padding:15px 16px 0}.tabs{padding:8px 10px 0;gap:0}
+    .tab{padding:9px 11px;font-size:12px}
+    .controls{padding:10px 14px 4px;gap:8px;flex-direction:column;align-items:stretch}
+    .control{width:100%;gap:6px}.control .lab{min-width:34px}
+    .segment{flex:1}.segment button{flex:1;padding:6px 8px}
+    .viewstats{grid-template-columns:repeat(2,1fr)}
+    .viewstats div{padding:9px 14px;border-bottom:1px solid var(--line)}
+    .viewstats div:nth-child(2n){border-right:0}.viewstats div:nth-last-child(-n+2){border-bottom:0}
+    .chart{padding:4px 4px 10px;min-height:230px}
+    .chartfoot{padding:0 14px 14px}.riskbox{margin:0 14px 14px}
+    .stat{grid-template-columns:repeat(2,1fr)}.stat div{border-bottom:1px solid var(--line)}
+    .stat div:nth-child(2n){border-right:0}.stat div:nth-last-child(-n+2){border-bottom:0}
+    .quality{grid-template-columns:repeat(2,1fr)}.quality div{border-bottom:1px solid var(--line)}
+    .quality div:nth-child(2n){border-right:0}.quality div:nth-last-child(-n+2){border-bottom:0}
+    .strategy-grid>div{padding:18px 16px}.facts div{padding:12px 14px}
+  }
+  @media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}.topnav{position:static}}
 </style>
 </head>
 <body>
-<header>
+<nav class="topnav">
   <div class="wrap">
-    <h1>大类资产轮动 · 策略回测净值看板</h1>
-    <div class="sub">云端工程实例每日收盘后自动更新 · 数据源：复来智投 detail?id=1 · 锚点 2013-06-01</div>
-    <div class="badges" id="badges"><span class="badge">正在加载数据接口…</span></div>
+    <div class="brand"><span class="mark">R</span> 量化研究看板</div>
+    <div class="navlinks">
+      <a href="#overview">绩效概览</a>
+      <a href="#strategy">策略介绍</a>
+      <a href="#performance">净值图表</a>
+      <a href="#evolution">进化对照</a>
+      <a href="#statistics">分年与持仓</a>
+      <a href="#data">数据口径</a>
+    </div>
+    <div class="live"><i></i> 数据管道就绪</div>
+  </div>
+</nav>
+
+<header id="overview">
+  <div class="wrap">
+    <div class="hero">
+      <div>
+        <div class="eyebrow">Multi-Asset Rotation Research</div>
+        <h1>大类资产轮动 · 策略研究看板</h1>
+        <p class="lede">以公开回测净值为基准，逐日沉淀 1095 期调仓记录；支持日 / 周 / 月 / 年多周期观察、回撤与仓位联动分析，以及本地稳健版策略的自我学习对照。</p>
+        <div class="badges" id="badges"><span class="badge">正在加载数据接口…</span></div>
+      </div>
+      <aside class="heroSide">
+        <div class="label">图表区间累计收益</div>
+        <div class="big" id="heroReturn">—</div>
+        <div class="meta" id="heroRange">固定锚点归一化 · 等待数据</div>
+        <hr>
+        <div class="row"><span>净值截至</span><b id="heroAsOf">—</b></div>
+        <div class="row"><span>数据点</span><b id="heroPoints">—</b></div>
+        <div class="row"><span>数据源</span><b>复来智投 id=1</b></div>
+        <div class="row"><span>更新频率</span><b>收盘后同步</b></div>
+      </aside>
+    </div>
   </div>
 </header>
 
 <div class="wrap">
-  <div class="card" id="kpiCard"><div class="kpis" id="kpis"></div></div>
+  <section class="section" id="kpiSection">
+    <div class="section-head">
+      <h2>绩效概览</h2>
+      <div class="hint">指标来自参考页公开披露；图表另按固定锚点归一化</div>
+    </div>
+    <div class="card"><div class="kpis" id="kpis"></div></div>
+    <div class="note" style="margin-top:10px">
+      <strong>口径说明：</strong>参考页披露的「总收益」与图表末点累计收益属于不同起点口径，本页不做二次换算；图表区间收益在下方按所选视图首点重新归一化。
+    </div>
+  </section>
 
-  <div class="card">
-    <div class="tabs" id="tabs">
-      <button class="tab on" data-p="eq">净值 / 收益曲线</button>
-      <button class="tab" data-p="dd">回撤曲线</button>
-      <button class="tab" data-p="pos">股票仓位</button>
-      <div class="range" id="range">
-        <button data-r="all" class="on">全部</button>
-        <button data-r="5y">近5年</button>
-        <button data-r="3y">近3年</button>
-        <button data-r="1y">近1年</button>
-        <button data-r="ytd">今年以来</button>
+  <section class="section" id="strategy">
+    <div class="section-head">
+      <h2>策略介绍</h2>
+      <div class="hint">依据参考页公开资料整理，不含未公开参数</div>
+    </div>
+    <div class="card">
+      <div class="strategy-grid">
+        <div>
+          <h3 style="border:0;padding:0 0 10px">策略定位与运行逻辑</h3>
+          <p>策略覆盖 <strong>A 股、港股、美股、债券与商品</strong> 等大类资产，通过动量评分比较候选 ETF，<strong>买入并持有动量值最高的两类资产</strong>；在风险资产走弱时，组合可切换至债券等防御资产。</p>
+          <p>看板把收盘后更新的净值、回撤、仓位与分年统计统一到固定时间锚点，所有历史记录只追加、不覆盖，并保留逐期特征样本，供后续去漂移与 Walk-Forward 检验使用。</p>
+          <div class="tagrow">
+            <span class="tag">多资产 ETF</span><span class="tag">动量轮动</span>
+            <span class="tag">双标的持有</span><span class="tag">风控切换</span>
+            <span class="tag">固定参数回放</span><span class="tag">收盘后信号</span>
+          </div>
+        </div>
+        <div>
+          <h3 style="border:0;padding:0 0 12px">运行机制</h3>
+          <ol class="steps">
+            <li><span class="n">1</span><div><b>构建资产池</b><span>300ETF、创业板、中概互联网、纳指、黄金、30 年国债 ETF</span></div></li>
+            <li><span class="n">2</span><div><b>计算动量评分</b><span>对候选资产进行趋势与风险调整比较，筛选相对强势资产</span></div></li>
+            <li><span class="n">3</span><div><b>形成目标组合</b><span>持有评分最高的两类资产；弱势环境降低风险资产暴露</span></div></li>
+            <li><span class="n">4</span><div><b>执行与复核</b><span>T 日收盘后生成信号，T+1 开盘集合竞价完成调仓</span></div></li>
+          </ol>
+        </div>
+      </div>
+      <div class="facts">
+        <div><span>策略周期</span><b>日 K 线</b></div>
+        <div><span>调仓频率</span><b>平均 4 次 / 月</b></div>
+        <div><span>交易标的</span><b>ETF、国债逆回购</b></div>
+        <div><span>适用平台</span><b>证券账户</b></div>
+      </div>
+      <div class="riskbox"><span class="ic">!</span>
+        <div><strong>研究边界：</strong>公开资料只披露到策略逻辑层，具体评分权重、阈值与参数未公开。参考页结果为全区间调优的开卷考表现，收益主体可能是资产 beta 与低波选券；历史回测不代表实盘可实现收益，本页不构成投资建议。</div>
       </div>
     </div>
-    <div class="pane on" data-p="eq"><div class="chart" id="c_eq"></div></div>
-    <div class="pane" data-p="dd"><div class="chart" id="c_dd"></div></div>
-    <div class="pane" data-p="pos"><div class="chart" id="c_pos"></div></div>
-  </div>
+  </section>
 
-  <div class="card">
-    <h2>自我学习进化对照 · 参考净值 vs 本地 1.3 稳健版</h2>
-    <div class="body">
-      <div class="stat" id="feedStat"></div>
-      <div class="chart" id="c_feed"></div>
-      <div class="note">两条曲线各自按对齐起点归一化；相关系数按相邻调仓期收益率计算。
-        对照数据由本地 <code>rotation_core.py</code> 固定参数回放生成，供后续因子进化消费，不代表可外推的 alpha。</div>
+  <section class="section" id="performance">
+    <div class="section-head">
+      <h2>净值图表</h2>
+      <div class="hint">日 / 周 / 月 / 年周期切换 · 桌面与移动端自适应</div>
     </div>
-  </div>
-
-  <div class="card">
-    <h2>分年统计</h2>
-    <div class="body" style="padding:0 8px 8px">
-      <table><thead><tr><th>年份</th><th>总收益率</th><th>年化收益率</th><th>最大回撤</th>
-        <th>收益回撤比</th><th>标准差</th><th>夏普比率</th></tr></thead>
-        <tbody id="yearBody"></tbody></table>
+    <div class="card chartcard">
+      <div class="charthead">
+        <div class="titleline">
+          <h3 id="chartTitle">净值 / 累计收益曲线</h3>
+          <div class="chartmeta" id="chartMeta">等待数据</div>
+        </div>
+      </div>
+      <div class="tabs" id="tabs" role="tablist">
+        <button class="tab on" data-v="eq" aria-selected="true">净值 / 收益</button>
+        <button class="tab" data-v="dd" aria-selected="false">回撤曲线</button>
+        <button class="tab" data-v="pos" aria-selected="false">股票仓位</button>
+      </div>
+      <div class="controls">
+        <div class="control">
+          <span class="lab">周期</span>
+          <div class="segment" id="gran">
+            <button data-g="day" class="on" aria-pressed="true">日线</button>
+            <button data-g="week" aria-pressed="false">周线</button>
+            <button data-g="month" aria-pressed="false">月线</button>
+            <button data-g="year" aria-pressed="false">年线</button>
+          </div>
+        </div>
+        <div class="control">
+          <span class="lab">区间</span>
+          <div class="segment" id="range">
+            <button data-r="all" class="on" aria-pressed="true">全部</button>
+            <button data-r="5y" aria-pressed="false">5 年</button>
+            <button data-r="3y" aria-pressed="false">3 年</button>
+            <button data-r="1y" aria-pressed="false">1 年</button>
+            <button data-r="ytd" aria-pressed="false">今年</button>
+            <button data-r="3m" aria-pressed="false">3 月</button>
+            <button data-r="1m" aria-pressed="false">1 月</button>
+            <button data-r="1w" aria-pressed="false">1 周</button>
+          </div>
+        </div>
+      </div>
+      <div class="viewstats" id="viewStats"></div>
+      <div class="pane on" data-v="eq"><div class="chart" id="c_eq"></div></div>
+      <div class="pane" data-v="dd"><div class="chart" id="c_dd"></div></div>
+      <div class="pane" data-v="pos"><div class="chart" id="c_pos"></div></div>
+      <div class="chartfoot">
+        <div class="note">
+          <strong>周期定义：</strong>日线为原始调仓期点（站点约每 5 个交易日发布 1 点，并非逐日净值）；周 / 月 / 年线分别取对应周期内最后一个已发布点。切换区间后，视图收益按首点重新归一化。
+        </div>
+      </div>
     </div>
-  </div>
+  </section>
 
-  <div class="card">
-    <h2>当前持仓（站点未订阅部分脱敏）</h2>
-    <div class="body" style="padding:0 8px 8px">
-      <table><thead><tr><th>证券代码</th><th>证券名称</th><th>成本价</th><th>最新价</th>
-        <th>仓位</th><th>当日盈亏</th><th>累计盈亏</th></tr></thead>
-        <tbody id="holdBody"></tbody></table>
+  <section class="section" id="evolution">
+    <div class="section-head">
+      <h2>自我学习进化对照</h2>
+      <div class="hint">参考净值 vs 本地 1.3 稳健版固定参数回放</div>
     </div>
-  </div>
-
-  <div class="card">
-    <h2>数据接口 · 每日收盘后由 GitHub Actions 更新</h2>
-    <div class="body">
-      <div class="api" id="api"></div>
-      <div class="note">页面直接读取 <code>data/nav.json</code>；接口返回相对锚点的复利累计收益率，
-        回撤由净值本地重算（站点原始回撤字段口径不一致，实测最大差 27.15pp）。
-        历史采用固定锚点全量拉取 + 重叠段逐点校验，历史永不覆盖、只追加新调仓期。</div>
+    <div class="card">
+      <h3>参考策略与本地策略区间收益</h3>
+      <div class="body">
+        <div class="stat" id="feedStat"></div>
+        <div class="chart" id="c_feed"></div>
+        <div class="note">两条曲线各自按对齐起点归一化；相关系数按相邻调仓期收益率计算。
+          本地曲线由固定参数回放生成，仅作为进化输入与对照，不代表可外推的 alpha。</div>
+      </div>
     </div>
-  </div>
+  </section>
 
-  <footer>数据来源：fulaizhitou.com · 本页面为研究用途的数据镜像与对照展示，不构成任何投资建议。</footer>
+  <section class="section" id="statistics">
+    <div class="section-head">
+      <h2>分年统计与当前持仓</h2>
+      <div class="hint">表格可横向滑动，移动端不会挤压图表</div>
+    </div>
+    <div class="card">
+      <h3>分年统计</h3>
+      <div class="tablewrap">
+        <table><thead><tr><th>年份</th><th>总收益率</th><th>年化收益率</th><th>最大回撤</th>
+          <th>收益回撤比</th><th>标准差</th><th>夏普比率</th></tr></thead>
+          <tbody id="yearBody"></tbody></table>
+      </div>
+    </div>
+    <div class="card" style="margin-top:18px">
+      <h3>当前持仓（参考页未订阅部分脱敏）</h3>
+      <div class="tablewrap">
+        <table><thead><tr><th>证券代码</th><th>证券名称</th><th>成本价</th><th>最新价</th>
+          <th>仓位</th><th>当日盈亏</th><th>累计盈亏</th></tr></thead>
+          <tbody id="holdBody"></tbody></table>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" id="data">
+    <div class="section-head">
+      <h2>数据口径与质量</h2>
+      <div class="hint">固定锚点 · 重叠逐点校验 · 历史只追加</div>
+    </div>
+    <div class="card">
+      <h3>数据质量闸门</h3>
+      <div class="quality" id="quality"></div>
+      <div class="body" style="padding-top:0">
+        <div class="note">
+          页面接口返回相对窗口起点的复利累计收益率，直接使用会随查询窗口整体漂移。本工程固定锚点
+          <strong>2013-06-01</strong> 全量拉取，重叠段逐点校验后才追加尾部；回撤由净值本地重算，站点原始回撤字段与净值回撤最大差
+          <strong>27.15pp</strong>，不可直接采用。远端若删除历史日期，本地权威存档予以保留并显式记录。
+        </div>
+      </div>
+    </div>
+    <div class="card" style="margin-top:18px">
+      <h3>公开数据接口</h3>
+      <div class="body">
+        <div class="api" id="api"></div>
+        <div class="note" style="margin-top:12px">原始参考页：
+          <a href="http://www.fulaizhitou.com/index/index/detail.html?id=1" target="_blank" rel="noopener">fulaizhitou.com / detail?id=1</a>。
+          本页为研究用途的数据镜像与可视化，不提供订阅、交易指令或参数复刻。</div>
+      </div>
+    </div>
+  </section>
+
+  <footer>数据来源：fulaizhitou.com · 本页面为公开数据研究看板，不构成任何投资建议。市场有风险，投资需谨慎。</footer>
 </div>
 
 <script>
 "use strict";
-const S = {nav:null, feed:null, meta:null, range:"all"};
+const S = {nav:null, feed:null, meta:null, quality:null, view:"eq", gran:"day", range:"all"};
 const $ = s => document.querySelector(s);
 const $$ = s => Array.from(document.querySelectorAll(s));
+const GNAME = {day:"日线", week:"周线", month:"月线", year:"年线"};
+const RNAME = {all:"全部区间", "5y":"近 5 年", "3y":"近 3 年", "1y":"近 1 年", ytd:"今年以来", "3m":"近 3 月", "1m":"近 1 月", "1w":"近 1 周"};
+const VNAME = {eq:"净值 / 累计收益曲线", dd:"净值回撤曲线", pos:"股票仓位曲线"};
 
 async function getJSON(p){
   const r = await fetch(p, {cache:"no-store"});
@@ -154,206 +436,339 @@ async function getJSON(p){
 }
 function fmt(v, unit, digits){
   if(v===null||v===undefined||Number.isNaN(v)) return "—";
-  return (v>0?"+":"") + Number(v).toFixed(digits===undefined?2:digits) + (unit||"");
+  const d = digits===undefined?2:digits;
+  return (v>0?"+":"") + Number(v).toFixed(d) + (unit||"");
+}
+function fmtPlain(v, unit, digits){
+  if(v===null||v===undefined||Number.isNaN(v)) return "—";
+  return Number(v).toFixed(digits===undefined?2:digits) + (unit||"");
 }
 function cls(v){ return v>0?"up":(v<0?"down":"flat"); }
-
+function num(s){
+  if(s===null||s===undefined) return null;
+  const v=parseFloat(String(s).replace("%",""));
+  return Number.isFinite(v)?v:null;
+}
+function pad2(n){ return String(n).padStart(2,"0"); }
+function isoUTC(d){ return d.getUTCFullYear()+"-"+pad2(d.getUTCMonth()+1)+"-"+pad2(d.getUTCDate()); }
+function shiftMonths(day, k){
+  const [y,m,d]=day.split("-").map(Number);
+  let nm=m-k, ny=y+Math.floor((nm-1)/12); nm=((nm-1)%12+12)%12+1;
+  const last=new Date(Date.UTC(ny,nm,0)).getUTCDate();
+  return `${ny}-${pad2(nm)}-${pad2(Math.min(d,last))}`;
+}
+function shiftDays(day, k){
+  const d=new Date(day+"T00:00:00Z"); d.setUTCDate(d.getUTCDate()-k); return isoUTC(d);
+}
 function cutoff(r, dates){
   if(r==="all") return null;
-  const last = dates[dates.length-1];
+  const last=dates[dates.length-1];
   if(r==="ytd") return last.slice(0,4)+"-01-01";
-  const y = parseInt(last.slice(0,4),10) - ({ "5y":5,"3y":3,"1y":1 }[r]||1);
-  return y + last.slice(4);
+  if(r==="5y") return shiftMonths(last,60);
+  if(r==="3y") return shiftMonths(last,36);
+  if(r==="1y") return shiftMonths(last,12);
+  if(r==="3m") return shiftMonths(last,3);
+  if(r==="1m") return shiftMonths(last,1);
+  if(r==="1w") return shiftDays(last,7);
+  return null;
 }
-function sliceIdx(nv){
-  const c = cutoff(S.range, nv.dates);
+function baseIdx(nv){
+  const c=cutoff(S.range,nv.dates);
   if(!c) return nv.dates.map((_,i)=>i);
   const out=[];
   for(let i=0;i<nv.dates.length;i++) if(nv.dates[i]>=c) out.push(i);
   return out;
 }
+function weekKey(day){
+  const d=new Date(day+"T00:00:00Z");
+  const dow=(d.getUTCDay()+6)%7; // 周一=0
+  d.setUTCDate(d.getUTCDate()-dow);
+  return isoUTC(d);
+}
+function groupKey(day,g){
+  if(g==="year") return day.slice(0,4);
+  if(g==="month") return day.slice(0,7);
+  if(g==="week") return weekKey(day);
+  return day;
+}
+function viewIdx(nv){
+  const base=baseIdx(nv), picked=[], seen={};
+  for(const i of base){ seen[groupKey(nv.dates[i],S.gran)]=i; }
+  for(const i of base){ if(seen[groupKey(nv.dates[i],S.gran)]===i) picked.push(i); }
+  return picked.length?picked:[base[base.length-1]];
+}
+function pick(a,ix){ return ix.map(i=>a[i]); }
 
-/* 纯 SVG 折线图：零外部依赖，带网格、坐标轴、hover */
+function niceAxis(v, step, unit){
+  if(Math.abs(v)<Math.pow(10,-2)/2) v=0;
+  const d=step>=100?0:(step>=10?1:2);
+  return v.toFixed(d)+(unit||"");
+}
+function xLabel(day){
+  if(S.gran==="year") return day.slice(0,4);
+  if(S.gran==="month") return day.slice(0,7);
+  if(S.gran==="week") return day.slice(5).replace("-","/");
+  if(["all","5y","3y"].includes(S.range)) return day.slice(0,4);
+  return day.slice(5).replace("-","/");
+}
+
+/* 零外部依赖 SVG：动态视口、网格、双线、十字光标、鼠标/触摸提示 */
 function draw(elId, dates, vals, opt){
-  const el = document.getElementById(elId);
-  if(!el || !vals.length){ return; }
-  const W=1000,H=340,PL=64,PR=18,PT=18,PB=36,pw=W-PL-PR,ph=H-PT-PB;
+  const el=document.getElementById(elId);
+  if(!el||!vals.length) return;
+  const W=Math.max(el.clientWidth||el.parentElement.clientWidth||1000, 300);
+  const H=W<520?250:340;
+  const PL=W<520?44:62, PR=W<520?10:16, PT=14, PB=W<520?28:34;
+  const pw=W-PL-PR, ph=H-PT-PB;
   let lo=Math.min.apply(null,vals), hi=Math.max.apply(null,vals);
   if(opt.extra){ lo=Math.min(lo,Math.min.apply(null,opt.extra.values));
                 hi=Math.max(hi,Math.max.apply(null,opt.extra.values)); }
-  const rawLo=lo;
-  if(opt.zeroBase) lo=Math.min(lo,0);
-  if(hi===lo){hi=lo+1;}
-  const pad=(hi-lo)*0.08;
-  hi+=pad;
-  // 零基线图只对上界留白：下界若再减 padding 会造出虚假的负刻度（如 -107%）
-  lo = opt.zeroBase ? Math.min(0,rawLo) : lo-pad;
-  const X=i=> PL + (vals.length===1?pw/2:i/(vals.length-1)*pw);
-  const Y=v=> PT + (hi-v)/(hi-lo)*ph;
-  let g="";
+  const span=Math.max(hi-lo,1e-6), pad=span*0.08;
+  if(opt.zeroBase){
+    lo=Math.min(0,lo);
+    if(!opt.maxCap) hi+=pad;
+  }else if(opt.ceilingZero){
+    hi=Math.max(0,hi); lo-=pad;
+  }else{ hi+=pad; lo-=pad; }
+  if(opt.maxCap!==undefined) hi=Math.min(hi,opt.maxCap);
+  if(hi<=lo) hi=lo+1;
+  const X=i=>PL+(vals.length===1?pw/2:i/(vals.length-1)*pw);
+  const Y=v=>PT+(hi-v)/(hi-lo)*ph;
+  const step=(hi-lo)/4, axisDigits=step>=100?0:(step>=10?1:2);
+  let grid="", ax="";
   for(let k=0;k<=4;k++){
     const v=lo+(hi-lo)*k/4, y=Y(v);
-    g += `<line x1="${PL}" y1="${y.toFixed(1)}" x2="${W-PR}" y2="${y.toFixed(1)}"/>`;
+    grid+=`<line x1="${PL}" y1="${y.toFixed(1)}" x2="${W-PR}" y2="${y.toFixed(1)}"/>`;
+    ax+=`<text x="${PL-8}" y="${(Y(lo+(hi-lo)*(4-k)/4)+4).toFixed(1)}" text-anchor="end">${niceAxis(lo+(hi-lo)*(4-k)/4,step,opt.unit)}</text>`;
   }
-  let ax="";
-  for(let k=0;k<=4;k++){
-    const v=lo+(hi-lo)*(4-k)/4;
-    ax += `<text x="${PL-9}" y="${(Y(v)+4).toFixed(1)}" text-anchor="end">${Number(v).toFixed(opt.digits||2)}${opt.unit||""}</text>`;
-  }
+  const maxTicks=W<520?4:6, tickStep=Math.max(1,Math.ceil(dates.length/maxTicks));
   let seen={}, xt="";
-  for(let i=0;i<dates.length;i++){
-    const yr=dates[i].slice(0,4);
-    if(!seen[yr]){ seen[yr]=1;
-      xt += `<text x="${X(i).toFixed(1)}" y="${H-12}" text-anchor="middle">${yr}</text>`; }
+  for(let i=0;i<dates.length;i+=tickStep){
+    const lab=xLabel(dates[i]);
+    if(seen[lab]) continue; seen[lab]=1;
+    xt+=`<text x="${X(i).toFixed(1)}" y="${H-10}" text-anchor="middle">${lab}</text>`;
   }
-  let d="", d2="", area="";
+  if(dates.length>1){
+    const i=dates.length-1, lab=xLabel(dates[i]);
+    if(!seen[lab]) xt+=`<text x="${X(i).toFixed(1)}" y="${H-10}" text-anchor="end">${lab}</text>`;
+  }
+  let d="",d2="";
   for(let i=0;i<vals.length;i++){
-    d += (i?" L":"M") + X(i).toFixed(2) + " " + Y(vals[i]).toFixed(2);
-    if(opt.extra) d2 += (i?" L":"M") + X(i).toFixed(2) + " " + Y(opt.extra.values[i]).toFixed(2);
+    d+=(i?" L":"M")+X(i).toFixed(2)+" "+Y(vals[i]).toFixed(2);
+    if(opt.extra) d2+=(i?" L":"M")+X(i).toFixed(2)+" "+Y(opt.extra.values[i]).toFixed(2);
   }
-  const baseY = opt.zeroBase ? Y(0) : (PT+ph);
-  area = d + ` L ${X(vals.length-1).toFixed(2)} ${baseY.toFixed(2)} L ${X(0).toFixed(2)} ${baseY.toFixed(2)} Z`;
+  const baseY=(opt.zeroBase||opt.ceilingZero)?Y(0):(PT+ph);
+  const area=d+` L ${X(vals.length-1).toFixed(2)} ${baseY.toFixed(2)} L ${X(0).toFixed(2)} ${baseY.toFixed(2)} Z`;
   const lastX=X(vals.length-1), lastY=Y(vals[vals.length-1]);
-  el.innerHTML =
-    `<svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="none" role="img">
+  const legend=opt.legend?`<div class="legend">${opt.legend.map(x=>`<span><i style="background:${x.color}"></i>${x.label}</span>`).join("")}</div>`:"";
+  el.innerHTML=legend+
+    `<svg viewBox="0 0 ${W} ${H}" width="100%" height="${H}" preserveAspectRatio="xMidYMid meet" role="img" aria-label="${opt.label||'策略曲线'}">
        <defs><linearGradient id="g_${elId}" x1="0" y1="0" x2="0" y2="1">
-         <stop offset="0%" stop-color="${opt.color}" stop-opacity=".22"/>
+         <stop offset="0%" stop-color="${opt.color}" stop-opacity=".20"/>
          <stop offset="100%" stop-color="${opt.color}" stop-opacity="0"/></linearGradient></defs>
-       <g class="grid">${g}</g>
+       <g class="grid">${grid}</g>
        <path d="${area}" fill="url(#g_${elId})"/>
-       <path d="${d}" fill="none" stroke="${opt.color}" stroke-width="2" stroke-linejoin="round"/>
-       ${opt.extra?`<path d="${d2}" fill="none" stroke="${opt.extra.color}" stroke-width="2" stroke-linejoin="round"/>`:""}
-       <circle cx="${lastX.toFixed(1)}" cy="${lastY.toFixed(1)}" r="4" fill="${opt.color}"/>
+       <path d="${d}" fill="none" stroke="${opt.color}" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>
+       ${opt.extra?`<path d="${d2}" fill="none" stroke="${opt.extra.color}" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>`:""}
+       <circle cx="${lastX.toFixed(1)}" cy="${lastY.toFixed(1)}" r="4" fill="${opt.color}" stroke="#fff" stroke-width="2"/>
        <g class="axis">${ax}${xt}</g>
+       <line class="cross" id="cross_${elId}" y1="${PT}" y2="${PT+ph}"/>
+       <circle class="marker" id="marker_${elId}" r="5" fill="${opt.color}"/>
        <rect id="hit_${elId}" x="${PL}" y="${PT}" width="${pw}" height="${ph}" fill="transparent"/>
      </svg><div class="tip" id="tip_${elId}"></div>`;
   const tip=$("#tip_"+elId), hit=$("#hit_"+elId);
-  hit.addEventListener("mousemove",ev=>{
-    const box=hit.getBoundingClientRect();
+  const cross=$("#cross_"+elId), marker=$("#marker_"+elId);
+  function show(ev){
+    const box=hit.getBoundingClientRect(), eb=el.getBoundingClientRect();
     const vx=(ev.clientX-box.left)/box.width*pw;
     let i=Math.round(vx/pw*(vals.length-1));
     i=Math.max(0,Math.min(vals.length-1,i));
+    const x=X(i), y=Y(vals[i]);
+    cross.setAttribute("x1",x); cross.setAttribute("x2",x); cross.style.display="block";
+    marker.setAttribute("cx",x); marker.setAttribute("cy",y); marker.style.display="block";
+    let extra="";
+    if(opt.extra) extra=`<br><span class="muted">${opt.extra.label}</span> ${fmt(opt.extra.values[i],opt.unit,opt.digits)}`;
+    if(opt.context){
+      extra+=`<br><span class="muted">累计</span> ${fmt(opt.context.ret[i],"%",2)}`+
+             `　<span class="muted">回撤</span> ${fmt(opt.context.dd[i],"%",2)}`+
+             `　<span class="muted">仓位</span> ${fmtPlain(opt.context.pos[i]*100,"%",1)}`;
+    }
+    tip.innerHTML=`<b>${dates[i]}</b><br>${opt.label} ${fmt(vals[i],opt.unit,opt.digits)}${extra}`;
     tip.style.display="block";
-    tip.style.left=Math.min(box.left+X(i)/W*box.width-PL+12, el.clientWidth-150)+"px";
-    tip.style.top=(ev.clientY-el.getBoundingClientRect().top-42)+"px";
-    tip.innerHTML=`<b>${dates[i]}</b>　${opt.label} ${fmt(vals[i],opt.unit,opt.digits)}`
-      + (opt.extra?`　${opt.extra.label} ${fmt(opt.extra.values[i],opt.unit,opt.digits)}`:"");
-  });
-  hit.addEventListener("mouseleave",()=>tip.style.display="none");
+    tip.style.left=Math.max(8,Math.min(ev.clientX-eb.left+12,el.clientWidth-tip.offsetWidth-8))+"px";
+    tip.style.top=Math.max(8,ev.clientY-eb.top-62)+"px";
+  }
+  function hide(){ tip.style.display="none"; cross.style.display="none"; marker.style.display="none"; }
+  hit.addEventListener("pointermove",ev=>{ if(ev.pointerType==="mouse"||ev.buttons) show(ev); });
+  hit.addEventListener("pointerdown",show);
+  hit.addEventListener("pointerleave",hide);
+  hit.addEventListener("pointercancel",hide);
 }
 
+function renderViewStats(nv,ix){
+  const nav=pick(nv.nav,ix), dd=pick(nv.drawdown,ix), pos=pick(nv.position,ix);
+  const rangeRet=(nav[nav.length-1]/nav[0]-1)*100;
+  const maxDD=Math.min.apply(null,dd), lastPos=pos[pos.length-1]*100;
+  $("#viewStats").innerHTML=
+    `<div><span>当前视图涨幅（按首点归一化）</span><b class="${cls(rangeRet)}">${fmt(rangeRet,"%",2)}</b></div>
+     <div><span>视图内最大回撤</span><b class="down">${fmt(maxDD,"%",2)}</b></div>
+     <div><span>最新股票仓位</span><b>${fmtPlain(lastPos,"%",1)}</b></div>
+     <div><span>聚合后数据点</span><b>${ix.length}</b></div>`;
+  $("#heroReturn").textContent=fmt(rangeRet,"%",2);
+  $("#heroRange").textContent=`${GNAME[S.gran]} · ${RNAME[S.range]} · 按视图首点归一化`;
+  $("#chartMeta").textContent=`${GNAME[S.gran]} · ${RNAME[S.range]} · ${ix.length} 点 · 截至 ${nv.dates[ix[ix.length-1]]}`;
+  $("#chartTitle").textContent=VNAME[S.view];
+}
 function drawAll(){
   const nv=S.nav; if(!nv) return;
-  const ix=sliceIdx(nv);
-  const pick=a=>ix.map(i=>a[i]);
-  draw("c_eq",  pick(nv.dates), pick(nv.ret),
-       {color:"#d93025",label:"累计收益",unit:"%",digits:2,zeroBase:true});
-  draw("c_dd",  pick(nv.dates), pick(nv.drawdown),
-       {color:"#0f9d58",label:"回撤",unit:"%",digits:2,zeroBase:true});
-  draw("c_pos", pick(nv.dates), pick(nv.position).map(v=>v*100),
-       {color:"#1a73e8",label:"仓位",unit:"%",digits:1,zeroBase:true});
+  const ix=viewIdx(nv);
+  const dates=pick(nv.dates,ix), ret=pick(nv.ret,ix), dd=pick(nv.drawdown,ix), pos=pick(nv.position,ix);
+  const ctx={ret,dd,pos};
+  renderViewStats(nv,ix);
+  draw("c_eq",dates,ret,{color:"#d93025",label:"累计收益",unit:"%",digits:2,zeroBase:true,context:ctx});
+  draw("c_dd",dates,dd,{color:"#0f9d58",label:"回撤",unit:"%",digits:2,ceilingZero:true,context:ctx});
+  draw("c_pos",dates,pos.map(v=>v*100),{color:"#2563eb",label:"股票仓位",unit:"%",digits:1,zeroBase:true,maxCap:100,context:ctx});
 }
-
 function drawFeed(){
-  const f=S.feed; if(!f||f.status!=="ok"||!f.series||!f.series.length){
+  const f=S.feed;
+  if(!f||f.status!=="ok"||!f.series||!f.series.length){
     $("#c_feed").innerHTML='<div class="loading">进化对照数据暂不可用</div>'; return;
   }
-  const s=f.series, d=s.map(x=>x.day);
-  const a0=s[0].nav_ref, b0=s[0].nav_local;
-  const st=f.stats||{};
-  draw("c_feed", d, s.map(x=>(x.nav_ref/a0-1)*100),
-       {color:"#6f5499",label:"参考策略",unit:"%",digits:1,zeroBase:true,
-        extra:{values:s.map(x=>(x.nav_local/b0-1)*100), color:"#d93025", label:"本地稳健版"}});
+  const s=f.series, d=s.map(x=>x.day), a0=s[0].nav_ref, b0=s[0].nav_local, st=f.stats||{};
+  draw("c_feed",d,s.map(x=>(x.nav_ref/a0-1)*100),
+       {color:"#7c5cb1",label:"参考策略",unit:"%",digits:1,zeroBase:true,
+        extra:{values:s.map(x=>(x.nav_local/b0-1)*100),color:"#d93025",label:"本地稳健版"},
+        legend:[{color:"#7c5cb1",label:"参考策略"},{color:"#d93025",label:"本地 1.3 稳健版"}]});
   $("#feedStat").innerHTML=
     `<div><span>对齐调仓期</span><b>${f.n}</b></div>
-     <div><span>区间收益相关系数</span><b>${st.period_return_corr===null||st.period_return_corr===undefined?"—":Number(st.period_return_corr).toFixed(3)}</b></div>
+     <div><span>区间收益相关系数</span><b>${st.period_return_corr==null?"—":Number(st.period_return_corr).toFixed(3)}</b></div>
      <div><span>参考策略 CAGR</span><b class="up">${fmt(st.cagr_ref,"%")}</b></div>
      <div><span>本地稳健版 CAGR</span><b class="up">${fmt(st.cagr_local,"%")}</b></div>
-     <div><span>对齐区间</span><b style="font-size:14px">${f.aligned_from} → ${f.aligned_to}</b></div>`;
+     <div><span>对齐区间</span><b class="small">${f.aligned_from} → ${f.aligned_to}</b></div>`;
 }
-
 function colorVal(v,unit,digits){ return `<span class="${cls(v)}">${fmt(v,unit,digits)}</span>`; }
 
 function render(){
-  const nv=S.nav, mt=S.meta||{}, dq=(nv&&nv.data_quality)||{};
-  const m=nv.metrics||{}, sm=nv.sub_metrics||{};
-  const num=s=>{ if(!s) return null; const v=parseFloat(String(s).replace("%","")); return isNaN(v)?null:v; };
-  // signed=收益/回撤类（红涨绿跌、带符号）；比率类保持中性，不加红加号
+  const nv=S.nav, mt=S.meta||{}, q=S.quality||{}, qLatest=q.latest||{};
+  const dq=nv.data_quality||{}, m=nv.metrics||{}, sm=nv.sub_metrics||{};
   const items=[
-    ["总收益", num(m["总收益"]), "%", true], ["年化收益", num(m["年化收益"]), "%", true],
-    ["最大回撤", num(m["最大回撤"]), "%", true], ["收益风险比", num(m["收益风险比"]), "", false],
-    ["夏普比例", num(sm["夏普比例"]), "", false], ["近1年收益", num(sm["近1年收益"]), "%", true]
+    ["总收益",num(m["总收益"]),"%",true,"站点披露口径"],
+    ["年化收益",num(m["年化收益"]),"%",true,"站点披露口径"],
+    ["最大回撤",num(m["最大回撤"]),"%",true,"站点披露口径"],
+    ["收益风险比",num(m["收益风险比"]),"",false,"总收益 / 最大回撤"],
+    ["夏普比例",num(sm["夏普比例"]),"",false,"站点披露口径"],
+    ["近 1 年收益",num(sm["近1年收益"]),"%",true,"站点披露口径"]
   ];
-  $("#kpis").innerHTML=items.map(([k,v,u,signed])=>{
-    const txt = signed ? fmt(v,u,2)
-      : (v===null||v===undefined ? "—" : Number(v).toFixed(2)+u);
-    return `<div class="kpi"><div class="k">${k}</div>`+
-           `<div class="v ${signed?cls(v):"flat"}">${txt}</div></div>`;
+  $("#kpis").innerHTML=items.map(([k,v,u,signed,s])=>{
+    const txt=signed?fmt(v,u,2):(v==null?"—":fmtPlain(v,u,2));
+    return `<div class="kpi"><div class="k">${k}</div><div class="v ${signed?cls(v):"flat"}">${txt}</div><div class="s">${s}</div></div>`;
   }).join("");
+
+  const allIx=viewIdx(nv), navAll=pick(nv.nav,allIx);
+  const totalChart=(navAll[navAll.length-1]/navAll[0]-1)*100;
+  $("#heroReturn").textContent=fmt(totalChart,"%",2);
+  $("#heroRange").textContent=`${GNAME[S.gran]} · ${RNAME[S.range]} · 按视图首点归一化`;
+  $("#heroAsOf").textContent=nv.as_of;
+  $("#heroPoints").textContent=`${nv.dates.length} 期`;
 
   const badges=[];
   badges.push(`<span class="badge">净值截至 ${nv.as_of} · ${nv.dates.length} 期</span>`);
   badges.push(`<span class="badge">站点最后更新 ${nv.last_update||"—"}</span>`);
-  badges.push(`<span class="badge">锚点 ${nv.anchor}</span>`);
+  badges.push(`<span class="badge">固定锚点 ${nv.anchor}</span>`);
   if(mt.generated_date) badges.push(`<span class="badge">管道运行 ${mt.generated_date}</span>`);
-  if(dq.ok) badges.push(`<span class="badge">口径校验通过 · ${dq.n_points} 点零偏差</span>`);
-  else badges.push(`<span class="badge err">口径校验异常 · 修订 ${dq.revisions_n}</span>`);
-  if(dq.stale) badges.push(`<span class="badge warn">数据停更 · 已启用本地兜底</span>`);
-  else badges.push(`<span class="badge">收盘后每日自动更新</span>`);
+  if(dq.ok){
+    const miss=qLatest.missing_n||0;
+    badges.push(`<span class="badge ${miss?"warn":"ok"}">口径校验通过 · ${dq.n_points} 期零偏差${miss?` · 远端缺 ${miss} 期已保留`:""}</span>`);
+  }else badges.push(`<span class="badge err">口径校验异常 · 修订 ${dq.revisions_n||0}</span>`);
+  badges.push(`<span class="badge ${dq.stale?"warn":"ok"}">${dq.stale?"数据停更 · 本地兜底":"同步管道就绪"}</span>`);
   $("#badges").innerHTML=badges.join("");
+
+  $("#quality").innerHTML=
+    `<div><span>权威存档</span><b>${nv.dates.length} 期</b></div>
+     <div><span>重叠校验</span><b class="down">${fmtPlain(qLatest.max_abs_diff_pp??dq.max_abs_diff_pp,"pp",2)}</b></div>
+     <div><span>历史修订</span><b>${qLatest.revisions_n??dq.revisions_n??0}</b></div>
+     <div><span>远端缺失并保留</span><b>${qLatest.missing_n??0} 期</b></div>
+     <div><span>质量结论</span><b class="${dq.ok?"down":"up"}">${dq.ok?"通过":"异常"}</b></div>`;
 
   $("#yearBody").innerHTML=(nv.yearly||[]).map(y=>
     `<tr><td>${y.year}年</td><td>${colorVal(y.total_return_pct,"%")}</td>
-      <td>${colorVal(y.annual_return_pct,"%")}</td><td class="down">${fmt(y.max_drawdown_pct,"%")}</td>
-      <td>${fmt(y.return_dd_ratio,"",2)}</td><td>${fmt(y.std_pct,"%")}</td>
-      <td>${fmt(y.sharpe,"",2)}</td></tr>`).join("");
+      <td>${colorVal(y.annual_return_pct,"%")}</td><td class="down">${fmt(-Math.abs(y.max_drawdown_pct),"%")}</td>
+      <td>${fmtPlain(y.return_dd_ratio,"",2)}</td><td>${fmtPlain(y.std_pct,"%",2)}</td>
+      <td>${fmtPlain(y.sharpe,"",2)}</td></tr>`).join("");
   $("#holdBody").innerHTML=(nv.holdings||[]).map(h=>
     `<tr><td>${h.code}</td><td>${h.name}</td><td>${h.cost}</td><td>${h.last}</td>
       <td>${h.weight}</td><td>${h.day_pnl}</td><td>${colorVal(parseFloat(h.cum_pnl),"%")}</td></tr>`).join("")
     || '<tr><td colspan="7" style="text-align:center;color:var(--muted)">站点未公开</td></tr>';
 
   const api=[
-    ["页面数据接口","data/nav.json","dates / nav / ret / drawdown / position / metrics / yearly / holdings"],
-    ["权威存档（逐期）","data/nav_history.csv","day, ret, dd_api, pos"],
-    ["站点元数据存档","data/detail.json","指标、分年统计、持仓、最后更新时间"],
-    ["运行报告","data/meta.json","新增点数、重叠校验、修订/回退/停更状态"],
-    ["质量审计","data/data_quality.json","最近 30 次校验报告历史"],
-    ["自我学习样本","data/learning_samples.csv","逐期动量 / 波动 / 回撤 / 仓位特征"],
-    ["进化对照","data/evolution_feed.json","与本地 1.3 稳健版净值对齐序列"],
-    ["回归测试","nav/nav_tests.py","递归回放 + 18 类故障注入"]
+    ["页面主接口","nav.json","dates / nav / ret / drawdown / position / metrics / yearly / holdings"],
+    ["逐期权威存档","nav_history.csv","day, nav, ret, dd_api, dd_local, pos"],
+    ["站点元数据","detail.json","指标、分年统计、持仓、最后更新时间"],
+    ["运行报告","meta.json","新增点数、重叠校验、修订 / 回退 / 停更状态"],
+    ["质量审计","data_quality.json","最近 30 次校验报告与告警"],
+    ["自我学习样本","learning_samples.csv","逐期动量 / 波动 / 回撤 / 仓位特征"],
+    ["进化对照","evolution_feed.json","与本地 1.3 稳健版净值对齐序列"],
+    ["数据管道","私有工程","固定锚点全量拉取、递归回归与每日同步"]
   ];
   $("#api").innerHTML=api.map(([n,p,d])=>
-    `<div><b>${n}</b>　<a href="${p}" target="_blank"><code>${p}</code></a>
-      <div style="color:var(--muted);font-size:12px;margin-top:2px">${d}</div></div>`).join("");
+    `<div><b>${n}</b>　${p==="私有工程"?`<code>${p}</code>`:`<a href="data/${p}" target="_blank"><code>data/${p}</code></a>`}
+      <div class="desc">${d}</div></div>`).join("");
 
   drawAll(); drawFeed();
 }
-
-$$(".tab").forEach(b=>b.addEventListener("click",()=>{
-  $$(".tab").forEach(x=>x.classList.remove("on")); b.classList.add("on");
-  $$(".pane").forEach(p=>p.classList.toggle("on",p.dataset.p===b.dataset.p));
-  drawAll();
+function setSegment(sel,key,val){
+  $$(sel+" button").forEach(b=>{
+    const on=b.dataset[key]===val;
+    b.classList.toggle("on",on);
+    b.setAttribute("aria-pressed",on?"true":"false");
+  });
+}
+function activateView(v,redraw=true){
+  S.view=v;
+  $$(".tab").forEach(b=>{
+    const on=b.dataset.v===v; b.classList.toggle("on",on); b.setAttribute("aria-selected",on?"true":"false");
+  });
+  $$(".pane").forEach(p=>p.classList.toggle("on",p.dataset.v===v));
+  if(redraw) setTimeout(drawAll,0);
+}
+function readURL(){
+  const q=new URLSearchParams(location.search), g=q.get("gran"), r=q.get("range"), v=q.get("view");
+  if(Object.prototype.hasOwnProperty.call(GNAME,g)) S.gran=g;
+  if(Object.prototype.hasOwnProperty.call(RNAME,r)) S.range=r;
+  if(Object.prototype.hasOwnProperty.call(VNAME,v)) activateView(v,false);
+  setSegment("#gran","g",S.gran);
+  setSegment("#range","r",S.range);
+}
+function syncURL(){
+  try{
+    const u=new URL(location.href);
+    u.searchParams.set("gran",S.gran); u.searchParams.set("range",S.range); u.searchParams.set("view",S.view);
+    history.replaceState(null,"",u.pathname+u.search+u.hash);
+  }catch(e){ /* file:// 或受限环境忽略 */ }
+}
+$$(".tab").forEach(b=>b.addEventListener("click",()=>{ activateView(b.dataset.v); syncURL(); }));
+$$("#gran button").forEach(b=>b.addEventListener("click",()=>{
+  S.gran=b.dataset.g; setSegment("#gran","g",S.gran); drawAll(); syncURL();
 }));
 $$("#range button").forEach(b=>b.addEventListener("click",()=>{
-  $$("#range button").forEach(x=>x.classList.remove("on")); b.classList.add("on");
-  S.range=b.dataset.r; drawAll();
+  S.range=b.dataset.r; setSegment("#range","r",S.range); drawAll(); syncURL();
 }));
+let rt=null;
+window.addEventListener("resize",()=>{ clearTimeout(rt); rt=setTimeout(()=>{drawAll();drawFeed();},140); });
 
 (async function boot(){
   try{
-    const [nv,fd,mt]=await Promise.all([
+    const [nv,fd,mt,q]=await Promise.all([
       getJSON("./data/nav.json"),
       getJSON("./data/evolution_feed.json").catch(()=>null),
-      getJSON("./data/meta.json").catch(()=>null)
+      getJSON("./data/meta.json").catch(()=>null),
+      getJSON("./data/data_quality.json").catch(()=>null)
     ]);
-    S.nav=nv; S.feed=fd; S.meta=mt;
+    S.nav=nv; S.feed=fd; S.meta=mt; S.quality=q;
+    readURL();
     render();
     const h=location.hash.replace("#","");
-    if(["eq","dd","pos"].indexOf(h)>=0){
-      $$(".tab").forEach(x=>x.classList.toggle("on",x.dataset.p===h));
-      $$(".pane").forEach(p=>p.classList.toggle("on",p.dataset.p===h));
-      setTimeout(drawAll,0);
-    }
+    if(["eq","dd","pos"].includes(h)){ activateView(h); syncURL(); }
   }catch(e){
     $("#badges").innerHTML=`<span class="badge err">数据接口加载失败：${e.message}</span>`;
     $("#c_eq").innerHTML=`<div class="loading">请通过 HTTP 访问本页（GitHub Pages 或本地 <code>python3 -m http.server</code>），

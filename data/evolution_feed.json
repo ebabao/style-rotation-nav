@@ -5,8 +5,8 @@
   "local_strategy": "1.3 稳健版 C 线（20.19% / 13.34% / 月胜率 69.48%）",
   "anchor": "2013-06-01",
   "aligned_from": "2013-10-21",
-  "aligned_to": "2026-11-05",
-  "n": 1064,
+  "aligned_to": "2026-11-06",
+  "n": 1065,
   "series": [
     {
       "day": "2013-10-21",
@@ -6391,13 +6391,19 @@
       "nav_ref": 15.6824,
       "nav_local": 9.563012,
       "pos_ref": 0.51
+    },
+    {
+      "day": "2026-11-06",
+      "nav_ref": 15.5509,
+      "nav_local": 9.563012,
+      "pos_ref": 1.0
     }
   ],
   "stats": {
-    "period_return_corr": 0.530805,
-    "cagr_ref": 22.0405,
-    "cagr_local": 18.8082,
-    "total_return_ref_pct": 1242.9,
+    "period_return_corr": 0.530811,
+    "cagr_ref": 21.9566,
+    "cagr_local": 18.8039,
+    "total_return_ref_pct": 1231.64,
     "total_return_local_pct": 846.3
   }
 }
