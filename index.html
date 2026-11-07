@@ -4,25 +4,25 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>大类资产轮动 · 策略研究看板</title>
-<meta name="description" content="大类资产轮动策略净值、回撤、仓位、策略介绍与每日数据接口研究看板">
+<meta name="description" content="大类资产轮动策略固定参数回放：净值、回撤、仓位、调仓信号与分年统计">
 <meta name="theme-color" content="#0b1533">
 <style>
   :root{
     --bg:#f4f6fb; --card:#fff; --ink:#111a33; --muted:#64708a; --line:#e4e9f2;
     --navy:#0b1533; --navy2:#172554; --brand:#4f46e5; --brand2:#7c6cf6;
-    --gold:#d6ad55; --up:#d93025; --down:#0f9d58; --pos:#2563eb; --ref:#7c5cb1;
-    --warn:#b26a00; --ok:#0f9d58; --shadow:0 12px 34px rgba(16,28,62,.07);
-    --radius:16px; --chart-h:340px;
+    --gold:#d6ad55; --up:#d93025; --down:#0f9d58; --pos:#2563eb; --warn:#b26a00;
+    --ok:#0f9d58; --shadow:0 12px 34px rgba(16,28,62,.07);
+    --radius:16px;
   }
   *{box-sizing:border-box}
-  html{scroll-behavior:smooth;scroll-padding-top:72px}
+  html{scroll-behavior:smooth;scroll-padding-top:78px}
   body{margin:0;background:var(--bg);color:var(--ink);
        font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;
        font-size:14px;line-height:1.6;-webkit-font-smoothing:antialiased;overflow-x:hidden}
   a{color:var(--pos);text-decoration:none} a:hover{text-decoration:underline}
   button{font-family:inherit}
   .wrap{max-width:1200px;margin:0 auto;padding:0 22px 60px}
-  .topnav{position:sticky;top:0;z-index:20;background:rgba(11,21,51,.92);backdrop-filter:blur(14px);
+  .topnav{position:sticky;top:0;z-index:20;background:rgba(11,21,51,.94);backdrop-filter:blur(14px);
           -webkit-backdrop-filter:blur(14px);border-bottom:1px solid rgba(255,255,255,.10)}
   .topnav .wrap{display:flex;align-items:center;gap:26px;padding-top:0;padding-bottom:0;height:54px}
   .brand{display:flex;align-items:center;gap:10px;color:#fff;font-weight:650;white-space:nowrap;letter-spacing:.3px}
@@ -34,36 +34,7 @@
   .navlinks a:hover{color:#fff;background:rgba(255,255,255,.10);text-decoration:none}
   .live{margin-left:auto;display:flex;align-items:center;gap:7px;color:#dbe4ff;font-size:12px;white-space:nowrap}
   .live i{width:7px;height:7px;border-radius:50%;background:#55d39a;box-shadow:0 0 0 4px rgba(85,211,154,.14)}
-  header{position:relative;overflow:hidden;background:
-          radial-gradient(circle at 84% 18%,rgba(124,108,246,.36),transparent 35%),
-          radial-gradient(circle at 18% 100%,rgba(214,173,85,.16),transparent 32%),
-          linear-gradient(120deg,#0b1533 0%,#18265a 58%,#3b3478 100%);color:#fff;padding:42px 0 38px}
-  header:before{content:"";position:absolute;inset:0;opacity:.16;
-    background-image:linear-gradient(rgba(255,255,255,.12) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.12) 1px,transparent 1px);
-    background-size:42px 42px;mask-image:linear-gradient(to bottom,#000,transparent 86%)}
-  header .wrap{position:relative;padding-bottom:0}
-  .hero{display:grid;grid-template-columns:minmax(0,1.55fr) minmax(280px,.75fr);gap:36px;align-items:end}
-  .eyebrow{display:inline-flex;align-items:center;gap:8px;font-size:12px;letter-spacing:1.6px;
-           color:#e4d6aa;text-transform:uppercase;margin-bottom:12px}
-  .eyebrow:before{content:"";width:26px;height:1px;background:var(--gold)}
-  h1{font-size:34px;line-height:1.25;margin:0 0 12px;font-weight:680;letter-spacing:.5px}
-  .lede{max-width:680px;color:rgba(255,255,255,.78);font-size:15px;margin:0}
-  .badges{margin-top:20px;display:flex;flex-wrap:wrap;gap:8px}
-  .badge{background:rgba(255,255,255,.10);border:1px solid rgba(255,255,255,.20);
-         border-radius:999px;padding:5px 12px;font-size:12px;color:#eef2ff;backdrop-filter:blur(6px)}
-  .badge.ok{border-color:rgba(85,211,154,.45);background:rgba(85,211,154,.12)}
-  .badge.warn{border-color:rgba(246,190,84,.55);background:rgba(246,190,84,.14);color:#ffe9b6}
-  .badge.err{border-color:rgba(255,120,110,.6);background:rgba(217,48,37,.24);color:#ffd9d6}
-  .heroSide{background:rgba(255,255,255,.09);border:1px solid rgba(255,255,255,.18);border-radius:16px;
-            padding:18px 20px;backdrop-filter:blur(10px)}
-  .heroSide .label{font-size:12px;color:rgba(255,255,255,.65);letter-spacing:.5px}
-  .heroSide .big{font-size:28px;font-weight:680;margin:3px 0 2px;letter-spacing:-.5px}
-  .heroSide .meta{font-size:12px;color:rgba(255,255,255,.70)}
-  .heroSide hr{border:0;border-top:1px solid rgba(255,255,255,.16);margin:14px 0}
-  .heroSide .row{display:flex;justify-content:space-between;gap:12px;font-size:12px;margin:7px 0;color:rgba(255,255,255,.72)}
-  .heroSide .row b{color:#fff;font-weight:600}
-  .section{scroll-margin-top:72px}
-  .section-head{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;margin:34px 0 14px}
+  .section-head{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;margin:30px 0 14px}
   .section-head h2{font-size:20px;margin:0;font-weight:680;letter-spacing:.2px}
   .section-head .hint{color:var(--muted);font-size:12px;text-align:right}
   .card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);
@@ -81,6 +52,12 @@
   .up{color:var(--up)} .down{color:var(--down)} .flat{color:var(--ink)}
   .note{color:var(--muted);font-size:12px;line-height:1.75}
   .note strong{color:var(--ink);font-weight:600}
+  .metaline{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
+  .metaline span{font-size:11px;color:#475569;background:#fff;border:1px solid var(--line);
+                 border-radius:999px;padding:4px 10px}
+  .metaline span b{font-weight:650;color:var(--ink)}
+  .metaline span.ok{border-color:#bfe6cf;background:#f1fbf5;color:#0b6b39}
+  .metaline span.warn{border-color:#f0dcae;background:#fffaef;color:#7a5a14}
   .strategy-grid{display:grid;grid-template-columns:minmax(0,1.05fr) minmax(0,.95fr);gap:0}
   .strategy-grid>div{padding:22px 24px}
   .strategy-grid>div+div{border-left:1px solid var(--line);background:#fafbfe}
@@ -103,7 +80,6 @@
            padding:12px 14px;color:#6b552e;font-size:12px;display:flex;gap:10px;align-items:flex-start}
   .riskbox .ic{flex:0 0 20px;height:20px;border-radius:6px;background:#f2dfae;color:#7a5a14;
                display:grid;place-items:center;font-weight:800;font-size:12px}
-  .chartcard{margin-top:0}
   .charthead{padding:18px 20px 0;border-bottom:0}
   .charthead .titleline{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
   .charthead h3{border:0;padding:0;font-size:17px}
@@ -141,48 +117,62 @@
   .legend{display:flex;gap:16px;flex-wrap:wrap;font-size:12px;color:var(--muted);padding:2px 8px 6px}
   .legend i{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:6px}
   .chartfoot{padding:0 20px 18px}
-  .stat{display:grid;grid-template-columns:repeat(5,1fr);gap:0;margin-bottom:8px;border:1px solid var(--line);border-radius:12px;overflow:hidden}
-  .stat div{padding:12px 14px;border-right:1px solid var(--line)}
-  .stat div:last-child{border-right:0}
-  .stat span{display:block;color:var(--muted);font-size:11px}
-  .stat b{font-size:17px;font-weight:680}
-  .stat b.small{font-size:13px}
   .tablewrap{overflow-x:auto;-webkit-overflow-scrolling:touch}
-  table{width:100%;border-collapse:collapse;font-size:13px;min-width:720px}
+  table{width:100%;border-collapse:collapse;font-size:13px;min-width:680px}
   th,td{padding:11px 14px;border-bottom:1px solid var(--line);text-align:right;white-space:nowrap}
   th:first-child,td:first-child,th:nth-child(2),td:nth-child(2){text-align:left}
   thead th{background:#f7f9fd;color:var(--muted);font-weight:600;font-size:12px;position:sticky;top:0}
   tbody tr:hover{background:#fafbff}
-  .quality{display:grid;grid-template-columns:repeat(5,1fr)}
-  .quality div{padding:16px 18px;border-right:1px solid var(--line)}
-  .quality div:nth-child(5n){border-right:0}
-  .quality span{display:block;color:var(--muted);font-size:11px;margin-bottom:5px}
-  .quality b{font-size:15px}
-  .api{display:grid;grid-template-columns:repeat(2,1fr);gap:0 26px}
-  .api div{padding:11px 0;border-bottom:1px dashed var(--line);font-size:13px}
-  .api code{background:#f1f4fa;padding:2px 6px;border-radius:5px;font-size:12px;color:#334155}
-  .api .desc{color:var(--muted);font-size:12px;margin-top:3px}
   .loading{padding:56px 20px;text-align:center;color:var(--muted)}
   footer{color:var(--muted);font-size:12px;text-align:center;padding:28px 20px 0;border-top:1px solid var(--line);margin-top:34px}
+  /* 调仓信号 */
+  .sighead{display:flex;flex-wrap:wrap;align-items:center;gap:10px 14px;padding:16px 20px;border-bottom:1px solid var(--line);
+           background:linear-gradient(180deg,#fafbff,#fff)}
+  .sighead .state{display:inline-flex;align-items:center;gap:7px;font-size:13px;font-weight:650;
+                  border-radius:999px;padding:5px 13px;border:1px solid #cfe0d6;background:#f1fbf5;color:#0b6b39}
+  .sighead .state.act{border-color:#f0c9c4;background:#fff5f4;color:#a52a1e}
+  .sighead .state i{width:7px;height:7px;border-radius:50%;background:currentColor}
+  .sighead .sub{font-size:12px;color:var(--muted)}
+  .sighead .sub b{color:var(--ink);font-weight:650}
+  .siggrid{display:grid;grid-template-columns:1fr 1fr;gap:0}
+  .sigcol{padding:18px 20px}
+  .sigcol+.sigcol{border-left:1px solid var(--line);background:#fafbfe}
+  .sigcol .cap{font-size:12px;color:var(--muted);margin-bottom:10px;letter-spacing:.3px}
+  .sigrow{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:9px 0;
+          border-bottom:1px dashed var(--line)}
+  .sighead .sub.right{margin-left:auto}
+  .sigrow:last-child{border-bottom:0}
+  .sigrow .nm{font-weight:650;font-size:14px}
+  .sigrow .cd{font-size:11px;color:var(--muted);margin-left:6px;font-weight:400}
+  .sigrow .wt{font-variant-numeric:tabular-nums;font-size:15px;font-weight:680}
+  .sigrow .numline{display:flex;flex-direction:column;align-items:flex-end;gap:1px}
+  .sigrow .cap2{font-size:11px;color:var(--muted);text-align:right}
+  .sigrow .nmline{min-width:0}
+  .sigempty{color:var(--muted);font-size:13px;padding:10px 0}
+  .sigstats{display:grid;grid-template-columns:repeat(4,1fr);border-top:1px solid var(--line);background:#fbfcff}
+  .sigstats div{padding:12px 20px;border-right:1px solid var(--line)}
+  .sigstats div:nth-child(4n){border-right:0}
+  .sigstats span{display:block;color:var(--muted);font-size:11px}
+  .sigstats b{font-size:16px;font-weight:680}
+  .badge-mini{display:inline-block;font-size:11px;border-radius:6px;padding:1px 7px;
+              background:#eef1fb;color:#334166;border:1px solid #dbe1f5}
+  .badge-mini.on{background:#fff1f0;color:#a52a1e;border-color:#f3cdc8}
   @media(max-width:980px){
-    .hero{grid-template-columns:1fr;gap:24px}.heroSide{max-width:480px}
     .kpis{grid-template-columns:repeat(3,1fr)}
     .kpi:nth-child(3n){border-right:0}.kpi:nth-child(6n){border-right:1px solid var(--line)}
     .kpi:nth-child(-n+3){border-bottom:1px solid var(--line)}
     .strategy-grid{grid-template-columns:1fr}.strategy-grid>div+div{border-left:0;border-top:1px solid var(--line)}
     .facts{grid-template-columns:repeat(2,1fr)}.facts div:nth-child(2n){border-right:0}
     .facts div:nth-child(-n+2){border-bottom:1px solid var(--line)}
-    .stat{grid-template-columns:repeat(3,1fr)}.stat div:nth-child(3n){border-right:0}
-    .quality{grid-template-columns:repeat(3,1fr)}.quality div:nth-child(3n){border-right:0}
-    .api{grid-template-columns:1fr}
   }
   @media(max-width:640px){
     .wrap{padding-left:13px;padding-right:13px;padding-bottom:42px}
-    .topnav .wrap{height:50px;gap:14px}.brand{font-size:13px}.live{display:none}
-    header{padding:30px 0 28px}h1{font-size:25px}.lede{font-size:13px}
-    .badge{font-size:11px;padding:4px 10px}
-    .heroSide{padding:15px 16px}.heroSide .big{font-size:23px}
-    .section-head{margin-top:26px;align-items:flex-start;flex-direction:column;gap:4px}
+    .topnav .wrap{height:50px;gap:10px}.brand{font-size:13px}.brand .btext{display:none}.live{display:none}
+    .navlinks{flex:1;justify-content:space-between;gap:0}
+    .navlinks a{padding:7px 5px;font-size:12px;letter-spacing:-.2px}
+    .segment{flex-wrap:wrap;overflow:visible}
+    .segment button{flex:1 0 21%}
+    .section-head{margin-top:22px;align-items:flex-start;flex-direction:column;gap:4px}
     .section-head h2{font-size:18px}.section-head .hint{text-align:left}
     .kpis{grid-template-columns:repeat(2,1fr)}
     .kpi{padding:14px 14px;border-right:1px solid var(--line);border-bottom:1px solid var(--line)}
@@ -193,17 +183,32 @@
     .tab{padding:9px 11px;font-size:12px}
     .controls{padding:10px 14px 4px;gap:8px;flex-direction:column;align-items:stretch}
     .control{width:100%;gap:6px}.control .lab{min-width:34px}
-    .segment{flex:1}.segment button{flex:1;padding:6px 8px}
+    .segment{flex:1;flex-wrap:wrap}
+    .segment button{flex:1 0 calc(25% - 3px);padding:6px 4px}
     .viewstats{grid-template-columns:repeat(2,1fr)}
     .viewstats div{padding:9px 14px;border-bottom:1px solid var(--line)}
     .viewstats div:nth-child(2n){border-right:0}.viewstats div:nth-last-child(-n+2){border-bottom:0}
     .chart{padding:4px 4px 10px;min-height:230px}
     .chartfoot{padding:0 14px 14px}.riskbox{margin:0 14px 14px}
-    .stat{grid-template-columns:repeat(2,1fr)}.stat div{border-bottom:1px solid var(--line)}
-    .stat div:nth-child(2n){border-right:0}.stat div:nth-last-child(-n+2){border-bottom:0}
-    .quality{grid-template-columns:repeat(2,1fr)}.quality div{border-bottom:1px solid var(--line)}
-    .quality div:nth-child(2n){border-right:0}.quality div:nth-last-child(-n+2){border-bottom:0}
     .strategy-grid>div{padding:18px 16px}.facts div{padding:12px 14px}
+    .sighead{padding:14px 16px}
+    .siggrid{grid-template-columns:1fr}
+    .sigcol{padding:14px 16px}
+    .sigcol+.sigcol{border-left:0;border-top:1px solid var(--line)}
+    .sigrow{flex-direction:column;align-items:flex-start;gap:3px}
+    .sigrow .numline{flex-direction:row;align-items:baseline;gap:8px}
+    .sigrow .cap2{text-align:left}
+    .sighead .sub.right{margin-left:0}
+    .sigstats{grid-template-columns:repeat(2,1fr)}
+    .sigstats div{padding:10px 16px;border-bottom:1px solid var(--line)}
+    .sigstats div:nth-child(2n){border-right:0}
+    .sigstats div:nth-last-child(-n+2){border-bottom:0}
+    table{min-width:600px}
+  }
+  @media(max-width:360px){
+    .brand{display:none}
+    .navlinks{gap:0;justify-content:space-between}
+    .navlinks a{font-size:11.5px;padding:7px 3px;letter-spacing:-.3px}
   }
   @media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}.topnav{position:static}}
 </style>
@@ -211,89 +216,73 @@
 <body>
 <nav class="topnav">
   <div class="wrap">
-    <div class="brand"><span class="mark">R</span> 量化研究看板</div>
+    <div class="brand"><span class="mark">R</span><span class="btext">量化研究看板</span></div>
     <div class="navlinks">
       <a href="#overview">绩效概览</a>
       <a href="#strategy">策略介绍</a>
       <a href="#performance">净值图表</a>
-      <a href="#evolution">进化对照</a>
+      <a href="#signal">调仓信号</a>
       <a href="#statistics">分年与持仓</a>
-      <a href="#data">数据口径</a>
     </div>
-    <div class="live"><i></i> 数据管道就绪</div>
+    <div class="live"><i></i> 模型回放已校准</div>
   </div>
 </nav>
 
-<header id="overview">
-  <div class="wrap">
-    <div class="hero">
-      <div>
-        <div class="eyebrow">Multi-Asset Rotation Research</div>
-        <h1>大类资产轮动 · 策略研究看板</h1>
-        <p class="lede">以公开回测净值为基准，逐日沉淀 1095 期调仓记录；支持日 / 周 / 月 / 年多周期观察、回撤与仓位联动分析，以及本地稳健版策略的自我学习对照。</p>
-        <div class="badges" id="badges"><span class="badge">正在加载数据接口…</span></div>
-      </div>
-      <aside class="heroSide">
-        <div class="label">图表区间累计收益</div>
-        <div class="big" id="heroReturn">—</div>
-        <div class="meta" id="heroRange">固定锚点归一化 · 等待数据</div>
-        <hr>
-        <div class="row"><span>净值截至</span><b id="heroAsOf">—</b></div>
-        <div class="row"><span>数据点</span><b id="heroPoints">—</b></div>
-        <div class="row"><span>数据源</span><b>复来智投 id=1</b></div>
-        <div class="row"><span>更新频率</span><b>收盘后同步</b></div>
-      </aside>
-    </div>
-  </div>
-</header>
-
 <div class="wrap">
-  <section class="section" id="kpiSection">
+  <section class="section" id="overview">
     <div class="section-head">
       <h2>绩效概览</h2>
-      <div class="hint">指标来自参考页公开披露；图表另按固定锚点归一化</div>
+      <div class="hint">策略模型固定参数回放 · 报告口径 2014-01-02 起</div>
     </div>
     <div class="card"><div class="kpis" id="kpis"></div></div>
+    <div class="metaline" id="metaline"></div>
     <div class="note" style="margin-top:10px">
-      <strong>口径说明：</strong>参考页披露的「总收益」与图表末点累计收益属于不同起点口径，本页不做二次换算；图表区间收益在下方按所选视图首点重新归一化。
+      <strong>口径说明：</strong>全部指标由策略模型 <code>rotation_core</code> 对 6 只 ETF 前复权收盘价逐日回放生成，
+      与模型接口 <code>--verify</code> 对账完全一致；单边千一成本、现金年化 1.5%、杠杆部分融资利差 3% 均已计入。
+      <span id="reconNote"></span>
     </div>
   </section>
 
   <section class="section" id="strategy">
     <div class="section-head">
       <h2>策略介绍</h2>
-      <div class="hint">依据参考页公开资料整理，不含未公开参数</div>
+      <div class="hint">固定参数、零进化 · 参数指纹 <span id="fpHint">—</span></div>
     </div>
     <div class="card">
       <div class="strategy-grid">
         <div>
           <h3 style="border:0;padding:0 0 10px">策略定位与运行逻辑</h3>
-          <p>策略覆盖 <strong>A 股、港股、美股、债券与商品</strong> 等大类资产，通过动量评分比较候选 ETF，<strong>买入并持有动量值最高的两类资产</strong>；在风险资产走弱时，组合可切换至债券等防御资产。</p>
-          <p>看板把收盘后更新的净值、回撤、仓位与分年统计统一到固定时间锚点，所有历史记录只追加、不覆盖，并保留逐期特征样本，供后续去漂移与 Walk-Forward 检验使用。</p>
+          <p>策略在 <strong>沪深 300、纳指 100、黄金、创业板、科创 50、国债</strong> 六类 ETF 之间轮动。
+          每个再平衡日按动量、低波、加速度、风险调整动量四个因子打分，<strong>持有得分最高且通过绝对动量门槛的两只标的</strong>；
+          无标的合格或触发回撤断路器时，组合退守国债 ETF。</p>
+          <p>仓位不固定满仓，而是按组合波动率靶向缩放，上限 1.42 倍；策略为 <strong>T 日收盘出信号、T+1 开盘执行</strong>，
+          因此看板上的净值、仓位与调仓记录同源，不存在两套口径。</p>
           <div class="tagrow">
-            <span class="tag">多资产 ETF</span><span class="tag">动量轮动</span>
-            <span class="tag">双标的持有</span><span class="tag">风控切换</span>
-            <span class="tag">固定参数回放</span><span class="tag">收盘后信号</span>
+            <span class="tag">六资产 ETF</span><span class="tag">动量 + 低波</span>
+            <span class="tag">双标的持有</span><span class="tag">波动率靶向</span>
+            <span class="tag">回撤断路器</span><span class="tag">固定参数回放</span>
           </div>
         </div>
         <div>
           <h3 style="border:0;padding:0 0 12px">运行机制</h3>
           <ol class="steps">
-            <li><span class="n">1</span><div><b>构建资产池</b><span>300ETF、创业板、中概互联网、纳指、黄金、30 年国债 ETF</span></div></li>
-            <li><span class="n">2</span><div><b>计算动量评分</b><span>对候选资产进行趋势与风险调整比较，筛选相对强势资产</span></div></li>
-            <li><span class="n">3</span><div><b>形成目标组合</b><span>持有评分最高的两类资产；弱势环境降低风险资产暴露</span></div></li>
-            <li><span class="n">4</span><div><b>执行与复核</b><span>T 日收盘后生成信号，T+1 开盘集合竞价完成调仓</span></div></li>
+            <li><span class="n">1</span><div><b>资产池</b><span>沪深300ETF、纳指100ETF、黄金ETF、创业板ETF、科创50ETF、国债ETF</span></div></li>
+            <li><span class="n">2</span><div><b>因子打分</b><span>160 日动量、40 日波动、加速度、风险调整动量，跨资产标准化后加权</span></div></li>
+            <li><span class="n">3</span><div><b>形成组合</b><span>前 2 名等风险贡献配置，按 10% 波动率目标定总仓位</span></div></li>
+            <li><span class="n">4</span><div><b>风控与执行</b><span>净值回撤超 13% 进入 40 日冷却并退守国债；T+1 开盘调仓</span></div></li>
           </ol>
         </div>
       </div>
       <div class="facts">
-        <div><span>策略周期</span><b>日 K 线</b></div>
-        <div><span>调仓频率</span><b>平均 4 次 / 月</b></div>
-        <div><span>交易标的</span><b>ETF、国债逆回购</b></div>
-        <div><span>适用平台</span><b>证券账户</b></div>
+        <div><span>调仓周期</span><b>每 10 个交易日</b></div>
+        <div><span>回测区间</span><b>2014-01-02 起</b></div>
+        <div><span>样本长度</span><b id="factBars">—</b></div>
+        <div><span>参数指纹</span><b id="factFp">—</b></div>
       </div>
       <div class="riskbox"><span class="ic">!</span>
-        <div><strong>研究边界：</strong>公开资料只披露到策略逻辑层，具体评分权重、阈值与参数未公开。参考页结果为全区间调优的开卷考表现，收益主体可能是资产 beta 与低波选券；历史回测不代表实盘可实现收益，本页不构成投资建议。</div>
+        <div><strong>研究边界：</strong>本策略为全区间调优的开卷考结果，收益主体是资产长期 beta 与低波选券；
+        把各标的长期漂移扣除后，同一套参数的年化降至 2.41%、回撤扩大到 16.15%，不可外推。
+        页面仅用于纸上跟踪与信号复核，不构成投资建议。</div>
       </div>
     </div>
   </section>
@@ -303,7 +292,7 @@
       <h2>净值图表</h2>
       <div class="hint">日 / 周 / 月 / 年周期切换 · 桌面与移动端自适应</div>
     </div>
-    <div class="card chartcard">
+    <div class="card">
       <div class="charthead">
         <div class="titleline">
           <h3 id="chartTitle">净值 / 累计收益曲线</h3>
@@ -345,24 +334,55 @@
       <div class="pane" data-v="pos"><div class="chart" id="c_pos"></div></div>
       <div class="chartfoot">
         <div class="note">
-          <strong>周期定义：</strong>日线为原始调仓期点（站点约每 5 个交易日发布 1 点，并非逐日净值）；周 / 月 / 年线分别取对应周期内最后一个已发布点。切换区间后，视图收益按首点重新归一化。
+          <strong>周期定义：</strong>日线为逐交易日回放点（<span id="barNote">—</span> 个交易日）；周 / 月 / 年线取对应周期内最后一个交易日。
+          切换区间后，视图收益按区间首点重新归一化，回撤与最大回撤同步重算。
         </div>
       </div>
     </div>
   </section>
 
-  <section class="section" id="evolution">
+  <section class="section" id="signal">
     <div class="section-head">
-      <h2>自我学习进化对照</h2>
-      <div class="hint">参考净值 vs 本地 1.3 稳健版固定参数回放</div>
+      <h2>调仓信号</h2>
+      <div class="hint">T 日收盘出信号 · T+1 开盘执行 · 与回放同一套决策函数</div>
     </div>
     <div class="card">
-      <h3>参考策略与本地策略区间收益</h3>
-      <div class="body">
-        <div class="stat" id="feedStat"></div>
-        <div class="chart" id="c_feed"></div>
-        <div class="note">两条曲线各自按对齐起点归一化；相关系数按相邻调仓期收益率计算。
-          本地曲线由固定参数回放生成，仅作为进化输入与对照，不代表可外推的 alpha。</div>
+      <div class="sighead">
+        <span class="state" id="sigState"><i></i> 等待数据</span>
+        <span class="sub">信号日 <b id="sigAsOf">—</b>　·　下次调仓 <b id="sigNext">—</b>　·　<b id="sigDays">—</b></span>
+        <span class="sub right">决策依据：<b id="sigReason">—</b></span>
+      </div>
+      <div class="siggrid">
+        <div class="sigcol">
+          <div class="cap">当前持仓</div>
+          <div id="sigCur"></div>
+        </div>
+        <div class="sigcol">
+          <div class="cap">目标持仓（下次调仓执行）</div>
+          <div id="sigTgt"></div>
+        </div>
+      </div>
+      <div class="sigstats" id="sigStats"></div>
+    </div>
+
+    <div class="card" style="margin-top:18px">
+      <h3>因子评分与合格性（信号日收盘）</h3>
+      <div class="tablewrap">
+        <table><thead><tr><th>标的</th><th>代码</th><th>160 日动量</th><th>40 日波动</th>
+          <th>综合评分</th><th>资格</th><th>说明</th></tr></thead>
+          <tbody id="factorBody"></tbody></table>
+      </div>
+    </div>
+
+    <div class="card" style="margin-top:18px">
+      <h3>最近调仓记录</h3>
+      <div class="tablewrap">
+        <table><thead><tr><th>执行日</th><th>持仓</th><th>总仓位</th><th>类型</th><th>决策依据</th></tr></thead>
+          <tbody id="rebalBody"></tbody></table>
+      </div>
+      <div class="body" style="padding-top:0">
+        <div class="note">仅列出最近 10 次再平衡；完整记录见 <a href="data/rebalances.csv" target="_blank">rebalances.csv</a>。
+          权重微调不算换仓，只有标的切换或仓位变化超过阈值才标记为「调仓」。</div>
       </div>
     </div>
   </section>
@@ -373,7 +393,7 @@
       <div class="hint">表格可横向滑动，移动端不会挤压图表</div>
     </div>
     <div class="card">
-      <h3>分年统计</h3>
+      <h3>分年统计（模型回放）</h3>
       <div class="tablewrap">
         <table><thead><tr><th>年份</th><th>总收益率</th><th>年化收益率</th><th>最大回撤</th>
           <th>收益回撤比</th><th>标准差</th><th>夏普比率</th></tr></thead>
@@ -381,48 +401,24 @@
       </div>
     </div>
     <div class="card" style="margin-top:18px">
-      <h3>当前持仓（参考页未订阅部分脱敏）</h3>
+      <h3>当前持仓（信号日收盘）</h3>
       <div class="tablewrap">
-        <table><thead><tr><th>证券代码</th><th>证券名称</th><th>成本价</th><th>最新价</th>
-          <th>仓位</th><th>当日盈亏</th><th>累计盈亏</th></tr></thead>
+        <table><thead><tr><th>标的</th><th>代码</th><th>角色</th><th>组合内权重</th>
+          <th>资金占用</th><th>最新收盘价</th></tr></thead>
           <tbody id="holdBody"></tbody></table>
       </div>
-    </div>
-  </section>
-
-  <section class="section" id="data">
-    <div class="section-head">
-      <h2>数据口径与质量</h2>
-      <div class="hint">固定锚点 · 重叠逐点校验 · 历史只追加</div>
-    </div>
-    <div class="card">
-      <h3>数据质量闸门</h3>
-      <div class="quality" id="quality"></div>
       <div class="body" style="padding-top:0">
-        <div class="note">
-          页面接口返回相对窗口起点的复利累计收益率，直接使用会随查询窗口整体漂移。本工程固定锚点
-          <strong>2013-06-01</strong> 全量拉取，重叠段逐点校验后才追加尾部；回撤由净值本地重算，站点原始回撤字段与净值回撤最大差
-          <strong>27.15pp</strong>，不可直接采用。远端若删除历史日期，本地权威存档予以保留并显式记录。
-        </div>
-      </div>
-    </div>
-    <div class="card" style="margin-top:18px">
-      <h3>公开数据接口</h3>
-      <div class="body">
-        <div class="api" id="api"></div>
-        <div class="note" style="margin-top:12px">原始参考页：
-          <a href="http://www.fulaizhitou.com/index/index/detail.html?id=1" target="_blank" rel="noopener">fulaizhitou.com / detail?id=1</a>。
-          本页为研究用途的数据镜像与可视化，不提供订阅、交易指令或参数复刻。</div>
+        <div class="note">资金占用 = 组合内权重 × 总仓位，合计即当前总仓位；最新收盘价取模型快照最后一个交易日。下次调仓的目标组合见「调仓信号」。</div>
       </div>
     </div>
   </section>
 
-  <footer>数据来源：fulaizhitou.com · 本页面为公开数据研究看板，不构成任何投资建议。市场有风险，投资需谨慎。</footer>
+  <footer>数据来源：策略模型固定参数回放（rotation_core 1.3）· 页面仅用于研究记录，不构成任何投资建议。市场有风险，投资需谨慎。</footer>
 </div>
 
 <script>
 "use strict";
-const S = {nav:null, feed:null, meta:null, quality:null, view:"eq", gran:"day", range:"all"};
+const S = {nav:null, sig:null, meta:null, view:"eq", gran:"day", range:"all"};
 const $ = s => document.querySelector(s);
 const $$ = s => Array.from(document.querySelectorAll(s));
 const GNAME = {day:"日线", week:"周线", month:"月线", year:"年线"};
@@ -434,21 +430,22 @@ async function getJSON(p){
   if(!r.ok) throw new Error(p + " HTTP " + r.status);
   return r.json();
 }
+/* 统一两位小数：先加极小量，避免 20.185 被二进制误差舍成 20.18 */
+function r2(v){ return Math.round(v*100 + (v>=0?1e-6:-1e-6))/100; }
 function fmt(v, unit, digits){
   if(v===null||v===undefined||Number.isNaN(v)) return "—";
   const d = digits===undefined?2:digits;
-  return (v>0?"+":"") + Number(v).toFixed(d) + (unit||"");
+  const q = Math.pow(10,d), sign = v>=0?1e-6:-1e-6;
+  const x = Math.round(v*q + sign)/q;
+  return (x>0?"+":"") + x.toFixed(d) + (unit||"");
 }
 function fmtPlain(v, unit, digits){
   if(v===null||v===undefined||Number.isNaN(v)) return "—";
-  return Number(v).toFixed(digits===undefined?2:digits) + (unit||"");
+  const d = digits===undefined?2:digits;
+  const q = Math.pow(10,d), x = Math.round(v*q + (v>=0?1e-6:-1e-6))/q;
+  return x.toFixed(d) + (unit||"");
 }
 function cls(v){ return v>0?"up":(v<0?"down":"flat"); }
-function num(s){
-  if(s===null||s===undefined) return null;
-  const v=parseFloat(String(s).replace("%",""));
-  return Number.isFinite(v)?v:null;
-}
 function pad2(n){ return String(n).padStart(2,"0"); }
 function isoUTC(d){ return d.getUTCFullYear()+"-"+pad2(d.getUTCMonth()+1)+"-"+pad2(d.getUTCDate()); }
 function shiftMonths(day, k){
@@ -481,7 +478,7 @@ function baseIdx(nv){
 }
 function weekKey(day){
   const d=new Date(day+"T00:00:00Z");
-  const dow=(d.getUTCDay()+6)%7; // 周一=0
+  const dow=(d.getUTCDay()+6)%7;
   d.setUTCDate(d.getUTCDate()-dow);
   return isoUTC(d);
 }
@@ -512,7 +509,7 @@ function xLabel(day){
   return day.slice(5).replace("-","/");
 }
 
-/* 零外部依赖 SVG：动态视口、网格、双线、十字光标、鼠标/触摸提示 */
+/* 零外部依赖 SVG：动态视口、网格、十字光标、鼠标/触摸提示 */
 function draw(elId, dates, vals, opt){
   const el=document.getElementById(elId);
   if(!el||!vals.length) return;
@@ -534,10 +531,10 @@ function draw(elId, dates, vals, opt){
   if(hi<=lo) hi=lo+1;
   const X=i=>PL+(vals.length===1?pw/2:i/(vals.length-1)*pw);
   const Y=v=>PT+(hi-v)/(hi-lo)*ph;
-  const step=(hi-lo)/4, axisDigits=step>=100?0:(step>=10?1:2);
+  const step=(hi-lo)/4;
   let grid="", ax="";
   for(let k=0;k<=4;k++){
-    const v=lo+(hi-lo)*k/4, y=Y(v);
+    const y=Y(lo+(hi-lo)*k/4);
     grid+=`<line x1="${PL}" y1="${y.toFixed(1)}" x2="${W-PR}" y2="${y.toFixed(1)}"/>`;
     ax+=`<text x="${PL-8}" y="${(Y(lo+(hi-lo)*(4-k)/4)+4).toFixed(1)}" text-anchor="end">${niceAxis(lo+(hi-lo)*(4-k)/4,step,opt.unit)}</text>`;
   }
@@ -587,7 +584,6 @@ function draw(elId, dates, vals, opt){
     cross.setAttribute("x1",x); cross.setAttribute("x2",x); cross.style.display="block";
     marker.setAttribute("cx",x); marker.setAttribute("cy",y); marker.style.display="block";
     let extra="";
-    if(opt.extra) extra=`<br><span class="muted">${opt.extra.label}</span> ${fmt(opt.extra.values[i],opt.unit,opt.digits)}`;
     if(opt.context){
       extra+=`<br><span class="muted">区间</span> ${fmt(opt.context.ret[i],"%",2)}`+
              `　<span class="muted">锚点累计</span> ${fmt(opt.context.anchor[i],"%",2)}`+
@@ -618,8 +614,6 @@ function renderViewStats(nv,ix,retView,ddView,pos){
      <div><span>视图内最大回撤</span><b class="down">${fmt(maxDD,"%",2)}</b></div>
      <div><span>最新股票仓位</span><b>${fmtPlain(lastPos,"%",1)}</b></div>
      <div><span>聚合后数据点</span><b>${ix.length}</b></div>`;
-  $("#heroReturn").textContent=fmt(rangeRet,"%",2);
-  $("#heroRange").textContent=`${GNAME[S.gran]} · ${RNAME[S.range]} · 按视图首点归一化`;
   $("#chartMeta").textContent=`${GNAME[S.gran]} · ${RNAME[S.range]} · ${ix.length} 点 · 截至 ${nv.dates[ix[ix.length-1]]}`;
   $("#chartTitle").textContent=VNAME[S.view];
 }
@@ -634,93 +628,105 @@ function drawAll(){
   draw("c_dd",dates,ddView,{color:"#0f9d58",label:"区间回撤",unit:"%",digits:2,ceilingZero:true,context:ctx});
   draw("c_pos",dates,pos.map(v=>v*100),{color:"#2563eb",label:"股票仓位",unit:"%",digits:1,zeroBase:true,maxCap:100,context:ctx});
 }
-function drawFeed(){
-  const f=S.feed;
-  if(!f||f.status!=="ok"||!f.series||!f.series.length){
-    $("#c_feed").innerHTML='<div class="loading">进化对照数据暂不可用</div>'; return;
-  }
-  const s=f.series, d=s.map(x=>x.day), a0=s[0].nav_ref, b0=s[0].nav_local, st=f.stats||{};
-  draw("c_feed",d,s.map(x=>(x.nav_ref/a0-1)*100),
-       {color:"#7c5cb1",label:"参考策略",unit:"%",digits:1,zeroBase:true,
-        extra:{values:s.map(x=>(x.nav_local/b0-1)*100),color:"#d93025",label:"本地稳健版"},
-        legend:[{color:"#7c5cb1",label:"参考策略"},{color:"#d93025",label:"本地 1.3 稳健版"}]});
-  $("#feedStat").innerHTML=
-    `<div><span>对齐调仓期</span><b>${f.n}</b></div>
-     <div><span>区间收益相关系数</span><b>${st.period_return_corr==null?"—":Number(st.period_return_corr).toFixed(3)}</b></div>
-     <div><span>参考策略 CAGR</span><b class="up">${fmt(st.cagr_ref,"%")}</b></div>
-     <div><span>本地稳健版 CAGR</span><b class="up">${fmt(st.cagr_local,"%")}</b></div>
-     <div><span>对齐区间</span><b class="small">${f.aligned_from} → ${f.aligned_to}</b></div>`;
-}
 function colorVal(v,unit,digits){ return `<span class="${cls(v)}">${fmt(v,unit,digits)}</span>`; }
 
+function sigRows(items){
+  if(!items||!items.length) return '<div class="sigempty">空仓（全部现金）</div>';
+  return items.map(h=>
+    `<div class="sigrow">
+       <div class="nmline"><span class="nm">${h.name}</span><span class="cd">${h.code} · ${h.role}</span></div>
+       <div class="numline"><span class="wt">${fmtPlain(h.capital,"%",1)}</span>
+         <span class="cap2">资金占用 · 权重 ${fmtPlain(h.weight,"%",1)}</span></div>
+     </div>`).join("");
+}
+function renderSignal(){
+  const s=S.sig; if(!s) return;
+  const st=$("#sigState");
+  st.className="state"+(s.will_change?" act":"");
+  st.innerHTML=`<i></i>${s.will_change?("待调仓 · "+s.changed.join("、")):"维持现状，无需调仓"}`;
+  $("#sigAsOf").textContent=s.as_of;
+  $("#sigNext").textContent=s.next_rebalance||"—";
+  $("#sigDays").textContent=s.days_to_rebalance===0?"今日调仓":(s.days_to_rebalance===1?"明日调仓":`${s.days_to_rebalance} 个交易日后`);
+  $("#sigReason").textContent=s.reason||"—";
+  $("#sigCur").innerHTML=sigRows(s.current);
+  $("#sigTgt").innerHTML=sigRows(s.target);
+  $("#sigStats").innerHTML=
+    `<div><span>当前总仓位</span><b>${fmtPlain(s.current_exposure,"%",1)}</b></div>
+     <div><span>目标总仓位</span><b>${fmtPlain(s.target_exposure,"%",1)}</b></div>
+     <div><span>当前净值回撤</span><b class="${cls(s.drawdown)}">${fmt(s.drawdown,"%",2)}</b></div>
+     <div><span>回撤熔断线</span><b>${s.circuit?"已触发":"-"+fmtPlain(Math.abs(s.dd_limit),"%",2)}</b></div>`;
+  $("#factorBody").innerHTML=(s.factors||[]).map(f=>{
+    const bond=f.role==="防御"||f.asset==="BondETF";
+    const badge=bond?`<span class="badge-mini">防御位</span>`
+      :`<span class="badge-mini ${f.eligible?"on":""}">${f.eligible?"合格":"不合格"}</span>`;
+    const why=bond?"防御资产，仅在无标的合格或熔断冷却时启用"
+      :(f.eligible?"通过绝对动量门槛，综合分排名居前":f.why);
+    return `<tr><td>${f.name}</td><td>${f.code}</td>
+      <td class="${cls(f.mom)}">${fmt(f.mom,"%",1)}</td>
+      <td>${fmtPlain(f.vol,"%",1)}</td>
+      <td>${fmtPlain(f.score,"",3)}</td>
+      <td>${badge}</td>
+      <td style="text-align:left;color:var(--muted)">${why}</td></tr>`;
+  }).join("");
+
+  const rs=(s.rebalances||[]).slice(-10).reverse();
+  $("#rebalBody").innerHTML=rs.map(r=>
+    `<tr><td>${r.date}</td><td>${r.names}</td><td>${fmtPlain(r.exposure,"%",1)}</td>
+      <td><span class="badge-mini ${r.kind==="换仓"?"on":""}">${r.kind||"权重微调"}</span></td>
+      <td style="text-align:left;color:var(--muted)">${r.reason}</td></tr>`).join("")
+    || '<tr><td colspan="5" style="text-align:center;color:var(--muted)">暂无记录</td></tr>';
+}
+
 function render(){
-  const nv=S.nav, mt=S.meta||{}, q=S.quality||{}, qLatest=q.latest||{};
-  const dq=nv.data_quality||{}, m=nv.metrics||{}, sm=nv.sub_metrics||{};
+  const nv=S.nav, mt=S.meta||{}, m=nv.metrics||{};
   const items=[
-    ["总收益",num(m["总收益"]),"%",true,"站点披露口径"],
-    ["年化收益",num(m["年化收益"]),"%",true,"站点披露口径"],
-    ["最大回撤",num(m["最大回撤"]),"%",true,"站点披露口径"],
-    ["收益风险比",num(m["收益风险比"]),"",false,"总收益 / 最大回撤"],
-    ["夏普比例",num(sm["夏普比例"]),"",false,"站点披露口径"],
-    ["近 1 年收益",num(sm["近1年收益"]),"%",true,"站点披露口径"]
+    ["总收益", num(m.total_return), "%", true, `2014-01-02 起 · 净值 ${fmtPlain(m.final_nav,"",2)}`],
+    ["年化收益", num(m.cagr), "%", true, "复利年化 · 报告口径"],
+    ["最大回撤", -Math.abs(num(m.max_drawdown)), "%", true, "净值峰谷 · 同口径"],
+    ["卡玛比率", num(m.calmar), "", false, "年化收益 / 最大回撤"],
+    ["夏普比率", num(m.sharp), "", false, `年化波动 ${fmtPlain(m.vol_ann,"%",2)}`],
+    ["月胜率", num(m.month_win), "%", true, "月度收益跑赢现金月息"]
   ];
   $("#kpis").innerHTML=items.map(([k,v,u,signed,s])=>{
     const txt=signed?fmt(v,u,2):(v==null?"—":fmtPlain(v,u,2));
     return `<div class="kpi"><div class="k">${k}</div><div class="v ${signed?cls(v):"flat"}">${txt}</div><div class="s">${s}</div></div>`;
   }).join("");
-
-  const allIx=viewIdx(nv), navAll=pick(nv.nav,allIx);
-  const totalChart=(navAll[navAll.length-1]/navAll[0]-1)*100;
-  $("#heroReturn").textContent=fmt(totalChart,"%",2);
-  $("#heroRange").textContent=`${GNAME[S.gran]} · ${RNAME[S.range]} · 按视图首点归一化`;
-  $("#heroAsOf").textContent=nv.as_of;
-  $("#heroPoints").textContent=`${nv.dates.length} 期`;
-
-  const badges=[];
-  badges.push(`<span class="badge">净值截至 ${nv.as_of} · ${nv.dates.length} 期</span>`);
-  badges.push(`<span class="badge">站点最后更新 ${nv.last_update||"—"}</span>`);
-  badges.push(`<span class="badge">固定锚点 ${nv.anchor}</span>`);
-  if(mt.generated_date) badges.push(`<span class="badge">管道运行 ${mt.generated_date}</span>`);
-  if(dq.ok){
-    const miss=qLatest.missing_n||0;
-    badges.push(`<span class="badge ${miss?"warn":"ok"}">口径校验通过 · ${dq.n_points} 期零偏差${miss?` · 远端缺 ${miss} 期已保留`:""}</span>`);
-  }else badges.push(`<span class="badge err">口径校验异常 · 修订 ${dq.revisions_n||0}</span>`);
-  badges.push(`<span class="badge ${dq.stale?"warn":"ok"}">${dq.stale?"数据停更 · 本地兜底":"同步管道就绪"}</span>`);
-  $("#badges").innerHTML=badges.join("");
-
-  $("#quality").innerHTML=
-    `<div><span>权威存档</span><b>${nv.dates.length} 期</b></div>
-     <div><span>重叠校验</span><b class="down">${fmtPlain(qLatest.max_abs_diff_pp??dq.max_abs_diff_pp,"pp",2)}</b></div>
-     <div><span>历史修订</span><b>${qLatest.revisions_n??dq.revisions_n??0}</b></div>
-     <div><span>远端缺失并保留</span><b>${qLatest.missing_n??0} 期</b></div>
-     <div><span>质量结论</span><b class="${dq.ok?"down":"up"}">${dq.ok?"通过":"异常"}</b></div>`;
+  const rec=(mt.reconcile&&mt.reconcile.max_abs_diff_pp)||0;
+  $("#metaline").innerHTML=
+    `<span>净值截至 <b>${nv.as_of}</b> · ${nv.bars} 个交易日</span>
+     <span>回测区间 <b>${nv.start} → ${nv.as_of}</b></span>
+     <span>模型 <b>${nv.model}</b></span>
+     <span>参数指纹 <b>${nv.params_fp}</b></span>
+     <span class="ok">模型对账通过 · ${(mt.reconcile&&mt.reconcile.window)||nv.as_of} 基准偏差 ${rec.toFixed(2)}pp</span>
+     <span>调仓 <b>${fmtPlain(m.trades,"",0)} 次</b> · 累计换手 ${fmtPlain(m.turnover,"",1)}x</span>`;
+  const rc=mt.reconcile||{};
+  if(rc.actual){
+    $("#reconNote").textContent=`报告基准 ${rc.window}：年化 ${Number(rc.actual.cagr).toFixed(4)}%、`+
+      `回撤 ${Number(rc.actual.maxdd).toFixed(4)}%、月胜率 ${Number(rc.actual.month_win).toFixed(4)}%，`+
+      `偏差 ${Number(rc.max_abs_diff_pp).toFixed(2)}pp。`;
+  }
+  $("#fpHint").textContent=nv.params_fp;
+  $("#factFp").textContent=nv.params_fp;
+  $("#factBars").textContent=`${nv.bars} 个交易日`;
+  $("#barNote").textContent=nv.bars;
 
   $("#yearBody").innerHTML=(nv.yearly||[]).map(y=>
     `<tr><td>${y.year}年</td><td>${colorVal(y.total_return_pct,"%")}</td>
       <td>${colorVal(y.annual_return_pct,"%")}</td><td class="down">${fmt(-Math.abs(y.max_drawdown_pct),"%")}</td>
       <td>${fmtPlain(y.return_dd_ratio,"",2)}</td><td>${fmtPlain(y.std_pct,"%",2)}</td>
       <td>${fmtPlain(y.sharpe,"",2)}</td></tr>`).join("");
-  $("#holdBody").innerHTML=(nv.holdings||[]).map(h=>
-    `<tr><td>${h.code}</td><td>${h.name}</td><td>${h.cost}</td><td>${h.last}</td>
-      <td>${h.weight}</td><td>${h.day_pnl}</td><td>${colorVal(parseFloat(h.cum_pnl),"%")}</td></tr>`).join("")
-    || '<tr><td colspan="7" style="text-align:center;color:var(--muted)">站点未公开</td></tr>';
 
-  const api=[
-    ["页面主接口","nav.json","dates / nav / ret / drawdown / position / metrics / yearly / holdings"],
-    ["逐期权威存档","nav_history.csv","day, nav, ret, dd_api, dd_local, pos"],
-    ["站点元数据","detail.json","指标、分年统计、持仓、最后更新时间"],
-    ["运行报告","meta.json","新增点数、重叠校验、修订 / 回退 / 停更状态"],
-    ["质量审计","data_quality.json","最近 30 次校验报告与告警"],
-    ["自我学习样本","learning_samples.csv","逐期动量 / 波动 / 回撤 / 仓位特征"],
-    ["进化对照","evolution_feed.json","与本地 1.3 稳健版净值对齐序列"],
-    ["数据管道","私有工程","固定锚点全量拉取、递归回归与每日同步"]
-  ];
-  $("#api").innerHTML=api.map(([n,p,d])=>
-    `<div><b>${n}</b>　${p==="私有工程"?`<code>${p}</code>`:`<a href="data/${p}" target="_blank"><code>data/${p}</code></a>`}
-      <div class="desc">${d}</div></div>`).join("");
+  const holds=(S.sig&&S.sig.current)||[];
+  $("#holdBody").innerHTML=holds.map(h=>
+    `<tr><td>${h.name}</td><td>${h.code}</td><td>${h.role}</td>
+      <td>${fmtPlain(h.weight,"%",1)}</td><td>${fmtPlain(h.capital,"%",1)}</td>
+      <td>${fmtPlain(h.price,"",3)}</td></tr>`).join("")
+    || '<tr><td colspan="6" style="text-align:center;color:var(--muted)">空仓</td></tr>';
 
-  drawAll(); drawFeed();
+  renderSignal();
+  drawAll();
 }
+function num(v){ return (v===null||v===undefined)?null:Number(v); }
 function setSegment(sel,key,val){
   $$(sel+" button").forEach(b=>{
     const on=b.dataset[key]===val;
@@ -759,23 +765,22 @@ $$("#range button").forEach(b=>b.addEventListener("click",()=>{
   S.range=b.dataset.r; setSegment("#range","r",S.range); drawAll(); syncURL();
 }));
 let rt=null;
-window.addEventListener("resize",()=>{ clearTimeout(rt); rt=setTimeout(()=>{drawAll();drawFeed();},140); });
+window.addEventListener("resize",()=>{ clearTimeout(rt); rt=setTimeout(()=>{drawAll();},140); });
 
 (async function boot(){
   try{
-    const [nv,fd,mt,q]=await Promise.all([
+    const [nv,sg,mt]=await Promise.all([
       getJSON("./data/nav.json"),
-      getJSON("./data/evolution_feed.json").catch(()=>null),
-      getJSON("./data/meta.json").catch(()=>null),
-      getJSON("./data/data_quality.json").catch(()=>null)
+      getJSON("./data/signal.json").catch(()=>null),
+      getJSON("./data/meta.json").catch(()=>null)
     ]);
-    S.nav=nv; S.feed=fd; S.meta=mt; S.quality=q;
+    S.nav=nv; S.sig=sg||nv.signal; S.meta=mt;
     readURL();
     render();
     const h=location.hash.replace("#","");
     if(["eq","dd","pos"].includes(h)){ activateView(h); syncURL(); }
   }catch(e){
-    $("#badges").innerHTML=`<span class="badge err">数据接口加载失败：${e.message}</span>`;
+    $("#metaline").innerHTML=`<span class="warn">数据接口加载失败：${e.message}</span>`;
     $("#c_eq").innerHTML=`<div class="loading">请通过 HTTP 访问本页（GitHub Pages 或本地 <code>python3 -m http.server</code>），
       浏览器直接打开 file:// 无法读取 data/nav.json。</div>`;
   }
