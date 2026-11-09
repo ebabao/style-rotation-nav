@@ -1,18 +1,18 @@
 {
  "version": "v1.4",
- "generated_at": "2026-11-09 14:23:40",
+ "generated_at": "2026-11-09 14:40:19",
  "data_source": "新浪长历史日线(money.finance) + hfq.js 前复权因子（复用 v1.2 已验证链路）",
- "config_hash": "04835269f5b504f2c1b80c42c3805e2402dfd02a6d8f1ad342ce3c55912d9fe9",
+ "config_hash": "20a06cb14b2df6413cda357ca2e43d9f9844689316b408a94a0479d49b53baed",
  "range": {
   "start": "2013-01-04",
-  "end": "2026-11-06",
-  "trading_days": 3360,
-  "return_rows": 3359
+  "end": "2026-11-09",
+  "trading_days": 3361,
+  "return_rows": 3360
  },
  "eval_start_explicit": "2019-12-06",
  "common_start_all7": "2019-12-06",
  "price_first_all7": "2019-12-05",
- "eval_trading_days": 1676,
+ "eval_trading_days": 1677,
  "universe_size": 7,
  "calendar_source": "sh000300 沪深300指数交易日（A股）",
  "assets": {
@@ -24,7 +24,7 @@
    "listing_date": "2013-04-09",
    "first_return_date": "2013-04-10",
    "price_rows": 3301,
-   "return_rows": 3299,
+   "return_rows": 3300,
    "absent_days": 60,
    "ffill_zero_return_days": 0,
    "qfq": {
@@ -47,7 +47,7 @@
    "listing_date": "2013-07-29",
    "first_return_date": "2013-07-30",
    "price_rows": 3228,
-   "return_rows": 3226,
+   "return_rows": 3227,
    "absent_days": 133,
    "ffill_zero_return_days": 0,
    "qfq": {
@@ -70,7 +70,7 @@
    "listing_date": "2019-12-05",
    "first_return_date": "2019-12-06",
    "price_rows": 1678,
-   "return_rows": 1676,
+   "return_rows": 1677,
    "absent_days": 1683,
    "ffill_zero_return_days": 0,
    "qfq": {
@@ -93,7 +93,7 @@
    "listing_date": "2019-01-18",
    "first_return_date": "2019-01-21",
    "price_rows": 1890,
-   "return_rows": 1889,
+   "return_rows": 1890,
    "absent_days": 1470,
    "ffill_zero_return_days": 1,
    "qfq": {
@@ -116,7 +116,7 @@
    "listing_date": "2014-01-15",
    "first_return_date": "2014-01-16",
    "price_rows": 3113,
-   "return_rows": 3112,
+   "return_rows": 3113,
    "absent_days": 247,
    "ffill_zero_return_days": 1,
    "qfq": {
@@ -139,7 +139,7 @@
    "listing_date": "2013-07-31",
    "first_return_date": "2013-08-01",
    "price_rows": 3225,
-   "return_rows": 3224,
+   "return_rows": 3225,
    "absent_days": 135,
    "ffill_zero_return_days": 1,
    "qfq": {
@@ -162,7 +162,7 @@
    "listing_date": "2016-07-22",
    "first_return_date": "2016-07-25",
    "price_rows": 2499,
-   "return_rows": 2497,
+   "return_rows": 2498,
    "absent_days": 862,
    "ffill_zero_return_days": 0,
    "qfq": {
