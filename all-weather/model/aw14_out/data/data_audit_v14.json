@@ -1,0 +1,197 @@
+{
+ "version": "v1.4",
+ "generated_at": "2026-11-09 14:40:19",
+ "data_source": "新浪长历史日线(money.finance) + hfq.js 前复权因子（复用 v1.2 已验证链路）",
+ "config_hash": "20a06cb14b2df6413cda357ca2e43d9f9844689316b408a94a0479d49b53baed",
+ "range": {
+  "start": "2013-01-04",
+  "end": "2026-11-09",
+  "trading_days": 3361,
+  "return_rows": 3360
+ },
+ "eval_start_explicit": "2019-12-06",
+ "common_start_all7": "2019-12-06",
+ "price_first_all7": "2019-12-05",
+ "eval_trading_days": 1677,
+ "universe_size": 7,
+ "calendar_source": "sh000300 沪深300指数交易日（A股）",
+ "assets": {
+  "TB5": {
+   "code": "511010",
+   "name": "国债ETF",
+   "sym": "sh511010",
+   "quadrant": "BD",
+   "listing_date": "2013-04-09",
+   "first_return_date": "2013-04-10",
+   "price_rows": 3301,
+   "return_rows": 3300,
+   "absent_days": 60,
+   "ffill_zero_return_days": 0,
+   "qfq": {
+    "events": 8,
+    "applied": 7,
+    "skipped": [
+     "1900-01-01 超出样本区间"
+    ],
+    "method": "新浪 hfq.js 前复权",
+    "split_repairs": []
+   },
+   "errors": [],
+   "mode": "真实 ETF 前复权（无代理、无拼接）"
+  },
+  "GOLD": {
+   "code": "518880",
+   "name": "黄金ETF",
+   "sym": "sh518880",
+   "quadrant": "GD",
+   "listing_date": "2013-07-29",
+   "first_return_date": "2013-07-30",
+   "price_rows": 3228,
+   "return_rows": 3227,
+   "absent_days": 133,
+   "ffill_zero_return_days": 0,
+   "qfq": {
+    "events": 1,
+    "applied": 0,
+    "skipped": [
+     "1900-01-01 超出样本区间"
+    ],
+    "method": "新浪 hfq.js 前复权",
+    "split_repairs": []
+   },
+   "errors": [],
+   "mode": "真实 ETF 前复权（无代理、无拼接）"
+  },
+  "SOY": {
+   "code": "159985",
+   "name": "豆粕ETF",
+   "sym": "sz159985",
+   "quadrant": "CM",
+   "listing_date": "2019-12-05",
+   "first_return_date": "2019-12-06",
+   "price_rows": 1678,
+   "return_rows": 1677,
+   "absent_days": 1683,
+   "ffill_zero_return_days": 0,
+   "qfq": {
+    "events": 1,
+    "applied": 0,
+    "skipped": [
+     "1900-01-01 超出样本区间"
+    ],
+    "method": "新浪 hfq.js 前复权",
+    "split_repairs": []
+   },
+   "errors": [],
+   "mode": "真实 ETF 前复权（无代理、无拼接）"
+  },
+  "DIVLV": {
+   "code": "512890",
+   "name": "红利低波ETF",
+   "sym": "sh512890",
+   "quadrant": "EQ",
+   "listing_date": "2019-01-18",
+   "first_return_date": "2019-01-21",
+   "price_rows": 1890,
+   "return_rows": 1890,
+   "absent_days": 1470,
+   "ffill_zero_return_days": 1,
+   "qfq": {
+    "events": 2,
+    "applied": 1,
+    "skipped": [
+     "1900-01-01 超出样本区间"
+    ],
+    "method": "新浪 hfq.js 前复权",
+    "split_repairs": []
+   },
+   "errors": [],
+   "mode": "真实 ETF 前复权（无代理、无拼接）"
+  },
+  "SP500": {
+   "code": "513500",
+   "name": "标普500ETF",
+   "sym": "sh513500",
+   "quadrant": "EQ",
+   "listing_date": "2014-01-15",
+   "first_return_date": "2014-01-16",
+   "price_rows": 3113,
+   "return_rows": 3113,
+   "absent_days": 247,
+   "ffill_zero_return_days": 1,
+   "qfq": {
+    "events": 2,
+    "applied": 1,
+    "skipped": [
+     "1900-01-01 超出样本区间"
+    ],
+    "method": "新浪 hfq.js 前复权",
+    "split_repairs": []
+   },
+   "errors": [],
+   "mode": "真实 ETF 前复权（无代理、无拼接）"
+  },
+  "NDX": {
+   "code": "513100",
+   "name": "纳指100ETF",
+   "sym": "sh513100",
+   "quadrant": "EQ",
+   "listing_date": "2013-07-31",
+   "first_return_date": "2013-08-01",
+   "price_rows": 3225,
+   "return_rows": 3225,
+   "absent_days": 135,
+   "ffill_zero_return_days": 1,
+   "qfq": {
+    "events": 2,
+    "applied": 1,
+    "skipped": [
+     "1900-01-01 超出样本区间"
+    ],
+    "method": "新浪 hfq.js 前复权",
+    "split_repairs": []
+   },
+   "errors": [],
+   "mode": "真实 ETF 前复权（无代理、无拼接）"
+  },
+  "GEM50": {
+   "code": "159949",
+   "name": "创业板50ETF",
+   "sym": "sz159949",
+   "quadrant": "EQ",
+   "listing_date": "2016-07-22",
+   "first_return_date": "2016-07-25",
+   "price_rows": 2499,
+   "return_rows": 2498,
+   "absent_days": 862,
+   "ffill_zero_return_days": 0,
+   "qfq": {
+    "events": 1,
+    "applied": 0,
+    "skipped": [
+     "1900-01-01 超出样本区间"
+    ],
+    "method": "新浪 hfq.js 前复权",
+    "split_repairs": []
+   },
+   "errors": [],
+   "mode": "真实 ETF 前复权（无代理、无拼接）"
+  }
+ },
+ "checks": {
+  "log_return_single_source": true,
+  "datetime_index": true,
+  "no_proxy_cells": 0,
+  "no_splice": true,
+  "absent_cells": 4590,
+  "price_rebuilt_from_log_returns": true,
+  "finite_returns_only": true
+ },
+ "caveats": [
+  "全部 7 只均为真实可交易 ETF 前复权日线，无指数代理、无上市前拼接、无编造",
+  "上市前保持缺席(NaN)，引擎按当日可用大类重分配风险预算",
+  "共同可交易起点由豆粕ETF(159985, 2019-12-05)决定；此前真实历史仅用于协方差预热",
+  "QDII ETF(513500/513100) 含场内溢价与汇率影响，未单独剥离",
+  "融资腿按年化2%计息（保守），不计入 7 只 ETF universe"
+ ]
+}
