@@ -1,6 +1,6 @@
 {
  "version": "v1.4",
- "generated_at": "2026-11-09 20:41:54",
+ "generated_at": "2026-11-09 14:14:44",
  "data_source": "新浪长历史日线(money.finance) + hfq.js 前复权因子（复用 v1.2 已验证链路）",
  "config_hash": "04835269f5b504f2c1b80c42c3805e2402dfd02a6d8f1ad342ce3c55912d9fe9",
  "range": {
