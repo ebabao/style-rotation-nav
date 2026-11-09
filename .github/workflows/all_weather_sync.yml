@@ -85,7 +85,8 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add all-weather/data/ all-weather/model/active_params.json all-weather/model/state_snapshot.json all-weather/model/aw14_out/data/
+          git add all-weather/data/ all-weather/model/active_params.json all-weather/model/state_snapshot.json \
+            all-weather/model/aw14_out/data/*.parquet all-weather/model/aw14_out/data/*.json
           if git diff --cached --quiet; then
             echo "本次无数据变化，跳过提交（页面保持上一版）"
           else
