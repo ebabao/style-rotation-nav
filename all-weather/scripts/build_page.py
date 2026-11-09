@@ -479,7 +479,7 @@ function renderOps(){
   "run_id":esc(sy.run_id),"状态 / 数据源":esc(sy.status)+" / "+esc(sy.source),
   "本次新增交易日":String(sy.new),"重试次数":String(sy.retry),
   "失败回退":esc(p.fallback||"—"),"回退开关":sy.fallback?"已触发":"未触发",
-  "发布目录":"site/data · 实时映射，接口写入即线上生效",
+  "发布目录":"GitHub Pages · main 分支自动发布",
   "参数回退":esc(p.rollback||"—"),"幂等策略":esc(p.idempotency||"—")});
  const a=(S.audit&&S.audit.runs||[]).slice(-12).reverse();
  $("#auditBody").innerHTML=a.map(r=>`<tr><td>${esc(r.run_id)}</td><td>${esc((r.at||"").replace("T"," ").slice(0,19))}</td>
