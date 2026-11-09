@@ -1,4 +1,0 @@
-numpy>=1.26
-pandas>=2.2
-PyYAML>=6.0
-pyarrow>=14.0
