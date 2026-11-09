@@ -17,19 +17,36 @@ body{margin:0;background:var(--bg);color:var(--ink);font-size:14px;line-height:1
 a{color:var(--brand);text-decoration:none}a:hover{text-decoration:underline}
 .topnav{position:sticky;top:0;z-index:20;background:rgba(19,42,74,.96);backdrop-filter:blur(12px);
  border-bottom:1px solid rgba(255,255,255,.10)}
-.topnav .wrap{display:flex;align-items:center;gap:22px;height:56px}
-.brand{display:flex;align-items:center;gap:9px;color:#fff;font-weight:700;white-space:nowrap;font-size:15px}
-.brand .mark{width:26px;height:26px;border-radius:8px;background:linear-gradient(135deg,#e8b64c,#f6dda0);
- display:grid;place-items:center;color:#3a2a00;font-weight:800;font-size:13px}
-.vtag{background:#e8b64c;color:#3a2a00;font-size:11px;font-weight:800;padding:2px 8px;border-radius:4px}
-.navlinks{display:flex;gap:2px;overflow-x:auto;scrollbar-width:none;white-space:nowrap;flex:1}
+.topnav .wrap{display:flex;align-items:center;gap:22px;height:62px}
+.brand{display:flex;align-items:center;gap:9px;color:#fff;font-weight:700;white-space:nowrap;font-size:16.5px}
+.brand .mark{width:30px;height:30px;border-radius:8px;background:linear-gradient(135deg,#e8b64c,#f6dda0);
+ display:grid;place-items:center;color:#3a2a00;font-weight:800;font-size:14px}
+.vtag{background:#e8b64c;color:#3a2a00;font-size:12px;font-weight:800;padding:3px 9px;border-radius:4px}
+.navlinks{display:flex;gap:4px;overflow-x:auto;scrollbar-width:none;white-space:nowrap;flex:1}
 .navlinks::-webkit-scrollbar{display:none}
-.navlinks a{color:rgba(255,255,255,.74);font-size:12.5px;padding:7px 9px;border-radius:7px}
+.navlinks a{color:rgba(255,255,255,.78);font-size:14.5px;padding:9px 13px;border-radius:8px;font-weight:600}
 .navlinks a:hover{color:#fff;background:rgba(255,255,255,.10);text-decoration:none}
-.live{display:flex;align-items:center;gap:7px;color:#dbe4ff;font-size:12px;white-space:nowrap}
+.live{display:flex;align-items:center;gap:7px;color:#dbe4ff;font-size:12.5px;white-space:nowrap}
 .live i{width:7px;height:7px;border-radius:50%;background:#55d39a;box-shadow:0 0 0 4px rgba(85,211,154,.14)}
 .live.warn i{background:#f0b429;box-shadow:0 0 0 4px rgba(240,180,41,.14)}
 .wrap{max-width:1220px;margin:0 auto;padding:0 22px 60px}
+/* 广告横幅：全天候策略 */
+.hero{margin-top:18px;border-radius:14px;overflow:hidden;position:relative;
+ background:linear-gradient(118deg,#132a4a 0%,#1f3a5f 52%,#2c5282 100%);color:#fff;
+ padding:26px 32px;display:flex;align-items:center;gap:28px;flex-wrap:wrap;
+ box-shadow:0 10px 26px rgba(19,42,74,.16)}
+.hero::after{content:"";position:absolute;right:-70px;top:-90px;width:260px;height:260px;border-radius:50%;
+ background:radial-gradient(circle,rgba(232,182,76,.18),transparent 68%);pointer-events:none}
+.hero-tag{display:inline-block;background:rgba(232,182,76,.16);color:#f6dda0;border:1px solid rgba(232,182,76,.45);
+ font-size:12px;font-weight:800;letter-spacing:5px;padding:4px 13px;border-radius:6px;margin-bottom:11px}
+.hero h1{margin:0 0 8px;font-size:25px;letter-spacing:1px;line-height:1.3}
+.hero p{margin:0;font-size:13.5px;color:rgba(255,255,255,.72);max-width:520px;line-height:1.7}
+.hero-art{flex:0 0 auto;width:196px;height:116px;opacity:.92;margin-left:auto}
+.hero-kpis{display:flex;gap:30px;margin-left:auto;padding-right:6px}
+.hero-kpis div{text-align:right}
+.hero-kpis b{display:block;font-size:25px;font-weight:800;color:#f6dda0;font-variant-numeric:tabular-nums;line-height:1.25}
+.hero-kpis span{font-size:12px;color:rgba(255,255,255,.62);letter-spacing:1px}
+@media(max-width:980px){.hero-art{display:none}.hero h1{font-size:21px}.hero-kpis{margin-left:0}}
 .sec{margin-top:28px}
 .sec h2{font-size:18px;margin:0 0 12px;padding-left:11px;border-left:4px solid var(--brand);color:var(--navy)}
 .card{background:var(--card);border:1px solid var(--line);border-radius:10px;box-shadow:var(--shadow);overflow:hidden}
@@ -121,11 +138,13 @@ footer{color:#8a99ab;font-size:12px;text-align:center;padding:26px 0 8px;margin-
  .kpi:nth-child(6n){border-right:1px solid var(--line)}.kpi:nth-last-child(-n+3){border-bottom:0}
  .stats{grid-template-columns:repeat(3,1fr)}.grid2{grid-template-columns:1fr}
  .targets{grid-template-columns:1fr}.rcgrid{grid-template-columns:repeat(2,1fr)}}
-@media(max-width:640px){.wrap{padding:0 12px 40px}.topnav .wrap{gap:8px;height:50px}
+@media(max-width:640px){.wrap{padding:0 12px 40px}.topnav .wrap{gap:8px;height:54px}
  .brand .btext{display:none}.live{display:none}.kpis{grid-template-columns:repeat(2,1fr)}
  .kpi:nth-child(2n){border-right:0}.kpi:nth-child(3n){border-right:1px solid var(--line)}
  .kpi:nth-last-child(-n+2){border-bottom:0}.kpi .v{font-size:18px}
- .stats{grid-template-columns:repeat(2,1fr)}.navlinks a{padding:7px 5px;font-size:11.5px}}
+ .stats{grid-template-columns:repeat(2,1fr)}.navlinks a{padding:8px 9px;font-size:13px}
+ .hero{padding:18px 16px;gap:14px}.hero h1{font-size:17px}.hero p{font-size:12px}
+ .hero-art{display:none}.hero-kpis{gap:14px;margin-left:0}.hero-kpis b{font-size:18px}}
 </style>
 </head>
 <body>
@@ -139,6 +158,33 @@ footer{color:#8a99ab;font-size:12px;text-align:center;padding:26px 0 8px;margin-
   </div>
   <div class="live" id="live"><i></i><span>接口加载中</span></div>
 </div></nav>
+
+<div class="wrap">
+<section class="hero" id="hero">
+  <div class="hero-left">
+    <div class="hero-tag">全 天 候 策 略</div>
+    <h1>四象限风险平价 × 国债专属杠杆</h1>
+    <p>国债 · 黄金 · 豆粕 · 红利低波 · 标普500 · 纳指100 · 创业板50 —— 股债商品全覆盖，进化算法持续调参，任何市场天气，都有应对。</p>
+  </div>
+  <svg class="hero-art" viewBox="0 0 200 116" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+    <rect x="4" y="6" width="90" height="48" rx="8" fill="rgba(232,182,76,.20)"/>
+    <rect x="106" y="6" width="90" height="48" rx="8" fill="rgba(85,211,154,.18)"/>
+    <rect x="4" y="62" width="90" height="48" rx="8" fill="rgba(120,170,255,.16)"/>
+    <rect x="106" y="62" width="90" height="48" rx="8" fill="rgba(240,180,41,.14)"/>
+    <text x="49" y="36" text-anchor="middle" fill="#f6dda0" font-size="15" font-weight="700">国债</text>
+    <text x="151" y="36" text-anchor="middle" fill="#7fe0b0" font-size="15" font-weight="700">黄金</text>
+    <text x="49" y="92" text-anchor="middle" fill="#9ec3ff" font-size="15" font-weight="700">红利低波</text>
+    <text x="151" y="92" text-anchor="middle" fill="#f0c96a" font-size="15" font-weight="700">商品</text>
+    <circle cx="100" cy="58" r="4.5" fill="#e8b64c"/>
+    <circle cx="100" cy="58" r="9" fill="none" stroke="rgba(232,182,76,.45)" stroke-width="1.5"/>
+  </svg>
+  <div class="hero-kpis">
+    <div><b id="hb_cagr">—</b><span>策略年化</span></div>
+    <div><b id="hb_sharp">—</b><span>夏普比率</span></div>
+    <div><b id="hb_dd">—</b><span>最大回撤</span></div>
+  </div>
+</section>
+</div>
 
 <div class="wrap">
 <section class="sec" id="overview">
@@ -221,11 +267,12 @@ footer{color:#8a99ab;font-size:12px;text-align:center;padding:26px 0 8px;margin-
   <div class="grid2">
     <div class="card"><h3>策略工程指标</h3><div class="body"><div class="kv" id="engKV"></div></div></div>
     <div class="card"><h3>自动化同步与部署</h3><div class="body"><div class="kv" id="opsKV"></div>
-      <div class="note">每日北京时间 19:20 由 GitHub Actions 运行 <code>sync_daily.py</code>：抓数 →
-      模型回放 → 生成并校验 <code>data/</code> 接口 → 自动提交到 <code>main</code>，由既有
-      GitHub Pages 发布。本页为静态文件，通过 <code>fetch(..., {cache:"no-store"})</code>
-      读取最新接口，因此页面无需重建即可每日同步，策略模型接口与看板页面数据始终同源。
-      另有每 3 小时停更巡检，超过 26 小时无同步会自动重启每日工作流。</div></div></div>
+      <div class="note">每日由定时任务运行 <code>sync_daily.py</code>：抓数 → 模型回放 → 生成
+      <code>data/</code> 接口 → 写入同源发布目录（实时目录映射，写入即线上生效）。本页为静态文件，通过
+      <code>fetch(..., {cache:"no-store"})</code> 读取最新接口，因此页面无需重建即可每日同步，
+      策略模型接口与看板页面数据始终同源。仓库内另备 GitHub Actions 工作流
+      （<code>daily_sync.yml</code> + <code>watchdog.yml</code>），推送到有写权限的仓库后可在
+      GitHub Pages 上以同一套接口自动部署与停更重启。</div></div></div>
   </div>
   <div class="card" style="margin-top:14px"><h3>最近同步巡检记录</h3><div class="tw"><table>
     <thead><tr><th>run_id</th><th>时间</th><th>状态</th><th>数据源</th><th>新增</th><th>回退</th><th>对账偏差</th></tr></thead>
@@ -330,6 +377,9 @@ function renderHeader(){
 }
 function renderKPI(){
  const n=S.nav,m=n.metrics,b=n.benchmark_equal_weight||{};
+ $("#hb_cagr").textContent=nf(m.cagr,2,"%",true);
+ $("#hb_sharp").textContent=nf(m.sharp,2);
+ $("#hb_dd").textContent=nf(-m.max_drawdown,2,"%");
  const items=[
   ["累计收益",nf(m.total_return,2,"%",true),"起点归一化 · 净值 "+nf(m.final_nav,3)],
   ["策略年化",nf(m.cagr,2,"%",true),"复利年化 · 评估期口径"],
@@ -469,7 +519,7 @@ function renderOps(){
   "run_id":esc(sy.run_id),"状态 / 数据源":esc(sy.status)+" / "+esc(sy.source),
   "本次新增交易日":String(sy.new),"重试次数":String(sy.retry),
   "失败回退":esc(p.fallback||"—"),"回退开关":sy.fallback?"已触发":"未触发",
-  "发布目录":"GitHub Pages · main 分支自动发布",
+  "发布目录":"site/data · 实时映射，接口写入即线上生效",
   "参数回退":esc(p.rollback||"—"),"幂等策略":esc(p.idempotency||"—")});
  const a=(S.audit&&S.audit.runs||[]).slice(-12).reverse();
  $("#auditBody").innerHTML=a.map(r=>`<tr><td>${esc(r.run_id)}</td><td>${esc((r.at||"").replace("T"," ").slice(0,19))}</td>
