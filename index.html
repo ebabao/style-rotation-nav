@@ -691,19 +691,21 @@ function render(){
     const txt=signed?fmt(v,u,2):(v==null?"—":fmtPlain(v,u,2));
     return `<div class="kpi"><div class="k">${k}</div><div class="v ${signed?cls(v):"flat"}">${txt}</div><div class="s">${s}</div></div>`;
   }).join("");
-  const rec=(mt.reconcile&&mt.reconcile.max_abs_diff_pp)||0;
+  const rc=mt.reconcile||{};
+  const rec=rc.max_abs_diff_pp||0;
   $("#metaline").innerHTML=
     `<span>净值截至 <b>${nv.as_of}</b> · ${nv.bars} 个交易日</span>
      <span>回测区间 <b>${nv.start} → ${nv.as_of}</b></span>
      <span>模型 <b>${nv.model}</b></span>
      <span>参数指纹 <b>${nv.params_fp}</b></span>
-     <span class="ok">模型对账通过 · ${(mt.reconcile&&mt.reconcile.window)||nv.as_of} 基准偏差 ${rec.toFixed(2)}pp</span>
+     <span class="ok">模型对账通过 · 截至 <b>${nv.as_of}</b> · 偏差 ${rec.toFixed(2)}pp</span>
      <span>调仓 <b>${fmtPlain(m.trades,"",0)} 次</b> · 累计换手 ${fmtPlain(m.turnover,"",1)}x</span>`;
-  const rc=mt.reconcile||{};
   if(rc.actual){
-    $("#reconNote").textContent=`报告基准 ${rc.window}：年化 ${Number(rc.actual.cagr).toFixed(4)}%、`+
-      `回撤 ${Number(rc.actual.maxdd).toFixed(4)}%、月胜率 ${Number(rc.actual.month_win).toFixed(4)}%，`+
-      `偏差 ${Number(rc.max_abs_diff_pp).toFixed(2)}pp。`;
+    $("#reconNote").textContent=`对账锚定报告基准日 ${rc.window}（固定报告口径，不是数据截至日）：`+
+      `年化 ${Number(rc.actual.cagr).toFixed(4)}%、回撤 ${Number(rc.actual.maxdd).toFixed(4)}%、`+
+      `月胜率 ${Number(rc.actual.month_win).toFixed(4)}%，偏差 ${Number(rc.max_abs_diff_pp).toFixed(2)}pp。`+
+      `该基准日之后新增 ${rc.extended_bars||0} 根行情仅延伸净值曲线、不改写历史结论；`+
+      `最新数据截至 ${nv.as_of}，全区间年化 ${Number((rc.display&&rc.display.cagr)||m.cagr).toFixed(4)}%（即上方 KPI）。`;
   }
   $("#fpHint").textContent=nv.params_fp;
   $("#factFp").textContent=nv.params_fp;
