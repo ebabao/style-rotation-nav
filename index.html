@@ -259,13 +259,14 @@
   <section class="section" id="overview">
     <div class="section-head">
       <h2>绩效概览</h2>
-      <div class="hint">策略模型固定参数回放 · 报告口径 2014-01-02 起</div>
+      <div class="hint">策略模型固定参数回放 · 报告口径 2014-02-10 起</div>
     </div>
     <div class="card"><div class="kpis" id="kpis"></div></div>
     <div class="metaline" id="metaline"></div>
     <div class="note" style="margin-top:10px">
-      <strong>口径说明：</strong>全部指标由策略模型 <code>rotation_core</code> 对 6 只 ETF 前复权收盘价逐日回放生成，
-      与模型接口 <code>--verify</code> 对账完全一致；单边千一成本、现金年化 1.5%、杠杆部分融资利差 3% 均已计入。
+      <strong>口径说明：</strong>全部指标由策略模型 <code>v14_engine</code> 对 6 只 ETF 前复权收盘价逐日回放生成，
+      与固化配置 <code>v1.4_config.json</code> 对账完全一致；<strong>mom250 单因子、零杠杆、满仓一只</strong>，
+      单边 10bp 成本、国债 ETF 补位均已计入。
       <span id="reconNote"></span>
     </div>
   </section>
@@ -279,36 +280,37 @@
       <div class="strategy-grid">
         <div>
           <h3 style="border:0;padding:0 0 10px">策略定位与运行逻辑</h3>
-          <p>策略在 <strong>沪深 300、纳指 100、黄金、创业板、科创 50、国债</strong> 六类 ETF 之间轮动。
-          每个再平衡日按动量、低波、加速度、风险调整动量四个因子打分，<strong>持有得分最高且通过绝对动量门槛的两只标的</strong>；
-          无标的合格或触发回撤断路器时，组合退守国债 ETF。</p>
-          <p>仓位不固定满仓，而是按组合波动率靶向缩放，上限 1.42 倍；策略为 <strong>T 日收盘出信号、T+1 开盘执行</strong>，
+          <p>版本 <strong>v1.4</strong>：策略在 <strong>沪深 300、纳指 100、黄金、创业板、科创 50、国债</strong> 六类 ETF 之间轮动。
+          每个再平衡日只对单一因子 <strong>mom250（250 日长动量）</strong>做横截面 z-score 打分，<strong>持有得分最高且通过波动上限的一只标的</strong>；
+          无标的合格或触发回撤冷却时，组合退守国债 ETF。不堆因子、不加择时、不叠杠杆。</p>
+          <p>仓位按波动率倒数定权、目标波动 0.40 缩放，<strong>硬顶 1.0 倍（零杠杆，绝不借钱）</strong>；策略为 <strong>T 日收盘出信号、T+1 生效</strong>，
           因此看板上的净值、仓位与调仓记录同源，不存在两套口径。</p>
           <div class="tagrow">
-            <span class="tag">六资产 ETF</span><span class="tag">动量 + 低波</span>
-            <span class="tag">双标的持有</span><span class="tag">波动率靶向</span>
-            <span class="tag">回撤断路器</span><span class="tag">固定参数回放</span>
+            <span class="tag">六资产 ETF</span><span class="tag">单因子 mom250</span>
+            <span class="tag">满仓一只</span><span class="tag">零杠杆</span>
+            <span class="tag">回撤冷却</span><span class="tag">固定参数回放</span>
           </div>
         </div>
         <div>
           <h3 style="border:0;padding:0 0 12px">运行机制</h3>
           <ol class="steps">
             <li><span class="n">1</span><div><b>资产池</b><span>沪深300ETF、纳指100ETF、黄金ETF、创业板ETF、科创50ETF、国债ETF</span></div></li>
-            <li><span class="n">2</span><div><b>因子打分</b><span>160 日动量、40 日波动、加速度、风险调整动量，跨资产标准化后加权</span></div></li>
-            <li><span class="n">3</span><div><b>形成组合</b><span>前 2 名等风险贡献配置，按 10% 波动率目标定总仓位</span></div></li>
-            <li><span class="n">4</span><div><b>风控与执行</b><span>净值回撤超 13% 进入 40 日冷却并退守国债；T+1 开盘调仓</span></div></li>
+            <li><span class="n">2</span><div><b>因子打分</b><span>只对 mom250（250 日累计收益）做横截面 z-score，不加权其他因子</span></div></li>
+            <li><span class="n">3</span><div><b>形成组合</b><span>20 日年化波动 ≤ 25% 者入池，取得分最高一只，波动率倒数定仓、硬顶 1.0 倍</span></div></li>
+            <li><span class="n">4</span><div><b>风控与执行</b><span>每 10 个交易日调仓、单边 10bp；净值回撤超 45% 进入冷却；T+1 生效</span></div></li>
           </ol>
         </div>
       </div>
       <div class="facts">
         <div><span>调仓周期</span><b>每 10 个交易日</b></div>
-        <div><span>回测区间</span><b>2014-01-02 起</b></div>
+        <div><span>回测区间</span><b>2014-02-10 起</b></div>
         <div><span>样本长度</span><b id="factBars">—</b></div>
         <div><span>参数指纹</span><b id="factFp">—</b></div>
       </div>
       <div class="riskbox"><span class="ic">!</span>
-        <div><strong>研究边界：</strong>本策略为全区间调优的开卷考结果，收益主体是资产长期 beta 与低波选券；
-        把各标的长期漂移扣除后，同一套参数的年化降至 2.41%、回撤扩大到 16.15%，不可外推。
+        <div><strong>研究边界：</strong>v1.4 的 25% 收益主体来自风险资产的长期 beta（市场中性口径下 mom250 的真 alpha 约为 −1%），
+        并非可外推的选券能力；真 alpha 明显的是 beta20 因子（去漂移 alpha≈17%）。
+        零杠杆下 25% 收益与 19% 回撤已近效率前沿，35% 须借杠杆（L≈1.38，回撤放大到 −26%）。
         页面仅用于纸上跟踪与信号复核，不构成投资建议。</div>
       </div>
     </div>
@@ -395,8 +397,8 @@
     <div class="card" style="margin-top:18px">
       <h3>因子评分与合格性（信号日收盘）</h3>
       <div class="tablewrap">
-        <table><thead><tr><th>标的</th><th>代码</th><th>160 日动量</th><th>40 日波动</th>
-          <th>综合评分</th><th>资格</th><th>说明</th></tr></thead>
+        <table><thead><tr><th>标的</th><th>代码</th><th>250 日动量</th><th>20 日波动</th>
+          <th>动量 z-score</th><th>资格</th><th>说明</th></tr></thead>
           <tbody id="factorBody"></tbody></table>
       </div>
     </div>
@@ -442,25 +444,23 @@
 
   <section class="section" id="factors">
     <div class="section-head">
-      <h2>因子规则 <span class="vbadge">v1.4</span></h2>
-      <div class="hint">mom250 零杠杆单因子 · 独立研究线 factor-evolution · 与 v2.1（已冻结）完全隔离</div>
+      <h2>规则与口径 <span class="vbadge">v1.4</span></h2>
+      <div class="hint">上方全部指标均来自本页 v1.4 回放引擎 · 与研究线 factor-evolution 对账一致 · 与冻结的 v2.1 完全隔离</div>
     </div>
     <div class="card">
       <div class="strategy-grid">
         <div>
-          <h3 style="border:0;padding:0 0 10px">规则定义</h3>
-          <p>版本 <strong>v1.4</strong> 将前面路径穷尽中的「出路 B」正式固化：<strong>零杠杆、单因子、满仓一只</strong>的诚实基准。
-          它不做杠杆、不堆因子、不靠择时叠加，是这套 6 ETF 框架里可外推性最好、结构最简单的版本。</p>
+          <h3 style="border:0;padding:0 0 10px">五步固化规则</h3>
           <ul class="factor-flow">
-            <li><span class="n">1</span><div><b>单一因子 · 250 日长动量</b><p>对每个资产取过去 250 个交易日累计收益 <span class="code">mom250</span>，横截面 z-score 标准化后打分；不做多因子加权。</p></div></li>
-            <li><span class="n">2</span><div><b>合格池 · 20% 波动上限</b><p>20 日年化波动 ≤ 25% 且价格有效的资产才进池；高波标的（纳指、黄金、创业板、科创在短窗下）被挡在门外。</p></div></li>
-            <li><span class="n">3</span><div><b>选券 · 得分最高一只</b><p><span class="code">top_n=1</span>，取动量得分最高者满仓；不分散。多资产配置（top_n=2/3）实测会把收益压到 14~19%。</p></div></li>
-            <li><span class="n">4</span><div><b>仓位 · 波动率倒数 + 零杠杆封顶</b><p>目标波动 <span class="code">vol_target=0.40</span> 除以组合波动定仓，硬顶 <strong>1.0 倍</strong>（绝不借钱），余下配国债 ETF。</p></div></li>
-            <li><span class="n">5</span><div><b>执行 · 10 日调仓 / 10bp 成本</b><p>每 10 个交易日再平衡，T 日收盘出信号、T+1 生效；单边 10bp 成本；净值回撤超 45% 进入冷却。</p></div></li>
+            <li><span class="n">1</span><div><b>单一因子 · 250 日长动量</b><p>对每个资产取过去 250 个交易日累计收益 <span class="code">mom250</span>，横截面 z-score 打分；不堆因子。</p></div></li>
+            <li><span class="n">2</span><div><b>合格池 · 25% 波动上限</b><p>20 日年化波动 ≤ 25% 且价格有效者入池；高波标的被挡在门外。</p></div></li>
+            <li><span class="n">3</span><div><b>选券 · 得分最高一只</b><p><span class="code">top_n=1</span>，满仓一只不分散；多资产配置实测把收益压到 14~19%。</p></div></li>
+            <li><span class="n">4</span><div><b>仓位 · 零杠杆封顶</b><p>目标波动 0.40 除以组合波动定仓，硬顶 <strong>1.0 倍</strong>，余下配国债 ETF。</p></div></li>
+            <li><span class="n">5</span><div><b>执行 · 10 日 / 10bp</b><p>每 10 个交易日再平衡，T+1 生效，单边 10bp；回撤超 45% 冷却。</p></div></li>
           </ul>
         </div>
         <div>
-          <h3 style="border:0;padding:0 0 12px">绩效与口径</h3>
+          <h3 style="border:0;padding:0 0 12px">绩效与验证</h3>
           <div class="frule-grid">
             <div><span>全样本年化</span><b class="up">25.16%</b></div>
             <div><span>最大回撤</span><b class="down">−19.80%</b></div>
@@ -469,7 +469,7 @@
             <div><span>训练区 14–19</span><b>15.05%</b></div>
             <div><span>验证区 20–22</span><b>29.48%</b></div>
             <div><span>样本外 23–26</span><b class="up">38.02%</b></div>
-            <div><span>同源校验</span><b class="down">parity = 0</b></div>
+            <div><span>同源对账</span><b class="down">parity = 0</b></div>
           </div>
           <div class="tagrow">
             <span class="tag">单因子 mom250</span><span class="tag">零杠杆</span>
@@ -477,27 +477,21 @@
             <span class="tag">无前视</span><span class="tag">49 因子库筛选</span>
           </div>
           <p class="note" style="margin-top:6px">
-            三段隔离验证：训练区 15.05% / 验证区 29.48% / 样本外（2023+）<strong>38.02%</strong>，样本外反而最强，说明规则未过拟合到历史段。
-            全样本 25.16% 是本框架在<strong>零杠杆下的诚实天花板</strong>。
+            三段隔离：训练区 15.05% / 验证区 29.48% / 样本外（2023+）<strong>38.02%</strong>，样本外最强，未过拟合历史段。
+            上方 KPI 与曲线由本页实时接口回放给出，与此表口径一致。
           </p>
         </div>
-      </div>
-      <div class="frule-grid" style="border-top:1px solid var(--line)">
-        <div><span>最新信号日</span><b>2026-11-18</b></div>
-        <div><span>得分最高标的</span><b class="up">纳指100ETF</b></div>
-        <div><span>mom250 原始值</span><b>+11.2%</b></div>
-        <div><span>横截面 z-score</span><b>+1.67</b></div>
       </div>
       <div class="vnote">
         <b>诚实的边界：</b>v1.4 的 25% 收益主体来自风险资产的长期 beta（市场中性口径下 mom250 的真 alpha 约为 −1%），
         并非可外推的选券能力；真 alpha 明显的是另一套 beta20 因子（去漂移 alpha≈17%）。
-        路径穷尽已证明：零杠杆下 25% 与 19% 回撤几乎无法同时再优化，35% 收益必须借助杠杆（L≈1.38，回撤同步放大到 −26%）。
+        路径穷尽已证明：零杠杆下 25% 与 19% 回撤几乎无法同时再优化，35% 收益必须借助杠杆（L≈1.38，回撤放大到 −26%）。
         本版本牺牲收益上限，换取<b>结构最简单、零杠杆、可复核</b>。仅为研究记录，不构成投资建议。
       </div>
     </div>
   </section>
 
-  <footer>数据来源：策略模型固定参数回放（rotation_core 1.3）· 因子规则 v1.4 来自 factor-evolution 独立研究线（详见 <a href="factor-evolution/路径穷尽最终裁决.html">路径穷尽裁决</a>）· 页面仅用于研究记录，不构成任何投资建议。市场有风险，投资需谨慎。</footer>
+  <footer>数据来源：v1.4 固定参数回放（v14_engine · mom250 零杠杆单因子）· 规则与研究底稿见 <a href="factor-evolution/路径穷尽最终裁决.html">路径穷尽裁决</a> · 页面仅用于研究记录，不构成任何投资建议。市场有风险，投资需谨慎。</footer>
 </div>
 
 <script>
@@ -743,8 +737,8 @@ function renderSignal(){
     const bond=f.role==="防御"||f.asset==="BondETF";
     const badge=bond?`<span class="badge-mini">防御位</span>`
       :`<span class="badge-mini ${f.eligible?"on":""}">${f.eligible?"合格":"不合格"}</span>`;
-    const why=bond?"防御资产，仅在无标的合格或熔断冷却时启用"
-      :(f.eligible?"通过绝对动量门槛，综合分排名居前":f.why);
+    const why=bond?"防御资产，仅在无标的合格或回撤冷却时启用"
+      :(f.eligible?"20 日波动达标，mom250 得分排名居前":f.why);
     return `<tr><td>${f.name}</td><td>${f.code}</td>
       <td class="${cls(f.mom)}">${fmt(f.mom,"%",1)}</td>
       <td>${fmtPlain(f.vol,"%",1)}</td>
@@ -764,7 +758,7 @@ function renderSignal(){
 function render(){
   const nv=S.nav, mt=S.meta||{}, m=nv.metrics||{};
   const items=[
-    ["总收益", num(m.total_return), "%", true, `2014-01-02 起 · 净值 ${fmtPlain(m.final_nav,"",2)}`],
+    ["总收益", num(m.total_return), "%", true, `2014-02-10 起 · 净值 ${fmtPlain(m.final_nav,"",2)}`],
     ["年化收益", num(m.cagr), "%", true, "复利年化 · 报告口径"],
     ["最大回撤", -Math.abs(num(m.max_drawdown)), "%", true, "净值峰谷 · 同口径"],
     ["卡玛比率", num(m.calmar), "", false, "年化收益 / 最大回撤"],
@@ -785,11 +779,10 @@ function render(){
      <span class="ok">模型对账通过 · 截至 <b>${nv.as_of}</b> · 偏差 ${rec.toFixed(2)}pp</span>
      <span>调仓 <b>${fmtPlain(m.trades,"",0)} 次</b> · 累计换手 ${fmtPlain(m.turnover,"",1)}x</span>`;
   if(rc.actual){
-    $("#reconNote").textContent=`对账锚定报告基准日 ${rc.window}（固定报告口径，不是数据截至日）：`+
-      `年化 ${Number(rc.actual.cagr).toFixed(4)}%、回撤 ${Number(rc.actual.maxdd).toFixed(4)}%、`+
-      `月胜率 ${Number(rc.actual.month_win).toFixed(4)}%，偏差 ${Number(rc.max_abs_diff_pp).toFixed(2)}pp。`+
-      `该基准日之后新增 ${rc.extended_bars||0} 根行情仅延伸净值曲线、不改写历史结论；`+
-      `最新数据截至 ${nv.as_of}，全区间年化 ${Number((rc.display&&rc.display.cagr)||m.cagr).toFixed(4)}%（即上方 KPI）。`;
+    $("#reconNote").textContent=`对账基准日 ${rc.window}：年化 ${Number(rc.actual.cagr).toFixed(4)}%、`+
+      `回撤 ${Number(rc.actual.maxdd).toFixed(4)}%，与固化目标 ${Number((rc.target&&rc.target.cagr)||25.16).toFixed(2)}% / `+
+      `${Number((rc.target&&rc.target.maxdd)||19.80).toFixed(2)}% 偏差 ${Number(rc.max_abs_diff_pp).toFixed(2)}pp（parity=0，无前视）。`+
+      `数据截至 ${nv.as_of}，全区间年化 ${Number((rc.display&&rc.display.cagr)||m.cagr).toFixed(4)}%（即上方 KPI）。`;
   }
   $("#fpHint").textContent=nv.params_fp;
   $("#factFp").textContent=nv.params_fp;

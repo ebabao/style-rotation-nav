@@ -1,0 +1,6 @@
+# Python 缓存
+__pycache__/
+*.py[cod]
+
+# 研究线临时输出（正式接口在 data/ 与各报告目录）
+factor-evolution/data_out/
