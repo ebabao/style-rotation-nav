@@ -462,10 +462,10 @@
         <div>
           <h3 style="border:0;padding:0 0 12px">绩效与验证</h3>
           <div class="frule-grid">
-            <div><span>全样本年化</span><b class="up">25.16%</b></div>
-            <div><span>最大回撤</span><b class="down">−19.80%</b></div>
-            <div><span>夏普比率</span><b>1.26</b></div>
-            <div><span>卡玛比率</span><b>1.27</b></div>
+            <div><span>全样本年化</span><b class="up" id="apCagr">—</b></div>
+            <div><span>最大回撤</span><b class="down" id="apMdd">—</b></div>
+            <div><span>夏普比率</span><b id="apSharpe">—</b></div>
+            <div><span>卡玛比率</span><b id="apCalmar">—</b></div>
             <div><span>训练区 14–19</span><b>15.05%</b></div>
             <div><span>验证区 20–22</span><b>29.48%</b></div>
             <div><span>样本外 23–26</span><b class="up">38.02%</b></div>
@@ -478,7 +478,7 @@
           </div>
           <p class="note" style="margin-top:6px">
             三段隔离：训练区 15.05% / 验证区 29.48% / 样本外（2023+）<strong>38.02%</strong>，样本外最强，未过拟合历史段。
-            上方 KPI 与曲线由本页实时接口回放给出，与此表口径一致。
+            上方四个绩效格与页面 KPI 均由本页实时接口回放给出、口径完全一致；分段结果为固定基准日研究切片。
           </p>
         </div>
       </div>
@@ -784,6 +784,11 @@ function render(){
       `${Number((rc.target&&rc.target.maxdd)||19.80).toFixed(2)}% 偏差 ${Number(rc.max_abs_diff_pp).toFixed(2)}pp（parity=0，无前视）。`+
       `数据截至 ${nv.as_of}，全区间年化 ${Number((rc.display&&rc.display.cagr)||m.cagr).toFixed(4)}%（即上方 KPI）。`;
   }
+  // 规则与口径板块的四个绩效格：与顶部 KPI 同源同口径
+  $("#apCagr").textContent=fmtPlain(m.cagr,"%",2);
+  $("#apMdd").textContent=fmtPlain(-Math.abs(m.max_drawdown),"%",2);
+  $("#apSharpe").textContent=fmtPlain(m.sharp,"",2);
+  $("#apCalmar").textContent=fmtPlain(m.calmar,"",2);
   $("#fpHint").textContent=nv.params_fp;
   $("#factFp").textContent=nv.params_fp;
   $("#factBars").textContent=`${nv.bars} 个交易日`;
