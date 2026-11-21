@@ -180,44 +180,71 @@
   .segtab{display:inline-block;font-size:11px;border-radius:5px;padding:1px 6px;background:#eef1fb;
           color:#475569;border:1px solid #dbe1f5;margin-right:6px}
   @media(max-width:980px){
-    .frule-grid{grid-template-columns:repeat(2,1fr)}
-    .frule-grid>div:nth-child(2n){border-right:0}
-    .frule-grid>div:nth-child(-n+2){border-bottom:1px solid var(--line)}
-  }
     .kpis{grid-template-columns:repeat(3,1fr)}
     .kpi:nth-child(3n){border-right:0}.kpi:nth-child(6n){border-right:1px solid var(--line)}
     .kpi:nth-child(-n+3){border-bottom:1px solid var(--line)}
     .strategy-grid{grid-template-columns:1fr}.strategy-grid>div+div{border-left:0;border-top:1px solid var(--line)}
     .facts{grid-template-columns:repeat(2,1fr)}.facts div:nth-child(2n){border-right:0}
     .facts div:nth-child(-n+2){border-bottom:1px solid var(--line)}
+    .frule-grid{grid-template-columns:repeat(2,1fr)}
+    .frule-grid>div:nth-child(2n){border-right:0}
+    .frule-grid>div:nth-child(-n+2){border-bottom:1px solid var(--line)}
   }
   @media(max-width:640px){
-    .wrap{padding-left:13px;padding-right:13px;padding-bottom:42px}
-    .topnav .wrap{height:50px;gap:10px}.brand{font-size:13px}.brand .btext{display:none}.live{display:none}
-    .navlinks{flex:1;justify-content:space-between;gap:0}
-    .navlinks a{padding:7px 5px;font-size:12px;letter-spacing:-.2px}
-    .segment{flex-wrap:wrap;overflow:visible}
-    .segment button{flex:1 0 21%}
-    .section-head{margin-top:22px;align-items:flex-start;flex-direction:column;gap:4px}
-    .section-head h2{font-size:18px}.section-head .hint{text-align:left}
+    .wrap{padding-left:12px;padding-right:12px;padding-bottom:36px}
+    /* 顶部导航：品牌仅保留图标，菜单横向可滑动，避免六项挤压换行 */
+    .topnav .wrap{height:50px;gap:8px}
+    .brand{flex:0 0 auto}
+    .live{display:none}
+    .navlinks{flex:1;justify-content:flex-start;gap:2px;overflow-x:auto;-webkit-overflow-scrolling:touch}
+    .navlinks a{padding:7px 9px;font-size:12px;flex:0 0 auto;letter-spacing:0}
+    /* 板块标题：标题与说明分两行，说明可换行 */
+    .section-head{margin-top:20px;margin-bottom:12px;align-items:flex-start;flex-direction:column;gap:5px}
+    .section-head h2{font-size:18px}
+    .section-head .hint{text-align:left;font-size:11.5px;line-height:1.5}
+    /* KPI 两列：修正 980 断点遗留的 3n 边框，保证中缝干净 */
     .kpis{grid-template-columns:repeat(2,1fr)}
-    .kpi{padding:14px 14px;border-right:1px solid var(--line);border-bottom:1px solid var(--line)}
-    .kpi:nth-child(2n){border-right:0}.kpi:nth-last-child(-n+2){border-bottom:0}
-    .kpi .v{font-size:19px}.kpi .s{font-size:10px}
-    .card h3{padding:14px 16px}.card .body{padding:16px}
-    .charthead{padding:15px 16px 0}.tabs{padding:8px 10px 0;gap:0}
+    .kpi{padding:13px 14px;border-right:1px solid var(--line);border-bottom:1px solid var(--line)}
+    .kpi .k{font-size:11.5px;margin-bottom:5px}
+    .kpi .v{font-size:20px}
+    .kpi .s{font-size:10px}
+    .kpi:nth-child(3n){border-right:1px solid var(--line)}
+    .kpi:nth-child(2n){border-right:0}
+    .kpi:nth-child(-n+3){border-bottom:1px solid var(--line)}
+    .kpi:nth-last-child(-n+2){border-bottom:0}
+    /* 卡片与通用内边距 */
+    .card h3{padding:14px 16px;font-size:15px}
+    .card .body{padding:16px}
+    .note{font-size:11.5px;line-height:1.7}
+    .metaline{gap:6px;margin-top:10px}
+    .metaline span{font-size:10.5px;padding:4px 8px}
+    /* 策略区 */
+    .strategy-grid>div{padding:16px}
+    .strategy-grid p{font-size:12.5px;line-height:1.7}
+    .facts div{padding:12px 14px}
+    .facts span{font-size:10.5px}
+    .riskbox{margin:0 14px 14px;padding:11px 12px;gap:8px}
+    /* 图表区 */
+    .charthead{padding:14px 16px 0}
+    .chartmeta{font-size:11px}
+    .tabs{padding:8px 10px 0;gap:0}
     .tab{padding:9px 11px;font-size:12px}
-    .controls{padding:10px 14px 4px;gap:8px;flex-direction:column;align-items:stretch}
-    .control{width:100%;gap:6px}.control .lab{min-width:34px}
-    .segment{flex:1;flex-wrap:wrap}
-    .segment button{flex:1 0 calc(25% - 3px);padding:6px 4px}
+    .controls{padding:10px 14px 6px;gap:10px;flex-direction:column;align-items:stretch}
+    .control{width:100%;gap:8px}
+    .control .lab{min-width:36px}
+    .segment{flex:1;flex-wrap:wrap;overflow:visible}
+    .segment button{flex:1 0 calc(25% - 3px);padding:6px 4px;font-size:11.5px}
     .viewstats{grid-template-columns:repeat(2,1fr)}
-    .viewstats div{padding:9px 14px;border-bottom:1px solid var(--line)}
-    .viewstats div:nth-child(2n){border-right:0}.viewstats div:nth-last-child(-n+2){border-bottom:0}
-    .chart{padding:4px 4px 10px;min-height:230px}
-    .chartfoot{padding:0 14px 14px}.riskbox{margin:0 14px 14px}
-    .strategy-grid>div{padding:18px 16px}.facts div{padding:12px 14px}
-    .sighead{padding:14px 16px}
+    .viewstats div{padding:10px 14px;border-bottom:1px solid var(--line)}
+    .viewstats div:nth-child(2n){border-right:0}
+    .viewstats div:nth-last-child(-n+2){border-bottom:0}
+    .viewstats b{font-size:15px}
+    .chart{padding:4px 4px 10px;min-height:260px}
+    .chartfoot{padding:0 14px 14px}
+    .legend{gap:10px;font-size:11px}
+    /* 调仓信号：上下两栏堆叠，数值行横排 */
+    .sighead{padding:13px 16px;gap:8px}
+    .sighead .sub{font-size:11.5px}
     .siggrid{grid-template-columns:1fr}
     .sigcol{padding:14px 16px}
     .sigcol+.sigcol{border-left:0;border-top:1px solid var(--line)}
@@ -226,15 +253,24 @@
     .sigrow .cap2{text-align:left}
     .sighead .sub.right{margin-left:0}
     .sigstats{grid-template-columns:repeat(2,1fr)}
-    .sigstats div{padding:10px 16px;border-bottom:1px solid var(--line)}
+    .sigstats div{padding:10px 14px;border-bottom:1px solid var(--line)}
     .sigstats div:nth-child(2n){border-right:0}
     .sigstats div:nth-last-child(-n+2){border-bottom:0}
-    table{min-width:600px}
+    /* 因子规则区 */
+    .frule-grid>div{padding:12px 14px}
+    .frule-grid b{font-size:14px}
+    .factor-flow li{grid-template-columns:24px 1fr;gap:9px}
+    .factor-flow p{font-size:11.5px;line-height:1.6}
+    .vnote{margin:0 14px 14px;padding:11px 12px;font-size:11.5px;line-height:1.7}
+    .tagrow{gap:6px;margin:12px 0}
+    .tag{font-size:11px;padding:4px 9px}
+    /* 表格：横向滑动，不挤压 */
+    table{min-width:560px;font-size:12px}
+    th,td{padding:9px 11px}
+    footer{padding:22px 14px 0;font-size:11px;line-height:1.7}
   }
   @media(max-width:360px){
-    .brand{display:none}
-    .navlinks{gap:0;justify-content:space-between}
-    .navlinks a{font-size:11.5px;padding:7px 3px;letter-spacing:-.3px}
+    .navlinks a{font-size:11.5px;padding:7px 7px}
   }
   @media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}.topnav{position:static}}
 </style>
@@ -242,7 +278,7 @@
 <body>
 <nav class="topnav">
   <div class="wrap">
-    <div class="brand"><span class="mark">R</span><span class="btext">量化研究看板</span></div>
+    <div class="brand"><span class="mark">R</span></div>
     <div class="navlinks">
       <a href="#overview">绩效概览</a>
       <a href="#strategy">策略介绍</a>
@@ -445,7 +481,6 @@
   <section class="section" id="factors">
     <div class="section-head">
       <h2>规则与口径 <span class="vbadge">v1.4</span></h2>
-      <div class="hint">上方全部指标均来自本页 v1.4 回放引擎 · 与研究线 factor-evolution 对账一致 · 与冻结的 v2.1 完全隔离</div>
     </div>
     <div class="card">
       <div class="strategy-grid">
@@ -491,7 +526,7 @@
     </div>
   </section>
 
-  <footer>数据来源：v1.4 固定参数回放（v14_engine · mom250 零杠杆单因子）· 规则与研究底稿见 <a href="factor-evolution/路径穷尽最终裁决.html">路径穷尽裁决</a> · 页面仅用于研究记录，不构成任何投资建议。市场有风险，投资需谨慎。</footer>
+  <footer>数据来源：v1.4 固定参数回放 · 规则与研究底稿见 <a href="factor-evolution/路径穷尽最终裁决.html">路径穷尽裁决</a> · 页面仅用于研究记录，不构成任何投资建议。市场有风险，投资需谨慎。</footer>
 </div>
 
 <script>
