@@ -1,0 +1,35 @@
+{
+ "asof": "2026-11-18",
+ "timing_params": {
+  "timing_mode": "vol_managed",
+  "timing_k": 60,
+  "timing_floor": 0.13348255140947596,
+  "timing_aggr": 0.8441447759475746,
+  "timing_gamma": 2.5,
+  "timing_band": 0.03504027380539095,
+  "vote_trend": 0.16742590298863955,
+  "vote_breadth": 2.0,
+  "vote_tsmom": 0.3495145022283797,
+  "vote_vol": 1.6008361964896043,
+  "vote_enter": 0.5607765746974773,
+  "vote_exit": 0.26423574837028907,
+  "vote_soft": 0.5350726899383005,
+  "breadth_thr": 0.5481176534906954
+ },
+ "signal": {
+  "timing_mode": "vol_managed",
+  "timing_k": 60,
+  "timing_floor": 0.5526540000000001,
+  "timing_aggr": 1.640724,
+  "timing_gamma": 2.5,
+  "timing_band": 0.005,
+  "vote_trend": 0.11714,
+  "vote_breadth": 1.7448,
+  "vote_tsmom": 0.54178,
+  "vote_vol": 0.96116,
+  "vote_enter": 0.5870375,
+  "vote_exit": 0.4327975,
+  "vote_soft": 0.99088,
+  "breadth_thr": 0.42772
+ }
+}

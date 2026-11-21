@@ -1,0 +1,162 @@
+{
+ "engine": {
+  "eval_freq": 20,
+  "warmup": 250,
+  "reward_win": 120,
+  "ic_h": 20,
+  "alpha": 0.3,
+  "promote_streak": 5,
+  "promote_edge": 0.05,
+  "promote_cool": 10,
+  "ic_reversal_mode": "adaptive",
+  "ic_adapt_q": 0.1,
+  "win_criterion": "risk_adjusted"
+ },
+ "paradigm": "sr-nav/evolution_guard Q-learning 监管层（移植到择时因子）",
+ "champion_diff": 0.0,
+ "n_eval": 156,
+ "n_events": 73,
+ "n_promote": 10,
+ "n_icrev": 42,
+ "n_decay": 16,
+ "icrev_rate": 0.269,
+ "final_leader": "冠军(no-timing)",
+ "final_Q": {
+  "低波管理-温和": -0.0372,
+  "低波管理-激进": -0.2122,
+  "趋势跟随": -0.0112,
+  "均线平滑": 0.0155,
+  "多信号投票": -0.0557,
+  "多信号-软仓": -0.0723
+ },
+ "range": [
+  "2013-01-04",
+  "2026-11-18"
+ ],
+ "eval_first": "2014-01-20",
+ "eval_last": "2026-10-26",
+ "metrics": {
+  "冠军(no-timing)": {
+   "cagr": 32.78,
+   "maxdd": -19.54,
+   "sharpe": 1.8281,
+   "avg_exp": 1.0
+  },
+  "低波管理-温和": {
+   "cagr": 26.27,
+   "maxdd": -13.63,
+   "sharpe": 1.8301,
+   "avg_exp": 0.81
+  },
+  "低波管理-激进": {
+   "cagr": 18.36,
+   "maxdd": -12.46,
+   "sharpe": 1.6464,
+   "avg_exp": 0.587
+  },
+  "趋势跟随": {
+   "cagr": 20.79,
+   "maxdd": -12.04,
+   "sharpe": 1.8988,
+   "avg_exp": 0.633
+  },
+  "均线平滑": {
+   "cagr": 31.19,
+   "maxdd": -19.53,
+   "sharpe": 1.8572,
+   "avg_exp": 0.88
+  },
+  "多信号投票": {
+   "cagr": 29.98,
+   "maxdd": -15.26,
+   "sharpe": 1.9034,
+   "avg_exp": 0.797
+  },
+  "多信号-软仓": {
+   "cagr": 26.43,
+   "maxdd": -13.62,
+   "sharpe": 1.8696,
+   "avg_exp": 0.731
+  }
+ },
+ "better_than_champion": [
+  "低波管理-温和",
+  "趋势跟随",
+  "均线平滑",
+  "多信号投票",
+  "多信号-软仓"
+ ],
+ "better_by_cagr_only": [],
+ "risk_adjusted_detail": {
+  "低波管理-温和": {
+   "sharpe_edge": 0.0020000000000000018,
+   "calmar_edge": 0.24978166201204344,
+   "sharpe_win": true,
+   "calmar_win": true,
+   "mdd_improve": true,
+   "risk_adjusted_win": true
+  },
+  "低波管理-激进": {
+   "sharpe_edge": -0.18169999999999997,
+   "calmar_edge": -0.2040691933737604,
+   "sharpe_win": false,
+   "calmar_win": false,
+   "mdd_improve": true,
+   "risk_adjusted_win": false
+  },
+  "趋势跟随": {
+   "sharpe_edge": 0.07069999999999999,
+   "calmar_edge": 0.0491597438766036,
+   "sharpe_win": true,
+   "calmar_win": true,
+   "mdd_improve": true,
+   "risk_adjusted_win": true
+  },
+  "均线平滑": {
+   "sharpe_edge": 0.029099999999999904,
+   "calmar_edge": -0.08055423223647229,
+   "sharpe_win": true,
+   "calmar_win": false,
+   "mdd_improve": true,
+   "risk_adjusted_win": true
+  },
+  "多信号投票": {
+   "sharpe_edge": 0.07529999999999992,
+   "calmar_edge": 0.2870289261131851,
+   "sharpe_win": true,
+   "calmar_win": true,
+   "mdd_improve": true,
+   "risk_adjusted_win": true
+  },
+  "多信号-软仓": {
+   "sharpe_edge": 0.04149999999999987,
+   "calmar_edge": 0.2629441921913256,
+   "sharpe_win": true,
+   "calmar_win": true,
+   "mdd_improve": true,
+   "risk_adjusted_win": true
+  }
+ },
+ "shadow_switch": {
+  "metrics": {
+   "shadow": {
+    "cagr": 0.29272266424211746,
+    "maxdd": -0.21759107345310524,
+    "sharpe": 1.864025982045527,
+    "calmar": 1.3452880193874517
+   },
+   "champion": {
+    "cagr": 0.3276563766229714,
+    "maxdd": -0.19541943271014306,
+    "sharpe": 1.8275187545906513,
+    "calmar": 1.6766826721320471
+   }
+  },
+  "switch_ratio": 0.6730769230769231,
+  "n_switches": 28,
+  "target_sharpe_met": true,
+  "target_mdd_met": false,
+  "sharpe_edge": 0.03650722745487567
+ },
+ "champion_ann": 32.78
+}

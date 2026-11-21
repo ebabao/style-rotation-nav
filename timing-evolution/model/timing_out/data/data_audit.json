@@ -1,0 +1,46 @@
+{
+ "version": "v3.0-timing-institutional",
+ "files": {
+  "etf_close_snapshot.csv": {
+   "sha256": "447bb3eba81af50f3c7c8eb8b45c968dfb71de036e39cb82b2c3e7b0acee03b2",
+   "rows": 3368,
+   "frame_hash": "f601d23cb19edb448c67e49e819c090b6d5ada4bdf1b671422b4cec9874369de"
+  },
+  "etf_ohlc.csv": {
+   "sha256": "3ba93c6c40508446bff0e47a9bd1f5dadc365f06c45c89f6d69494a748407564",
+   "rows": 3368,
+   "frame_hash": "324b548e31e469311df0ba1fef74a15d8fb4e13e3255d7d535fc3978dc3a2966"
+  }
+ },
+ "close_panel": {
+  "start": "2013-01-04",
+  "end": "2026-11-18",
+  "n_rows": 3368,
+  "assets": [
+   "CSI300ETF",
+   "NDX100ETF",
+   "GoldETF",
+   "ChiNextETF",
+   "STAR50ETF",
+   "BondETF"
+  ],
+  "nan_counts": {
+   "CSI300ETF": 0,
+   "NDX100ETF": 136,
+   "GoldETF": 133,
+   "ChiNextETF": 1,
+   "STAR50ETF": 1911,
+   "BondETF": 60
+  }
+ },
+ "risk_assets": [
+  "CSI300ETF",
+  "NDX100ETF",
+  "GoldETF",
+  "ChiNextETF",
+  "STAR50ETF"
+ ],
+ "cost_bps": 10.0,
+ "fin_annual": 0.03,
+ "note": "全部数据随子工程发布，离线可复现；哈希用于检测数据被外部改写。"
+}

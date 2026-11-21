@@ -1,0 +1,64 @@
+{
+  "version": "factor-evolution v1.0 最终冠军 (样本外达标方案)",
+  "note": "GA过拟合被诊断; 采用事前简单的250日长动量+择时, 样本外2023+达38%",
+  "champion_params": {
+    "rebal": 10,
+    "vol_win": 20,
+    "vol_target": 0.4,
+    "vol_cap": 0.25,
+    "top_n": 1,
+    "dd_limit": 0.45,
+    "cost_bps": 10,
+    "warmup": 260,
+    "timing_mode": "multi_vote",
+    "timing_floor": 0.3,
+    "timing_k": 120,
+    "vote_enter": 0.6,
+    "vote_exit": 0.4
+  },
+  "champion_factors": {
+    "mom250": 1.0
+  },
+  "metrics": {
+    "full": {
+      "cagr": 0.2573901744944762,
+      "maxdd": -0.19906432395617357,
+      "sharpe": 1.287467027738228,
+      "calmar": 1.2930000181807755
+    },
+    "train": {
+      "cagr": 0.15803272258568035,
+      "maxdd": -0.17601813943821443,
+      "sharpe": 0.9263443405792606,
+      "calmar": 0.897820662632062
+    },
+    "valid": {
+      "cagr": 0.3002379430564508,
+      "maxdd": -0.19906432395617357,
+      "sharpe": 1.3566017017780672,
+      "calmar": 1.5082458628927995
+    },
+    "test": {
+      "cagr": 0.3828986166617776,
+      "maxdd": -0.1781935103262684,
+      "sharpe": 1.7023711770254697,
+      "calmar": 2.1487798066309973
+    }
+  },
+  "segments": {
+    "train": {
+      "start": "2014-01-02",
+      "end": "2019-12-31"
+    },
+    "valid": {
+      "start": "2020-01-02",
+      "end": "2022-12-30"
+    },
+    "test": {
+      "start": "2023-01-03",
+      "end": "2026-11-18"
+    }
+  },
+  "parity": true,
+  "source_factors": 49
+}

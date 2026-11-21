@@ -1,0 +1,168 @@
+# 择时因子进化学习 · 机构版 (institutional timing evolution)
+# 范式对齐 sr-nav/all-weather/model/aw14：配置驱动 + 三段隔离 + GA 进化
+# + 反套利目标 + champion/challenger 版本化 + 递归测试零前视探针 + 数据审计哈希。
+version: v3.0-timing-institutional
+seed: 20261121
+product: 冻结alpha + 择时信号库 + 连续仓位缩放 + 滞回 + 遗传算法三段进化
+baseline_version: v2.0-no-timing
+reference:
+  title: 机构级择时因子进化学习（同源 sr-nav 工程范式）
+  date: 2026-11-21
+  core_points:
+    - alpha 选股参数完全冻结为 v2.0 零杠杆进化冠军，只进化择时 overlay，避免"参数串扰"
+    - 择时 = 信号库 × 连续仓位缩放 × 滞回状态机；t-1 决策、t 生效，严格无前视
+    - 反套利：收益底线 + 平均仓位底线双约束，杜绝"缩仓到 floor 刷高夏普"的伪解
+    - 单引擎 parity=0：回测 / 三段 / 递归 / 探针全部走同一个 Engine20
+
+data:
+  close_panel: etf_close_snapshot.csv        # 前复权收盘价（引擎主数据源）
+  ohlc_panel: etf_ohlc.csv                   # OHLCV 面板（开盘成交/冲击成本稳健性检验）
+  source: 新浪长历史日线 + 前复权因子（纳指100ETF 2022-01-14 1:5 拆分已修正）
+  cost_bps: 10.0                             # 单边千一（成本/冲击已含）
+  fin_annual: 0.030                          # 融资/杠杆利差（零杠杆下不触发）
+  cash_annual: 0.015
+  eval_start: 2013-10-15                     # warmup=186 后的首个完整决策日
+  audit: true                                # 数据哈希与面板指纹落盘
+
+universe:
+  ASSETS: [CSI300ETF, NDX100ETF, GoldETF, ChiNextETF, STAR50ETF, BondETF]
+  RISK:   [CSI300ETF, NDX100ETF, GoldETF, ChiNextETF, STAR50ETF]
+  bond: BondETF
+
+# 冻结的 alpha 基线（v2.0 零杠杆冠军）：CAGR 32.78% / MDD -19.54% / Sharpe 1.8281
+alpha_baseline:
+  source: /workspace/v2.0候选参数.json → picks.v20_no_timing.params
+  params:
+    mom_lb: 10
+    skip: 5
+    vol_win: 20
+    ma_len: 0
+    high_win: 252
+    w_mom: 0.6289449196061017
+    w_vol: 0.08913168631869055
+    w_accel: 0.05791233354776098
+    w_sharpe: 0.08143244941643725
+    w_trend: 0.1425786111110097
+    w_ts: 0.06011696923133859
+    top_n: 1
+    rebal: 10
+    vol_target: 0.4078639317919691
+    lev_cap: 1.0
+    abs_thr: -0.0363360654533207
+    vol_cap: 0.2
+    dd_limit: 0.42850818921094647
+    dd_cooldown: 10
+    high_dd_limit: 0.5383352317429745
+    weight_mode: inv_vol
+    cash_mode: bond
+    softmax_temp: 0.3843493124921948
+    blend_alpha: 0.15293202713529724
+    blend: true
+    timing_mode: none
+  baseline_metrics: {cagr: 32.78, maxdd: -19.54, sharpe: 1.8281, avg_exp: 1.0}
+
+# 择时基因库（仅这些键参与进化；alpha 参数锁定）
+timing_genes:
+  discrete:
+    timing_mode: [none, vol_managed, tsmom, ma_smooth, multi_vote]
+    timing_k: [40, 60, 120, 200]
+  continuous:
+    timing_floor:   [0.0, 0.9]
+    timing_aggr:    [0.3, 2.5]
+    timing_gamma:   [0.4, 2.5]
+    timing_band:    [0.005, 0.06]
+    vote_trend:     [0.0, 2.0]
+    vote_breadth:   [0.0, 2.0]
+    vote_tsmom:     [0.0, 2.0]
+    vote_vol:       [0.0, 2.0]
+    vote_enter:     [0.50, 0.75]
+    vote_exit:      [0.25, 0.50]
+    vote_soft:      [0.0, 1.0]
+    breadth_thr:    [0.30, 0.70]
+
+learning:
+  method: genetic_algorithm          # 锦标赛选择 + 算术交叉 + 高斯变异(逐代衰减) + 精英保留
+  population: 28
+  generations: 12
+  elite_keep: 4
+  crossover_rate: 0.7
+  mutation_sigma_start: 0.30
+  mutation_sigma_end: 0.06
+  split: [train, valid, test]
+  train_range: [2013-10-15, 2021-12-31]
+  valid_range: [2022-01-01, 2023-12-31]
+  test_range:  [2024-01-01, 2026-11-18]
+  # 目标函数：三重风险调整目标 - 反套利双底线罚 - 回撤罚 - 换手/复杂度罚
+  # 收益「达标即饱和」：cagr_cap 后边际效用封顶，达标后由 Sharpe/Calmar 主导，
+  # 避免牛市段 no-timing 靠绝对账面收益恒赢（机构版反套利的核心校准）。
+  objective_weights: {sharpe: 0.40, calmar: 0.30, cagr: 0.30}
+  cagr_cap: 0.22              # 收益饱和线：超过后不再线性加分
+  cagr_floor: 0.13            # 年化收益硬底线：低于此值重罚（防止空仓刷夏普）
+  cagr_floor_penalty: 5.0
+  exposure_floor: 0.55        # 平均仓位底线：低于此值重罚（择时不能长期离场）
+  exposure_floor_penalty: 5.0
+  mdd_limit: 0.22             # 回撤容忍线
+  mdd_penalty: 6.0
+  turnover_penalty: 0.10
+  complexity_penalty: 0.004
+  note: >-
+    择时天然降仓位→提夏普/降收益。仅优化夏普会收敛到"几乎空仓"伪解。
+    故设 cagr≥18% 与 平均仓位≥55% 双硬底线，越线重罚；收益权重最高。
+
+evolution:
+  retrain_freq: quarterly
+  champion_challenger: true
+  versioned_params: true
+  rollback_available: true
+  audit_log: true
+  promote_if_valid_better: true
+
+recursive_test:
+  window: expanding
+  min_train: 900               # 至少 ~3.6 年训练
+  step: 63                     # 每季度重训
+  forbid_lookahead: true
+  probe_perturb: 1.7           # 扰动未来收益/价格，检查历史检查日特征不变
+
+# Q-learning 监管层（移植 sr-nav/evolution_guard.py，择时因子机构版主线）
+regulator:
+  eval_freq: 20                # 每 20 交易日评估一次
+  warmup: 250                  # 预热：此前不评估（保证奖励窗口与 IC 历史足够）
+  reward_win: 120              # 奖励/绩效滚动窗口（交易日）
+  ic_h: 20                     # 择时因子 RankIC 前瞻收益天数（仅已实现配对，零前视）
+  ic_freq: 10                  # IC 采样步长
+  vol_win: 20                  # 波动状态窗口
+  regime_lbs: [40, 90, 160]    # 时序动量 regime 因子回看
+  core_signal: mkt_er          # 用于 IC 反转监管的核心择时因子（趋势效率ER，长期IC≈+0.09）
+  alpha: 0.30                  # EWMA 学习率（Q 更新）
+  promote_streak: 5            # 连续达标期数才标晋升候选
+  promote_edge: 0.05           # 信誉 Q 门槛（滚动夏普超额需持续显著）
+  promote_cool: 10             # 晋升候选冷却期
+  ic_reversal_mode: adaptive   # adaptive=按已实现IC自身分布动态定阈值; fixed=固定阈值
+  ic_reversal_th: -0.02        # fixed 模式阈值（adaptive 下不用）
+  ic_adapt_q: 0.10             # adaptive 阈值=已实现IC历史该分位数（基于扩展窗口，零前视）
+  ic_adapt_min: 60             # 至少这么多样本才启用自适应阈值
+  ic_adapt_floor: -0.35        # 自适应阈值下限（防止阈值过松永不预警）
+  ic_adapt_cap: -0.02          # 自适应阈值上限（仍对轻微负IC保持敏感）
+  champ_sharpe_th: 0.0         # 冠军滚动夏普低于此值 → 退化预警
+  champ_mdd_th: -0.15          # 冠军滚动回撤低于此值 → 回撤预警
+  win_criterion: risk_adjusted # 胜率判定口径: risk_adjusted(Sharpe+Calmar) vs cagr_only
+  shadow_switch: true          # 闭环验证：真实模拟"按Q提名切换"的累计净值
+  note: >-
+    移植 sr-nav/evolution_guard 的表格化 Q-learning 监管范式到择时因子：
+    冠军=冻结alpha不变，挑战者=择时参数变体影子回测，EWMA 信誉Q在线学习，
+    只提名不切换；对抗择时 IC 反转/冠军退化/数据滞后。
+    v3.1优化：IC反转阈值按已实现IC自身分布自适应（消除固定阈值假警报）；
+    胜率判定改风险调整口径；新增影子切换闭环验证。
+
+validation:
+  parity_engine: single        # 回测/分段/递归/探针共用 Engine20
+  prefix_cuts: [2018-01-01, 2020-01-01, 2022-01-01, 2024-01-01]
+  cost_grid_bps: [0, 5, 10, 20, 40]
+  ablation: true               # 择时开/关边际贡献
+
+targets:                        # 披露用参考线（非硬学习）
+  sharpe_min: 1.74
+  mdd_max: 0.1839
+  cagr_min: 0.3798
+  note: 目标含杠杆且被 2020 年异常值抬高；机构版坚持零杠杆，如实披露达成度。

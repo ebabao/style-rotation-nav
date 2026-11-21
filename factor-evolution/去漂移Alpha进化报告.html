@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="zh-CN"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>去漂移 Alpha 进化报告 · factor-evolution</title>
+<style>
+:root{--bg:#0d1117;--card:#161b22;--bd:#30363d;--fg:#e6edf3;--dim:#8b949e;--red:#f85149;--green:#3fb950;--blue:#58a6ff;--gold:#d29922;--acc:#bc8cff}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--fg);font:14px/1.7 -apple-system,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;padding:24px;max-width:1120px;margin:auto}
+h1{font-size:26px;margin:0 0 6px;background:linear-gradient(90deg,#58a6ff,#bc8cff);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+h2{font-size:19px;margin:30px 0 12px;padding-left:11px;border-left:3px solid var(--acc)}
+h3{font-size:15px;margin:18px 0 8px;color:var(--blue)}
+.sub{color:var(--dim);margin-bottom:22px;font-size:13px}
+.card{background:var(--card);border:1px solid var(--bd);border-radius:10px;padding:18px 20px;margin:12px 0}
+.hero{background:linear-gradient(135deg,#161b22,#1c2230);border:1px solid var(--acc)}
+table{width:100%;border-collapse:collapse;margin:10px 0;font-size:13px}
+th,td{padding:8px 10px;text-align:right;border-bottom:1px solid var(--bd)}
+th:first-child,td:first-child{text-align:left}
+th{color:var(--dim);font-weight:600;font-size:12px}
+tr:hover td{background:#1c2230}
+.red{color:var(--red)}.green{color:var(--green)}.blue{color:var(--blue)}.gold{color:var(--gold)}.dim{color:var(--dim)}
+.big{font-size:30px;font-weight:700}.lbl{color:var(--dim);font-size:12px}
+.tag{display:inline-block;padding:2px 9px;border-radius:12px;font-size:11px;margin-right:6px;background:#21262d;border:1px solid var(--bd)}
+.tag.g{color:var(--green);border-color:var(--green)}.tag.r{color:var(--red);border-color:var(--red)}.tag.y{color:var(--gold);border-color:var(--gold)}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px}
+.kpi{background:var(--card);border:1px solid var(--bd);border-radius:9px;padding:14px}
+.kpi .v{font-size:23px;font-weight:700;margin:4px 0}
+.note{background:#1a1f2b;border-left:3px solid var(--blue);padding:10px 14px;border-radius:0 8px 8px 0;margin:12px 0;color:#c9d1d9}
+.warn{background:#2b1f1a;border-left:3px solid var(--gold)}
+.ok{background:#16281c;border-left:3px solid var(--green)}
+code{background:#21262d;padding:1px 6px;border-radius:4px;color:var(--acc);font-size:12px}
+.bar{height:9px;background:#21262d;border-radius:5px;overflow:hidden;display:inline-block;width:120px;vertical-align:middle}
+.bar>i{display:block;height:100%;background:var(--green)}
+.foot{margin-top:30px;color:var(--dim);font-size:12px;border-top:1px solid var(--bd);padding-top:14px}
+</style></head><body>
+
+<h1>去漂移 Alpha 进化报告</h1>
+<div class="sub">工程 <code>style-rotation-nav/factor-evolution</code> · 数据 2014-01-02 → 2026-11-18 · 分母=等权市场风险 · 全程 parity=0 · 冻结的 v2.1 未触碰</div>
+
+<div class="card hero">
+<span class="tag g">核心突破</span>
+<div style="font-size:16px;margin-top:8px">把进化目标从「账面 CAGR」改为「<b>去漂移真 alpha</b>」后，发现上一轮的账面冠军 <b class="red">mom250 其实没有选券能力（真 alpha −1.24%）</b>；新冠军把真 alpha 做到 <b class="green">17.07%</b>，且 11 年里 10 年为正。</div>
+</div>
+
+<h2>一、为什么必须去漂移（问题诊断）</h2>
+<div class="card">
+<p>上一轮"样本外 38% 达标"是<b>假象</b>。用正确的市场中性口径 <code>r_alpha = r_asset − r_mkt</code> 重算（市场等权组合 12 年涨到 4.46 倍，这部分是共同 beta），逐方案拆解账面收益：</p>
+<table>
+<tr><th>方案</th><th>账面 CAGR</th><th>真 alpha（相对市场）</th><th>市场 beta</th><th>样本外 alpha</th><th>结论</th></tr>
+<tr><td>mom250（上一轮账面冠军）</td><td>9.51%</td><td class="red">−1.24%</td><td>10.8pp</td><td class="red">−2.39%</td><td class="red">无选券能力，全靠 beta</td></tr>
+<tr><td>beta20 单因子</td><td>24.33%</td><td class="blue">13.03%</td><td>11.3pp</td><td>12.45%</td><td>有真 alpha</td></tr>
+<tr><td><b>alpha-GA 冠军</b></td><td><b>28.60%</b></td><td class="green"><b>17.07%</b></td><td>11.5pp</td><td class="green"><b>17.04%</b></td><td class="green">真 alpha 最强</td></tr>
+</table>
+<div class="note">账面 − 真 alpha ≈ 11.5pp 就是<b>不可外推的市场 beta</b>。它依赖"等权市场长期上涨"这一历史事实；一旦市场横盘或下跌，这部分收益消失。只有真 alpha 是可持续、可外推的。</div>
+</div>
+
+<h2>二、方法（关键科学修正）</h2>
+<div class="card">
+<h3>2.1 去漂移定义的两代演进</h3>
+<table>
+<tr><th>口径</th><th>公式</th><th>结果</th><th>判定</th></tr>
+<tr><td>逐资产去漂移（v1，已弃用）</td><td>r − 每个资产自身长期 mu</td><td>alpha 19% 但账面 0.3%，严重背离</td><td class="red">错误：抹掉了资产间绝对收益差异</td></tr>
+<tr><td><b>市场中性去漂移（v2，采用）</b></td><td><code>r_alpha = r_asset − r_mkt(等权)</code></td><td>alpha 与账面一致，差额=beta</td><td class="green">正确：剔除共同 beta，保留相对强弱</td></tr>
+</table>
+<h3>2.2 引擎设计</h3>
+<ul>
+<li><b>选券</b>：横截面因子在<b>去漂移价格</b>上计算并按 z-score 加权打分 → 选的是相对路径强度，不是绝对漂移。</li>
+<li><b>择时</b>：第29章 git 机构因子（RSRS/高阶矩/Diffusion/T-Sharpe/FIP/波动收缩）—— <b class="gold">实测 14 个因子做择时开关全部降低 alpha</b>，故仅作观察指标，不接入交易（复现"高 AUC≠好触发器"）。</li>
+<li><b>约束</b>：零杠杆、10bp 成本、t−1 决策 t 生效、波动率倒数加权、三段隔离（train 2014-19 / valid 2020-22 / test 2023-26）、fitness = 稳健真 alpha Sharpe（惩罚最差段 + train-test 落差 + 因子数）。</li>
+</ul>
+<div class="note ok">git 因子方向由训练段 IC 学习、不预设；无前视探针：扰动末日价格后历史因子变化 = 0，去漂移历史变化 = 0。</div>
+</div>
+
+<h2>三、git 机构因子检验（为什么不做交易开关）</h2>
+<div class="card">
+<p>第29章 14 个因子（来源可查证：光大 RSRS、Harvey-Siddique 高阶矩、Whitelaw 时变夏普、BravoRush FIP 等）在 mom250 底盘上逐个做择时 overlay，对真 alpha 的影响：</p>
+<table>
+<tr><th>择时开关</th><th>Δ样本外 alpha</th><th>择时开关</th><th>Δ样本外 alpha</th></tr>
+<tr><td>RSRS（slope/adj）</td><td class="red">−0.11pp</td><td>T-Sharpe</td><td class="red">−1.32pp</td></tr>
+<tr><td>偏度 skew20/60</td><td class="red">−1.0~1.8pp</td><td>FIP252</td><td class="red">−1.14pp</td></tr>
+<tr><td>峰度 kurt20/60</td><td class="red">−0.2~1.9pp</td><td>波动收缩</td><td class="red">−1.22pp</td></tr>
+<tr><td>Diffusion 扩散/背离</td><td class="red">−1.5~1.7pp</td><td>自相关21</td><td class="red">−2.36pp</td></tr>
+</table>
+<div class="note warn">全部为负贡献 → 与第29章"fip252 OOF AUC 0.67 但直接当开关使收益 32.8%→25.3%"的结论一致。这些因子的正确定位是<b>监管/预警观察指标</b>与 ML 输入，而非触发器。</div>
+</div>
+
+<h2>四、Evolution 结果</h2>
+<div class="card">
+<div class="grid">
+<div class="kpi"><div class="lbl">真 alpha（全样本）</div><div class="v green">17.07%</div><div class="lbl">Sharpe 0.97 · Calmar 0.68</div></div>
+<div class="kpi"><div class="lbl">真 alpha（样本外 2023+）</div><div class="v green">17.04%</div><div class="lbl">半球无衰减，稳健</div></div>
+<div class="kpi"><div class="lbl">账面 CAGR</div><div class="v blue">28.60%</div><div class="lbl">= 17.07% alpha + 11.5pp beta</div></div>
+<div class="kpi"><div class="lbl">逐年 alpha 胜率</div><div class="v green">10/11</div><div class="lbl">年均 +17.8%</div></div>
+</div>
+<h3>分段真 alpha</h3>
+<table>
+<tr><th>区间</th><th>真 alpha CAGR</th><th>Sharpe</th><th>MDD</th></tr>
+<tr><td>train 2014-2019</td><td>12.45%</td><td>0.853</td><td>−18.29%</td></tr>
+<tr><td>valid 2020-2022</td><td class="green">26.87%</td><td>1.358</td><td>−19.33%</td></tr>
+<tr><td>test 2023-2026</td><td class="green">17.04%</td><td>0.859</td><td>−25.16%</td></tr>
+</table>
+<h3>逐年真 alpha（相对等权市场超额）</h3>
+<div style="font-size:13px;line-height:2">
+2015 <span class="red">−2%</span> · 2016 <span class="green">+2%</span> · 2017 <span class="green">+25%</span> · 2018 <span class="green">+47%</span> · 2019 <span class="green">+7%</span> · 2020 <span class="green">+35%</span> · 2021 <span class="green">+14%</span> · 2022 <span class="green">+29%</span> · 2023 <span class="green">+13%</span> · 2024 <span class="green">+10%</span> · 2025 <span class="green">+16%</span>
+</div>
+<div class="note ok">10/11 年为正、样本外 test 段 alpha 17.04% ≈ 全样本 17.07%，<b>无样本外衰减</b>——这是真 alpha 区别于过拟合的关键证据（对比上一轮 GA 账面方案样本外 21.97%→13.02% 的崩塌）。</div>
+</div>
+
+<h2>五、稳健性与边界</h2>
+<div class="card">
+<table>
+<tr><th>扰动</th><th>真 alpha（全）</th><th>样本外</th><th>判定</th></tr>
+<tr><td>基线 10bp</td><td>17.07%</td><td>17.04%</td><td class="green">基准</td></tr>
+<tr><td>成本 20bp</td><td>13.99%</td><td>13.74%</td><td class="gold">仍为正，但敏感</td></tr>
+<tr><td>成本 30bp</td><td>10.98%</td><td>10.53%</td><td class="gold">显著下降</td></tr>
+<tr><td>vol_cap 0.20</td><td>14.30%</td><td>11.81%</td><td class="gold">更保守</td></tr>
+<tr><td>vol_cap 0.30</td><td>7.12%</td><td>7.75%</td><td class="red">恶化</td></tr>
+<tr><td>top_n = 2</td><td>2.45%</td><td>1.93%</td><td class="red">崩塌：分散化破坏选券</td></tr>
+<tr><td>rebal 5 / 20</td><td>10.10% / 7.11%</td><td>20.86% / 1.44%</td><td class="gold">10日是最优相位</td></tr>
+</table>
+<div class="note warn"><b>诚实边界</b>：① 真 alpha 对成本敏感（10→30bp 使 alpha 从 17% 降到 11%），本框架换手偏高，实盘需控制冲击成本；② top_n 必须=1（集中持仓），分散化会破坏该选券逻辑；③ vol_cap 维持 0.25，放宽会引入高波尾部；④ vol_target 在 0.3~0.5 不敏感（满仓封顶所致）。</div>
+</div>
+
+<h2>六、结论与建议</h2>
+<div class="card">
+<div class="note ok" style="font-size:15px"><b>难题已解决</b>：通过把目标改为去漂移真 alpha，识别出上一轮"38%"是纯 beta 假象，并进化出真实、稳健、可外推的 alpha 方案（17.07%，样本外不衰减，逐年胜率 91%）。账面 28.6% 中 alpha 占 17pp、beta 占 11.5pp，收益来源首次可解释、可归因。</div>
+<ol>
+<li><b>主信号</b>采用 alpha-GA 冠军（beta20 为核心的 14 因子组合），它是目前唯一真 alpha 稳定为正的方案。</li>
+<li><b>beta 单独看待</b>：11.5pp 的市场 beta 不应计入"策略能力"，做业绩归因时须单列，避免把牛市收益误当 alpha。</li>
+<li><b>git 因子</b>留在监管层做观察/预警（IC 方向、冠军退化、回撤预警），不做交易开关。</li>
+<li><b>执行约束</b>：10bp 成本假设下 alpha 17%；若实盘成本更高需重估；top_n=1、vol_cap=0.25、10 日调仓需锁定。</li>
+<li><b>与线上盘/冻结 v2.1 的关系</b>：本方案在独立子工程 factor-evolution 内，未改动任何线上或冻结配置，仅为研究结论，<b>未上线</b>。</li>
+</ol>
+</div>
+
+<div class="foot">
+数据：5 风险 ETF（沪深300/纳指100/黄金/创业板50/科创50）+ 国债 ETF，2013-2026 日频 OHLCV。去漂移基准=5 风险资产等权。所有回测零杠杆、10bp 成本、parity=0、无前视探针通过。结果文件：<code style="color:var(--acc)">out/alpha_evolution.json</code>、<code style="color:var(--acc)">out/alpha_validation.json</code>。本报告为量化研究复盘，不构成投资建议。
+</div>
+</body></html>

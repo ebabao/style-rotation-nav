@@ -1,0 +1,31 @@
+分段: {'train': ('2014-01-02', '2019-12-31'), 'valid': ('2020-01-02', '2022-12-30'), 'test': ('2023-01-03', '2026-11-18')}
+Gen  5 best_fit 0.1634 train 27.28% valid 23.03%
+Gen 10 best_fit 0.2081 train 25.37% valid 25.67%
+Gen 15 best_fit 0.2137 train 25.97% valid 25.67%
+Gen 20 best_fit 0.2137 train 25.97% valid 25.67%
+Gen 25 best_fit 0.2137 train 25.97% valid 25.67%
+
+=== Stage A 冠军因子权重 ===
+  kup            -0.722  [Alpha158 KBAR]
+  rank20         +0.635  [Alpha158 RANK]
+  ma20           +0.505  [Alpha158 MA]
+  ma5            +0.495  [Alpha158 MA]
+  fip252         +0.464  [第29章/Frog-in-the-Pan]
+  ddhigh20       +0.402  [Alpha158 距高点]
+  tsmom120       -0.340  [Baz2015时序动量]
+
+=== Stage B: 执行参数网格 ===
+Top5 执行参数 (按train+valid稳健fitness):
+  fit 0.2137 rebal=10 vt=0.30 vc=0.25 | train 25.97% valid 25.67% test 13.02%
+  fit 0.2137 rebal=10 vt=0.40 vc=0.25 | train 25.97% valid 25.67% test 13.02%
+  fit 0.2137 rebal=10 vt=0.50 vc=0.25 | train 25.97% valid 25.67% test 13.02%
+  fit 0.1495 rebal=10 vt=0.30 vc=0.30 | train 21.40% valid 20.72% test 9.61%
+  fit 0.1495 rebal=10 vt=0.40 vc=0.30 | train 21.40% valid 20.72% test 9.61%
+
+=== 最终冠军 (test 样本外) ===
+  full   CAGR  21.97%  MDD  -20.84%  Sharpe 1.172  Calmar 1.054
+  train  CAGR  25.97%  MDD  -15.00%  Sharpe 1.497  Calmar 1.731
+  valid  CAGR  25.67%  MDD  -12.62%  Sharpe 1.269  Calmar 2.034
+  test   CAGR  13.02%  MDD  -20.84%  Sharpe 0.703  Calmar 0.625
+parity: True
+结果已存: /workspace/style-rotation-nav/factor-evolution/model/../out/evolution_result.json

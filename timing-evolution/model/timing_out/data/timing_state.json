@@ -1,0 +1,783 @@
+{
+ "version": "v3.0-timing-institutional",
+ "seed": 20261121,
+ "generated_at": "2026-11-21 11:48:51",
+ "paradigm": "sr-nav/all-weather 机构级范式（配置/分层/GA/三段/反套利/版本化/RT零前视/审计）",
+ "alpha_baseline": {
+  "cagr": 32.78,
+  "maxdd": -19.54,
+  "sharpe": 1.8281,
+  "avg_exp": 1.0
+ },
+ "timing_genes": {
+  "discrete": {
+   "timing_mode": [
+    "none",
+    "vol_managed",
+    "tsmom",
+    "ma_smooth",
+    "multi_vote"
+   ],
+   "timing_k": [
+    40,
+    60,
+    120,
+    200
+   ]
+  },
+  "continuous": {
+   "timing_floor": [
+    0.0,
+    0.9
+   ],
+   "timing_aggr": [
+    0.3,
+    2.5
+   ],
+   "timing_gamma": [
+    0.4,
+    2.5
+   ],
+   "timing_band": [
+    0.005,
+    0.06
+   ],
+   "vote_trend": [
+    0.0,
+    2.0
+   ],
+   "vote_breadth": [
+    0.0,
+    2.0
+   ],
+   "vote_tsmom": [
+    0.0,
+    2.0
+   ],
+   "vote_vol": [
+    0.0,
+    2.0
+   ],
+   "vote_enter": [
+    0.5,
+    0.75
+   ],
+   "vote_exit": [
+    0.25,
+    0.5
+   ],
+   "vote_soft": [
+    0.0,
+    1.0
+   ],
+   "breadth_thr": [
+    0.3,
+    0.7
+   ]
+  },
+  "dim": 14
+ },
+ "learning": {
+  "J_base_train": -0.6687799999999999,
+  "J_best_train": -0.743472846577711,
+  "n_eval": 292,
+  "history": [
+   {
+    "gen": 1,
+    "best_J": -0.66878,
+    "mean_J": -0.66794
+   },
+   {
+    "gen": 2,
+    "best_J": -0.66878,
+    "mean_J": -0.66457
+   },
+   {
+    "gen": 3,
+    "best_J": -0.66878,
+    "mean_J": -0.66774
+   },
+   {
+    "gen": 4,
+    "best_J": -0.696,
+    "mean_J": -0.67067
+   },
+   {
+    "gen": 5,
+    "best_J": -0.70151,
+    "mean_J": -0.67324
+   },
+   {
+    "gen": 6,
+    "best_J": -0.71763,
+    "mean_J": -0.68236
+   },
+   {
+    "gen": 7,
+    "best_J": -0.71763,
+    "mean_J": -0.68806
+   },
+   {
+    "gen": 8,
+    "best_J": -0.73695,
+    "mean_J": -0.68826
+   },
+   {
+    "gen": 9,
+    "best_J": -0.73695,
+    "mean_J": -0.70058
+   },
+   {
+    "gen": 10,
+    "best_J": -0.73695,
+    "mean_J": -0.70382
+   },
+   {
+    "gen": 11,
+    "best_J": -0.73855,
+    "mean_J": -0.70893
+   },
+   {
+    "gen": 12,
+    "best_J": -0.74347,
+    "mean_J": -0.72143
+   }
+  ],
+  "J_base_valid": -0.90084,
+  "J_selected_valid": -1.0337388786441095,
+  "chosen_learned": true,
+  "improved": true,
+  "pool_size": 16,
+  "valid_detail": {
+   "cagr": 22.03,
+   "mdd": 7.980000000000001,
+   "sharpe": 1.716,
+   "avg_exp": 0.864
+  }
+ },
+ "champion": {
+  "vid": "pv3-000-b359393d",
+  "x": [
+   0.986337,
+   0.61409,
+   0.148314,
+   0.247339,
+   1.0,
+   0.546187,
+   0.083713,
+   1.0,
+   0.174757,
+   0.800418,
+   0.243106,
+   0.056943,
+   0.535073,
+   0.620294
+  ],
+  "timing_params": {
+   "timing_mode": "vol_managed",
+   "timing_k": 60,
+   "timing_floor": 0.13348255140947596,
+   "timing_aggr": 0.8441447759475746,
+   "timing_gamma": 2.5,
+   "timing_band": 0.03504027380539095,
+   "vote_trend": 0.16742590298863955,
+   "vote_breadth": 2.0,
+   "vote_tsmom": 0.3495145022283797,
+   "vote_vol": 1.6008361964896043,
+   "vote_enter": 0.5607765746974773,
+   "vote_exit": 0.26423574837028907,
+   "vote_soft": 0.5350726899383005,
+   "breadth_thr": 0.5481176534906954
+  }
+ },
+ "evolution": {
+  "promotions": 2,
+  "rejections": 46,
+  "rollback_consistent": true,
+  "n_versions": 49,
+  "audit": [
+   {
+    "at": "2014-07-09",
+    "seq": 1,
+    "vid": "pv3-001-11221153",
+    "role": "challenger:rejected(保留champion)",
+    "J_train": -0.587663,
+    "J_base": -0.42564
+   },
+   {
+    "at": "2014-10-14",
+    "seq": 2,
+    "vid": "pv3-002-11221153",
+    "role": "challenger:rejected(保留champion)",
+    "J_train": 4.759461,
+    "J_base": 4.790692
+   },
+   {
+    "at": "2015-01-13",
+    "seq": 3,
+    "vid": "pv3-003-11221153",
+    "role": "challenger:rejected(保留champion)",
+    "J_train": -0.714614,
+    "J_base": -0.715885
+   },
+   {
+    "at": "2015-04-20",
+    "seq": 4,
+    "vid": "pv3-004-11221153",
+    "role": "challenger:rejected(保留champion)",
+    "J_train": -0.914447,
+    "J_base": -0.91601
+   },
+   {
+    "at": "2015-07-20",
+    "seq": 5,
+    "vid": "pv3-005-11221153",
+    "role": "challenger:rejected(保留champion)",
+    "J_train": -0.8885,
+    "J_base": -0.88977
+   },
+   {
+    "at": "2015-10-26",
+    "seq": 6,
+    "vid": "pv3-006-11221153",
+    "role": "challenger:rejected(保留champion)",
+    "J_train": -0.887576,
+    "J_base": -0.88903
+   },
+   {
+    "at": "2016-01-22",
+    "seq": 7,
+    "vid": "pv3-007-11221153",
+    "role": "challenger:rejected(保留champion)",
+    "J_train": -0.665129,
+    "J_base": -0.666588
+   },
+   {
+    "at": "2016-04-28",
+    "seq": 8,
+    "vid": "pv3-008-11221153",
+    "role": "challenger:rejected(保留champion)",
+    "J_train": -0.671478,
+    "J_base": -0.763417
+   },
+   {
+    "at": "2016-07-29",
+    "seq": 9,
+    "vid": "pv3-009-11221153",
+    "role": "challenger:rejected(保留champion)",
+    "J_train": -0.793849,
+    "J_base": -0.79526
+   },
+   {
+    "at": "2016-11-04",
+    "seq": 10,
+    "vid": "pv3-010-11221153",
+    "role": "challenger:rejected(保留champion)",
+    "J_train": -0.798299,
+    "J_base": -0.79954
+   },
+   {
+    "at": "2017-02-09",
+    "seq": 11,
+    "vid": "pv3-011-11221153",
+    "role": "challenger:rejected(保留champion)",
+    "J_train": -0.835052,
+    "J_base": -0.83626
+   },
+   {
+    "at": "2017-05-12",
+    "seq": 12,
+    "vid": "pv3-012-11221153",
+    "role": "challenger:rejected(保留champion)",
+    "J_train": -0.813096,
+    "J_base": -0.82465
+   },
+   {
+    "at": "2017-08-11",
+    "seq": 13,
+    "vid": "pv3-013-11221153",
+    "role": "challenger:rejected(保留champion)",
+    "J_train": -0.830477,
+    "J_base": -0.83209
+   },
+   {
+    "at": "2017-11-15",
+    "seq": 14,
+    "vid": "pv3-014-11221153",
+    "role": "challenger:rejected(保留champion)",
+    "J_train": -0.864473,
+    "J_base": -0.86601
+   },
+   {
+    "at": "2018-02-13",
+    "seq": 15,
+    "vid": "pv3-015-11221153",
+    "role": "challenger:rejected(保留champion)",
+    "J_train": -0.713735,
+    "J_base": -0.715216
+   },
+   {
+    "at": "2018-05-24",
+    "seq": 16,
+    "vid": "pv3-016-11221153",
+    "role": "challenger:rejected(保留champion)",
+    "J_train": -0.618342,
+    "J_base": -0.538411
+   },
+   {
+    "at": "2018-08-22",
+    "seq": 17,
+    "vid": "pv3-017-11221153",
+    "role": "challenger:rejected(保留champion)",
+    "J_train": -0.633412,
+    "J_base": -0.575956
+   },
+   {
+    "at": "2018-11-27",
+    "seq": 18,
+    "vid": "pv3-018-11221153",
+    "role": "challenger:rejected(保留champion)",
+    "J_train": -0.582096,
+    "J_base": -0.525305
+   },
+   {
+    "at": "2019-03-05",
+    "seq": 19,
+    "vid": "pv3-019-11221153",
+    "role": "challenger:rejected(保留champion)",
+    "J_train": -0.558063,
+    "J_base": -0.512851
+   },
+   {
+    "at": "2019-06-06",
+    "seq": 20,
+    "vid": "pv3-020-11221153",
+    "role": "challenger:rejected(保留champion)",
+    "J_train": -0.58623,
+    "J_base": -0.545934
+   },
+   {
+    "at": "2019-09-04",
+    "seq": 21,
+    "vid": "pv3-021-11221153",
+    "role": "challenger:rejected(保留champion)",
+    "J_train": -0.5686,
+    "J_base": -0.536112
+   },
+   {
+    "at": "2019-12-10",
+    "seq": 22,
+    "vid": "pv3-022-11221153",
+    "role": "challenger:rejected(保留champion)",
+    "J_train": -0.534773,
+    "J_base": -0.504238
+   },
+   {
+    "at": "2020-03-17",
+    "seq": 23,
+    "vid": "pv3-023-df4fbcc8",
+    "role": "challenger→promoted",
+    "J_train": -0.694823,
+    "J_base": -0.64089
+   },
+   {
+    "at": "2020-06-18",
+    "seq": 24,
+    "vid": "pv3-024-df4fbcc8",
+    "role": "challenger:rejected(保留champion)",
+    "J_train": -0.68635,
+    "J_base": -0.632194
+   },
+   {
+    "at": "2020-09-17",
+    "seq": 25,
+    "vid": "pv3-025-b359393d",
+    "role": "challenger→promoted",
+    "J_train": -0.839328,
+    "J_base": -0.73491
+   },
+   {
+    "at": "2020-12-23",
+    "seq": 26,
+    "vid": "pv3-026-b359393d",
+    "role": "challenger:rejected(保留champion)",
+    "J_train": -0.840037,
+    "J_base": -0.73624
+   },
+   {
+    "at": "2021-03-30",
+    "seq": 27,
+    "vid": "pv3-027-b359393d",
+    "role": "challenger:rejected(保留champion)",
+    "J_train": -0.822213,
+    "J_base": -0.72053
+   },
+   {
+    "at": "2021-07-02",
+    "seq": 28,
+    "vid": "pv3-028-b359393d",
+    "role": "challenger:rejected(保留champion)",
+    "J_train": -0.770878,
+    "J_base": -0.6931
+   },
+   {
+    "at": "2021-10-08",
+    "seq": 29,
+    "vid": "pv3-029-b359393d",
+    "role": "challenger:rejected(保留champion)",
+    "J_train": -0.761258,
+    "J_base": -0.6845
+   },
+   {
+    "at": "2022-01-06",
+    "seq": 30,
+    "vid": "pv3-030-b359393d",
+    "role": "challenger:rejected(保留champion)",
+    "J_train": -0.744018,
+    "J_base": -0.67028
+   },
+   {
+    "at": "2022-04-14",
+    "seq": 31,
+    "vid": "pv3-031-b359393d",
+    "role": "challenger:rejected(保留champion)",
+    "J_train": -0.742648,
+    "J_base": -0.6682
+   },
+   {
+    "at": "2022-07-18",
+    "seq": 32,
+    "vid": "pv3-032-b359393d",
+    "role": "challenger:rejected(保留champion)",
+    "J_train": -0.72005,
+    "J_base": -0.64191
+   },
+   {
+    "at": "2022-10-21",
+    "seq": 33,
+    "vid": "pv3-033-b359393d",
+    "role": "challenger:rejected(保留champion)",
+    "J_train": -0.722612,
+    "J_base": -0.64505
+   },
+   {
+    "at": "2023-01-19",
+    "seq": 34,
+    "vid": "pv3-034-b359393d",
+    "role": "challenger:rejected(保留champion)",
+    "J_train": -0.729452,
+    "J_base": -0.65112
+   },
+   {
+    "at": "2023-04-26",
+    "seq": 35,
+    "vid": "pv3-035-b359393d",
+    "role": "challenger:rejected(保留champion)",
+    "J_train": -0.703461,
+    "J_base": -0.63484
+   },
+   {
+    "at": "2023-07-31",
+    "seq": 36,
+    "vid": "pv3-036-b359393d",
+    "role": "challenger:rejected(保留champion)",
+    "J_train": -0.729888,
+    "J_base": -0.6478
+   },
+   {
+    "at": "2023-11-03",
+    "seq": 37,
+    "vid": "pv3-037-b359393d",
+    "role": "challenger:rejected(保留champion)",
+    "J_train": -0.712795,
+    "J_base": -0.63525
+   },
+   {
+    "at": "2024-02-01",
+    "seq": 38,
+    "vid": "pv3-038-b359393d",
+    "role": "challenger:rejected(保留champion)",
+    "J_train": -0.672059,
+    "J_base": -0.60895
+   },
+   {
+    "at": "2024-05-15",
+    "seq": 39,
+    "vid": "pv3-039-b359393d",
+    "role": "challenger:rejected(保留champion)",
+    "J_train": -0.690195,
+    "J_base": -0.62913
+   },
+   {
+    "at": "2024-08-13",
+    "seq": 40,
+    "vid": "pv3-040-b359393d",
+    "role": "challenger:rejected(保留champion)",
+    "J_train": -0.690385,
+    "J_base": -0.62672
+   },
+   {
+    "at": "2024-11-19",
+    "seq": 41,
+    "vid": "pv3-041-b359393d",
+    "role": "challenger:rejected(保留champion)",
+    "J_train": -0.685702,
+    "J_base": -0.62718
+   },
+   {
+    "at": "2025-02-25",
+    "seq": 42,
+    "vid": "pv3-042-b359393d",
+    "role": "challenger:rejected(保留champion)",
+    "J_train": -0.698995,
+    "J_base": -0.64682
+   },
+   {
+    "at": "2025-05-29",
+    "seq": 43,
+    "vid": "pv3-043-b359393d",
+    "role": "challenger:rejected(保留champion)",
+    "J_train": -0.722818,
+    "J_base": -0.66847
+   },
+   {
+    "at": "2025-08-27",
+    "seq": 44,
+    "vid": "pv3-044-b359393d",
+    "role": "challenger:rejected(保留champion)",
+    "J_train": -0.737364,
+    "J_base": -0.68796
+   },
+   {
+    "at": "2025-12-02",
+    "seq": 45,
+    "vid": "pv3-045-b359393d",
+    "role": "challenger:rejected(保留champion)",
+    "J_train": -0.756213,
+    "J_base": -0.69515
+   },
+   {
+    "at": "2026-03-11",
+    "seq": 46,
+    "vid": "pv3-046-b359393d",
+    "role": "challenger:rejected(保留champion)",
+    "J_train": -0.785692,
+    "J_base": -0.71954
+   },
+   {
+    "at": "2026-06-12",
+    "seq": 47,
+    "vid": "pv3-047-b359393d",
+    "role": "challenger:rejected(保留champion)",
+    "J_train": -0.768747,
+    "J_base": -0.69823
+   },
+   {
+    "at": "2026-09-10",
+    "seq": 48,
+    "vid": "pv3-048-b359393d",
+    "role": "challenger:rejected(保留champion)",
+    "J_train": -0.750158,
+    "J_base": -0.70104
+   }
+  ]
+ },
+ "recursive_test": {
+  "executed": true,
+  "periods": 40,
+  "window": "expanding",
+  "min_train": 900,
+  "step": 63,
+  "oos_metrics": {
+   "cagr": 28.75,
+   "maxdd": -19.54,
+   "n_days": 2467
+  },
+  "lookahead_leak": 0,
+  "prefix_diff": 0.0,
+  "probe_note": "扰动 cut 之后价格/收益后，cut 之前净值逐点不变",
+  "x_jumps": 3
+ },
+ "final_params": {
+  "mom_lb": 10,
+  "skip": 5,
+  "vol_win": 20,
+  "ma_len": 0,
+  "high_win": 252,
+  "w_mom": 0.6289449196061017,
+  "w_vol": 0.08913168631869055,
+  "w_accel": 0.05791233354776098,
+  "w_sharpe": 0.08143244941643725,
+  "w_trend": 0.1425786111110097,
+  "w_ts": 0.06011696923133859,
+  "top_n": 1,
+  "rebal": 10,
+  "vol_target": 0.4078639317919691,
+  "lev_cap": 1.0,
+  "abs_thr": -0.0363360654533207,
+  "vol_cap": 0.2,
+  "dd_limit": 0.42850818921094647,
+  "dd_cooldown": 10,
+  "high_dd_limit": 0.5383352317429745,
+  "weight_mode": "inv_vol",
+  "cash_mode": "bond",
+  "softmax_temp": 0.3843493124921948,
+  "blend_alpha": 0.15293202713529724,
+  "timing_mode": "vol_managed",
+  "timing_floor": 0.5526540000000001,
+  "timing_k": 60,
+  "timing_aggr": 1.640724,
+  "timing_gamma": 2.5,
+  "timing_band": 0.005,
+  "vote_trend": 0.11714,
+  "vote_breadth": 1.7448,
+  "vote_tsmom": 0.54178,
+  "vote_vol": 0.96116,
+  "vote_enter": 0.5870375,
+  "vote_exit": 0.4327975,
+  "vote_soft": 0.99088,
+  "breadth_thr": 0.42772,
+  "blend": true
+ },
+ "final_metrics": {
+  "total": 2051.52,
+  "cagr": 26.43,
+  "vol": 13.96,
+  "sharpe": 1.8107,
+  "maxdd": -14.03,
+  "calmar": 1.884,
+  "mwin": 69.43,
+  "trades": 274,
+  "turnover": 202.3,
+  "avg_exp": 0.816,
+  "lev_time": 0.0,
+  "years": 13.08
+ },
+ "detrend_metrics": {
+  "total": 494.1,
+  "cagr": 14.59,
+  "vol": 13.87,
+  "sharpe": 1.0867,
+  "maxdd": -18.34,
+  "calmar": 0.796,
+  "mwin": 55.41,
+  "trades": 271,
+  "turnover": 227.5,
+  "avg_exp": 0.817,
+  "lev_time": 0.0,
+  "years": 13.08
+ },
+ "segments": {
+  "train": {
+   "total": 431.24,
+   "cagr": 22.59,
+   "vol": 14.06,
+   "sharpe": 1.5664,
+   "maxdd": -14.03,
+   "calmar": 1.61,
+   "mwin": 70.41,
+   "trades": 174,
+   "turnover": 121.2,
+   "avg_exp": 0.826,
+   "lev_time": 0.0,
+   "years": 8.2
+  },
+  "valid": {
+   "total": 48.71,
+   "cagr": 22.03,
+   "vol": 12.5,
+   "sharpe": 1.716,
+   "maxdd": -7.98,
+   "calmar": 2.761,
+   "mwin": 66.67,
+   "trades": 45,
+   "turnover": 22.1,
+   "avg_exp": 0.864,
+   "lev_time": 0.0,
+   "years": 1.99
+  },
+  "test": {
+   "total": 95.52,
+   "cagr": 26.16,
+   "vol": 13.91,
+   "sharpe": 1.8178,
+   "maxdd": -8.12,
+   "calmar": 3.221,
+   "mwin": 68.57,
+   "trades": 57,
+   "turnover": 50.3,
+   "avg_exp": 0.749,
+   "lev_time": 0.0,
+   "years": 2.89
+  }
+ },
+ "ablation": {
+  "timing_on": {
+   "cagr": 26.43,
+   "maxdd": -14.03,
+   "sharpe": 1.8107,
+   "avg_exp": 0.816
+  },
+  "timing_off": {
+   "cagr": 32.78,
+   "maxdd": -19.54,
+   "sharpe": 1.8281,
+   "avg_exp": 1.0
+  },
+  "d_cagr": -6.35,
+  "d_sharpe": -0.0174
+ },
+ "cost": [
+  {
+   "bp": 0,
+   "cagr": 28.4,
+   "sharpe": 1.9247
+  },
+  {
+   "bp": 5,
+   "cagr": 27.41,
+   "sharpe": 1.868
+  },
+  {
+   "bp": 10,
+   "cagr": 26.43,
+   "sharpe": 1.8107
+  },
+  {
+   "bp": 20,
+   "cagr": 24.5,
+   "sharpe": 1.6945
+  },
+  {
+   "bp": 40,
+   "cagr": 20.7,
+   "sharpe": 1.4571
+  }
+ ],
+ "yearly": {
+  "2013": 3.35,
+  "2014": 18.28,
+  "2015": 16.25,
+  "2016": 27.74,
+  "2017": 22.86,
+  "2018": 0.51,
+  "2019": 13.64,
+  "2020": 106.67,
+  "2021": -0.78,
+  "2022": 15.06,
+  "2023": 19.06,
+  "2024": 22.5,
+  "2025": 84.45,
+  "2026": 27.75
+ },
+ "target_assessment": {
+  "sharpe_met": true,
+  "mdd_met": true,
+  "cagr_met": false,
+  "cagr": 26.43,
+  "maxdd": -14.03,
+  "sharpe": 1.8107,
+  "note": "目标含杠杆且被 2020 年异常值抬高；机构版坚持零杠杆，如实披露达成度。"
+ },
+ "elapsed_sec": 23.8
+}

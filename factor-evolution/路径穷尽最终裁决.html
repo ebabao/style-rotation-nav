@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>路径穷尽最终裁决 — 35%/19%目标可达性</title>
+<style>
+:root{--bg:#0d1117;--card:#161b22;--bd:#30363d;--fg:#e6edf3;--dim:#8b949e;--red:#f85149;--green:#3fb950;--blue:#58a6ff;--amber:#d29922;--purple:#bc8cff}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--fg);font-family:-apple-system,'PingFang SC','Microsoft YaHei',sans-serif;line-height:1.7;padding:24px;max-width:1080px;margin:0 auto}
+h1{font-size:26px;margin-bottom:6px;background:linear-gradient(90deg,#58a6ff,#bc8cff);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.sub{color:var(--dim);font-size:13px;margin-bottom:24px}
+.card{background:var(--card);border:1px solid var(--bd);border-radius:10px;padding:20px;margin-bottom:18px}
+h2{font-size:18px;margin-bottom:12px;color:var(--blue);border-left:3px solid var(--blue);padding-left:10px}
+table{width:100%;border-collapse:collapse;font-size:13px;margin-top:8px}
+th,td{padding:8px 10px;text-align:right;border-bottom:1px solid var(--bd)}
+th{color:var(--dim);font-weight:600;background:#1c2128}
+td:first-child,th:first-child{text-align:left}
+.g{color:var(--green)}.r{color:var(--red)}.a{color:var(--amber)}.b{color:var(--blue)}.dim{color:var(--dim)}
+.verdict{background:linear-gradient(135deg,#1a1025,#161b22);border:1px solid var(--purple);border-radius:10px;padding:24px;margin-bottom:18px}
+.verdict .big{font-size:22px;font-weight:700;color:var(--purple);margin-bottom:10px}
+ul{margin-left:18px}li{margin:6px 0}
+.tag{display:inline-block;padding:2px 8px;border-radius:12px;font-size:11px;margin-left:6px}
+.tno{background:rgba(248,81,73,.15);color:var(--red)}
+.tyes{background:rgba(63,185,80,.15);color:var(--green)}
+.foot{color:var(--dim);font-size:12px;margin-top:20px;border-top:1px solid var(--bd);padding-top:12px}
+.bar{height:8px;border-radius:4px;background:#21262d;overflow:hidden;display:inline-block;width:80px;vertical-align:middle;margin-left:6px}
+.bar>i{display:block;height:100%;background:var(--blue)}
+</style>
+</head>
+<body>
+<h1>路径穷尽最终裁决</h1>
+<div class="sub">style-rotation-nav / factor-evolution · 2026-11-22 · 目标 CAGR≥35% 且 最大回撤≤19% · 全程 parity=0、无前视</div>
+
+<div class="verdict">
+<div class="big">结论：这四条约束同时成立时，确实没有一条路径能同时达标——但原因不是"没努力"，是数学结构</div>
+我前面几轮下"做不到"太快了：我用的引擎把仓位<strong>硬封顶在 1.0</strong>，然后拿这些零杠杆实验去证明"零杠杆做不到"，属于循环论证。这次我解除了封顶，把<strong>所有本质不同的路径</strong>逐条实测，得到下面这张完整的权衡图。答案清晰了：不是"没有任何办法"，而是<strong>收益和回撤这两个目标本身互相冲突</strong>——没有任何参数组合能同时满足。
+</div>
+
+<div class="card">
+<h2>一、先纠正我之前的错误：杠杆是有效的</h2>
+<p>纯数学验证：把 mom250 零杠杆净值（25.17%/−19.8%）的每日收益乘以杠杆 L，几何收益随 L 单调上升：</p>
+<table>
+<tr><th>杠杆 L</th><th>几何年化</th><th>最大回撤</th><th>Calmar</th><th>35%/19%双达标</th></tr>
+<tr><td>1.0（零杠杆）</td><td>25.17%</td><td class="g">−19.80%</td><td>1.27</td><td class="r">收益差9.8pp</td></tr>
+<tr><td>1.2</td><td>30.34%</td><td>−23.33%</td><td>1.30</td><td class="r">回撤超4.3pp</td></tr>
+<tr><td class="b">1.38</td><td class="b">35.0%</td><td class="r">−26.40%</td><td>1.32</td><td class="r">回撤超7.4pp</td></tr>
+<tr><td>1.4</td><td class="g">35.52%</td><td class="r">−26.74%</td><td>1.33</td><td class="r">回撤超7.7pp</td></tr>
+<tr><td>1.5</td><td class="g">38.11%</td><td class="r">−28.39%</td><td>1.34</td><td class="r">回撤超9.4pp</td></tr>
+</table>
+<p class="dim" style="margin-top:10px">关键：收益到 35% 需要 L≈1.38，但回撤同步放大到 −26.4%。杠杆同时放大收益和回撤，无法只取其一。</p>
+</div>
+
+<div class="card">
+<h2>二、四条从没验证过的路径，全部实测</h2>
+<table>
+<tr><th>路径</th><th>做法</th><th>最好收益</th><th>最好回撤</th><th>判定</th></tr>
+<tr><td>① 固定杠杆</td><td>L=1.0~1.3</td><td>25.16%</td><td class="r">−19.8%~−20.2%</td><td class="r">引擎内加杠杆被成本/熔断抵消<span class="tag tno">失败</span></td></tr>
+<tr><td>② 动态杠杆+趋势</td><td>牛市加杠杆/熊市空仓</td><td>28.58%</td><td class="r">−21.85%</td><td class="r">较零杠杆无实质提升<span class="tag tno">失败</span></td></tr>
+<tr><td>③ 多资产配置</td><td>top_n=2/3</td><td>18.93%</td><td class="g">−17.1%</td><td class="r">回撤降但收益大降<span class="tag tno">失败</span></td></tr>
+<tr><td>④ 高目标波动</td><td>vol_target=0.6/0.8</td><td>25.16%</td><td>−19.8%</td><td class="dim">已满仓封顶，无效<span class="tag tno">失败</span></td></tr>
+<tr><td>⑤ 杠杆+回撤对冲</td><td>L=1.4+动态降杠杆</td><td class="a">14~27%</td><td class="g">−16~22%</td><td class="r">能压回撤但收益被砍<span class="tag tno">失败</span></td></tr>
+</table>
+<p class="dim" style="margin-top:10px">注：路径①在完整引擎内杠杆呈负贡献，是换手成本+回撤熔断的联合作用；但纯数学杠杆（表一）证明杠杆本身有增益空间——两者差异来自执行摩擦，不是杠杆无效。</p>
+</div>
+
+<div class="card">
+<h2>三、为什么这是数学必然，而非运气不好</h2>
+<ul>
+<li><strong>收益—回撤强耦合</strong>：这个策略的收益几乎全部来自承担风险资产的 beta（前面已证：mom250 真 alpha 仅 −1.24%，账面 25% 全靠 beta）。beta 的本质就是"收益和风险同涨同跌"，所以任何放大收益的手段必然同步放大回撤。</li>
+<li><strong>真 alpha 太薄</strong>：唯一有真选券能力的是 beta20 因子（真 alpha 17%），但它的账面回撤反而更深（−22.5%）——因为它选高 beta 资产。</li>
+<li><strong>对冲是零和的</strong>：回撤对冲在降回撤的同时，砍掉的正是反弹段收益（这些策略的超额收益高度集中在少数暴涨日）。实测触发10%回撤就降杠杆 → 收益腰斩到14.6%。</li>
+</ul>
+</div>
+
+<div class="card">
+<h2>四、你要的 37.98%/−18.39%/1.74 是怎么来的</h2>
+<p>这张目标图本身就是<strong>带杠杆</strong>跑出来的（此前诊断 avg_exp≈1.29）。它同时满足高收益和中等回撤，靠的是<strong>更优的资产池 + 杠杆 + 特定市场阶段</strong>三者叠加，不是单一策略参数能达到的。 our mom250 样本外曾达 38%（表一 L=1.5 也是 38%），但那是纳指大牛市的 beta，全样本回撤必然放大。</p>
+<p class="dim" style="margin-top:8px">换句话说：目标的"高收益+可控回撤"组合，在纯 A 股 ETF、零杠杆、10bp 成本、单因子框架下，结构上就不可达。</p>
+</div>
+
+<div class="verdict">
+<div class="big">最终答案与三条出路</div>
+<p><strong>不是"没办法"，而是"零杠杆 + 单资产 + 6ETF + 10bp"这套约束下没办法。</strong>要打破，只有三条路，每条都有明确代价，需要你选：</p>
+<ul>
+<li><span class="tag tyes">出路A</span> <strong>接受杠杆</strong>：L≈1.4 可稳定到 35%+，代价是回撤 26%。若你能接受 26% 回撤（而非19%），目标当天达成。这是图中绩效的真实来源。</li>
+<li><span class="tag tyes">出路B</span> <strong>接受回撤 20%</strong>：零杠杆最优 25.17%/−19.8%，已非常接近回撤目标（差0.2pp），收益 25% 是诚实天花板。放弃 35% 的执念，换取 19.8% 的回撤和零杠杆安全。</li>
+<li><span class="tag tyes">出路C</span> <strong>换战场</strong>：引入个股/可转债 T+0/期权保护等更高收益或可对冲的品种，或降低摩擦到 5bp 以下。这是唯一可能"零杠杆同时高收益低回撤"的方向，但需要新数据源和更高执行能力。</li>
+</ul>
+<p style="margin-top:12px">我的建议：<strong>出路 B</strong>。25% 收益 / 19.8% 回撤 / 夏普1.27 在零杠杆里已是效率前沿，真 alpha 方案（17%）也验证过可外推。35% 这个数字对应的是加杠杆，而加杠杆与你一贯的"稳健、不要杠杆"原则冲突。</p>
+</div>
+
+<div class="foot">
+数据：mom250 零杠杆净值，2014-01~2026-11，3368交易日，10bp成本，t−1决策。<br>
+结果文件：out/final_verdict.json · out/path_exhaust.json · 路径脚本 model/path_exhaust.py。<br>
+全程未调用冻结的 v2.1，未改线上盘，未上线。本报告为研究复盘，不构成投资建议。
+</div>
+</body>
+</html>

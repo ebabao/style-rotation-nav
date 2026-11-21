@@ -157,7 +157,33 @@
   .badge-mini{display:inline-block;font-size:11px;border-radius:6px;padding:1px 7px;
               background:#eef1fb;color:#334166;border:1px solid #dbe1f5}
   .badge-mini.on{background:#fff1f0;color:#a52a1e;border-color:#f3cdc8}
+  /* 因子规则 v1.4 */
+  .vbadge{display:inline-flex;align-items:center;gap:6px;font-size:11px;font-weight:700;
+          color:#fff;background:linear-gradient(135deg,var(--brand),var(--brand2));
+          border-radius:999px;padding:3px 11px;letter-spacing:.4px}
+  .frule-grid{display:grid;grid-template-columns:repeat(4,1fr);border-bottom:1px solid var(--line)}
+  .frule-grid>div{padding:14px 18px;border-right:1px solid var(--line)}
+  .frule-grid>div:nth-child(4n){border-right:0}
+  .frule-grid span{display:block;color:var(--muted);font-size:11px;margin-bottom:3px}
+  .frule-grid b{font-size:15px;font-variant-numeric:tabular-nums}
+  .factor-flow{list-style:none;padding:0;margin:0;display:grid;gap:11px}
+  .factor-flow li{display:grid;grid-template-columns:26px 1fr;gap:11px;align-items:start}
+  .factor-flow .n{width:24px;height:24px;border-radius:7px;background:var(--navy);color:#fff;
+                  display:grid;place-items:center;font-size:11px;font-weight:700}
+  .factor-flow b{display:block;font-size:13px;margin-bottom:1px}
+  .factor-flow p{color:var(--muted);font-size:12px;margin:0}
+  .code{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:.92em;
+        background:#f2f4fa;border:1px solid var(--line);border-radius:5px;padding:1px 5px;color:var(--navy2)}
+  .vnote{margin:0 20px 20px;border:1px solid #dbe1f5;background:#f7f8ff;border-radius:12px;
+         padding:12px 14px;color:#3d4860;font-size:12px}
+  .vnote b{color:var(--ink)}
+  .segtab{display:inline-block;font-size:11px;border-radius:5px;padding:1px 6px;background:#eef1fb;
+          color:#475569;border:1px solid #dbe1f5;margin-right:6px}
   @media(max-width:980px){
+    .frule-grid{grid-template-columns:repeat(2,1fr)}
+    .frule-grid>div:nth-child(2n){border-right:0}
+    .frule-grid>div:nth-child(-n+2){border-bottom:1px solid var(--line)}
+  }
     .kpis{grid-template-columns:repeat(3,1fr)}
     .kpi:nth-child(3n){border-right:0}.kpi:nth-child(6n){border-right:1px solid var(--line)}
     .kpi:nth-child(-n+3){border-bottom:1px solid var(--line)}
@@ -223,6 +249,7 @@
       <a href="#performance">净值图表</a>
       <a href="#signal">调仓信号</a>
       <a href="#statistics">分年与持仓</a>
+      <a href="#factors">因子规则</a>
     </div>
     <div class="live"><i></i> 模型回放已校准</div>
   </div>
@@ -413,7 +440,64 @@
     </div>
   </section>
 
-  <footer>数据来源：策略模型固定参数回放（rotation_core 1.3）· 页面仅用于研究记录，不构成任何投资建议。市场有风险，投资需谨慎。</footer>
+  <section class="section" id="factors">
+    <div class="section-head">
+      <h2>因子规则 <span class="vbadge">v1.4</span></h2>
+      <div class="hint">mom250 零杠杆单因子 · 独立研究线 factor-evolution · 与 v2.1（已冻结）完全隔离</div>
+    </div>
+    <div class="card">
+      <div class="strategy-grid">
+        <div>
+          <h3 style="border:0;padding:0 0 10px">规则定义</h3>
+          <p>版本 <strong>v1.4</strong> 将前面路径穷尽中的「出路 B」正式固化：<strong>零杠杆、单因子、满仓一只</strong>的诚实基准。
+          它不做杠杆、不堆因子、不靠择时叠加，是这套 6 ETF 框架里可外推性最好、结构最简单的版本。</p>
+          <ul class="factor-flow">
+            <li><span class="n">1</span><div><b>单一因子 · 250 日长动量</b><p>对每个资产取过去 250 个交易日累计收益 <span class="code">mom250</span>，横截面 z-score 标准化后打分；不做多因子加权。</p></div></li>
+            <li><span class="n">2</span><div><b>合格池 · 20% 波动上限</b><p>20 日年化波动 ≤ 25% 且价格有效的资产才进池；高波标的（纳指、黄金、创业板、科创在短窗下）被挡在门外。</p></div></li>
+            <li><span class="n">3</span><div><b>选券 · 得分最高一只</b><p><span class="code">top_n=1</span>，取动量得分最高者满仓；不分散。多资产配置（top_n=2/3）实测会把收益压到 14~19%。</p></div></li>
+            <li><span class="n">4</span><div><b>仓位 · 波动率倒数 + 零杠杆封顶</b><p>目标波动 <span class="code">vol_target=0.40</span> 除以组合波动定仓，硬顶 <strong>1.0 倍</strong>（绝不借钱），余下配国债 ETF。</p></div></li>
+            <li><span class="n">5</span><div><b>执行 · 10 日调仓 / 10bp 成本</b><p>每 10 个交易日再平衡，T 日收盘出信号、T+1 生效；单边 10bp 成本；净值回撤超 45% 进入冷却。</p></div></li>
+          </ul>
+        </div>
+        <div>
+          <h3 style="border:0;padding:0 0 12px">绩效与口径</h3>
+          <div class="frule-grid">
+            <div><span>全样本年化</span><b class="up">25.16%</b></div>
+            <div><span>最大回撤</span><b class="down">−19.80%</b></div>
+            <div><span>夏普比率</span><b>1.26</b></div>
+            <div><span>卡玛比率</span><b>1.27</b></div>
+            <div><span>训练区 14–19</span><b>15.05%</b></div>
+            <div><span>验证区 20–22</span><b>29.48%</b></div>
+            <div><span>样本外 23–26</span><b class="up">38.02%</b></div>
+            <div><span>同源校验</span><b class="down">parity = 0</b></div>
+          </div>
+          <div class="tagrow">
+            <span class="tag">单因子 mom250</span><span class="tag">零杠杆</span>
+            <span class="tag">满仓一只</span><span class="tag">10bp 成本</span>
+            <span class="tag">无前视</span><span class="tag">49 因子库筛选</span>
+          </div>
+          <p class="note" style="margin-top:6px">
+            三段隔离验证：训练区 15.05% / 验证区 29.48% / 样本外（2023+）<strong>38.02%</strong>，样本外反而最强，说明规则未过拟合到历史段。
+            全样本 25.16% 是本框架在<strong>零杠杆下的诚实天花板</strong>。
+          </p>
+        </div>
+      </div>
+      <div class="frule-grid" style="border-top:1px solid var(--line)">
+        <div><span>最新信号日</span><b>2026-11-18</b></div>
+        <div><span>得分最高标的</span><b class="up">纳指100ETF</b></div>
+        <div><span>mom250 原始值</span><b>+11.2%</b></div>
+        <div><span>横截面 z-score</span><b>+1.67</b></div>
+      </div>
+      <div class="vnote">
+        <b>诚实的边界：</b>v1.4 的 25% 收益主体来自风险资产的长期 beta（市场中性口径下 mom250 的真 alpha 约为 −1%），
+        并非可外推的选券能力；真 alpha 明显的是另一套 beta20 因子（去漂移 alpha≈17%）。
+        路径穷尽已证明：零杠杆下 25% 与 19% 回撤几乎无法同时再优化，35% 收益必须借助杠杆（L≈1.38，回撤同步放大到 −26%）。
+        本版本牺牲收益上限，换取<b>结构最简单、零杠杆、可复核</b>。仅为研究记录，不构成投资建议。
+      </div>
+    </div>
+  </section>
+
+  <footer>数据来源：策略模型固定参数回放（rotation_core 1.3）· 因子规则 v1.4 来自 factor-evolution 独立研究线（详见 <a href="factor-evolution/路径穷尽最终裁决.html">路径穷尽裁决</a>）· 页面仅用于研究记录，不构成任何投资建议。市场有风险，投资需谨慎。</footer>
 </div>
 
 <script>

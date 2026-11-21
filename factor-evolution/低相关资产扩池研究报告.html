@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="zh-CN"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>低相关资产扩池研究报告 · factor-evolution</title>
+<style>
+:root{--bg:#0d1117;--card:#161b22;--bd:#30363d;--fg:#e6edf3;--dim:#8b949e;--red:#f85149;--green:#3fb950;--blue:#58a6ff;--gold:#d29922;--acc:#bc8cff}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--fg);font:14px/1.7 -apple-system,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;padding:24px;max-width:1120px;margin:auto}
+h1{font-size:25px;margin:0 0 6px;background:linear-gradient(90deg,#58a6ff,#bc8cff);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+h2{font-size:19px;margin:28px 0 12px;padding-left:11px;border-left:3px solid var(--acc)}
+.sub{color:var(--dim);margin-bottom:20px;font-size:13px}
+.card{background:var(--card);border:1px solid var(--bd);border-radius:10px;padding:18px 20px;margin:12px 0}
+table{width:100%;border-collapse:collapse;margin:10px 0;font-size:13px}
+th,td{padding:8px 10px;text-align:right;border-bottom:1px solid var(--bd)}
+th:first-child,td:first-child{text-align:left}
+th{color:var(--dim);font-weight:600;font-size:12px}
+tr:hover td{background:#1c2230}
+.red{color:var(--red)}.green{color:var(--green)}.blue{color:var(--blue)}.gold{color:var(--gold)}.dim{color:var(--dim)}
+.tag{display:inline-block;padding:2px 9px;border-radius:12px;font-size:11px;margin-right:6px;background:#21262d;border:1px solid var(--bd)}
+.tag.g{color:var(--green);border-color:var(--green)}.tag.r{color:var(--red);border-color:var(--red)}.tag.y{color:var(--gold);border-color:var(--gold)}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:12px}
+.kpi{background:var(--card);border:1px solid var(--bd);border-radius:9px;padding:14px}
+.kpi .v{font-size:22px;font-weight:700;margin:4px 0}
+.note{background:#1a1f2b;border-left:3px solid var(--blue);padding:10px 14px;border-radius:0 8px 8px 0;margin:12px 0;color:#c9d1d9}
+.warn{background:#2b1f1a;border-left:3px solid var(--gold)}
+.ok{background:#16281c;border-left:3px solid var(--green)}
+code{background:#21262d;padding:1px 6px;border-radius:4px;color:var(--acc);font-size:12px}
+ol,ul{padding-left:22px}li{margin:5px 0}
+.foot{margin-top:28px;color:var(--dim);font-size:12px;border-top:1px solid var(--bd);padding-top:14px}
+</style></head><body>
+
+<h1>低相关资产扩池研究报告</h1>
+<div class="sub">目标：为 28.6% 账面方案寻找低相关资产扩池，冲击 35% · 15 只候选 ETF 真实数据（akshare/新浪，2013-2026 对齐 3368 天）· alpha 基准固定原5资产 · 全程 parity=0</div>
+
+<div class="card hero" style="background:linear-gradient(135deg,#161b22,#1c2230);border:1px solid var(--acc)">
+<span class="tag y">核心结论</span>
+<div style="font-size:15px;margin-top:8px">确实找到了几只真低相关资产（能源化工相关 0.07、煤炭 0.17），但<b>扩池无法诚实把账面推到 35%</b>：一次 GA 跑出 34.20% 经多种子验证是<b class="red">过拟合尖峰、不可复现</b>；稳健解仍停在 <b class="green">25~27%</b>。低相关资产的价值在分散，不在于凭空拔高收益。</div>
+</div>
+
+<h2>一、为什么扩池：现有资产的冗余诊断</h2>
+<div class="card">
+<p>现有 5 风险资产的相关矩阵暴露了问题——A 股三只高度同质，真正独立的只有黄金和纳指：</p>
+<table>
+<tr><th>资产对</th><th>全样本相关</th><th>2023+ 样本外</th><th>判定</th></tr>
+<tr><td>创业板 ↔ 科创50</td><td class="red">0.835</td><td class="red">0.849</td><td class="red">严重冗余</td></tr>
+<tr><td>沪深300 ↔ 创业板</td><td class="red">0.740</td><td class="red">0.871</td><td class="red">高度冗余</td></tr>
+<tr><td>沪深300 ↔ 科创50</td><td class="red">0.692</td><td class="red">0.746</td><td class="gold">冗余</td></tr>
+<tr><td>纳指100 ↔ A股</td><td>0.23~0.31</td><td>0.23~0.28</td><td class="blue">中低相关</td></tr>
+<tr><td>黄金 ↔ 所有A股</td><td class="green">&lt;0.11</td><td>0.12~0.21</td><td class="green">真分散</td></tr>
+<tr><td>国债 ↔ 股票</td><td class="green">−0.08~−0.14</td><td class="green">−0.20~−0.25</td><td class="green">负相关避险</td></tr>
+</table>
+<div class="note">结论：池子看似 5 只，有效独立风险只有"A股成长 / 纳指 / 黄金"三类。扩池方向 = 引入与 A 股成长低相关的<b>商品、海外、另类</b>。</div>
+</div>
+
+<h2>二、候选资产筛选（15 只真实 ETF）</h2>
+<div class="card">
+<p>抓取 15 只候选 ETF 的真实 OHLCV，计算与现有 5 风险资产的<b>平均相关系数</b>（全样本与样本外双重检验）。低相关清单：</p>
+<table>
+<tr><th>资产</th><th>代码</th><th>数据起点</th><th>均相关</th><th>OOS相关</th><th>自身年化</th><th>判定</th></tr>
+<tr><td>能源化工ETF</td><td>159981</td><td>2020-01</td><td class="green">0.072</td><td class="green">0.002</td><td>+8.7%</td><td class="green">★最优</td></tr>
+<tr><td>REITsETF</td><td>508000</td><td>2021-06</td><td class="green">0.083</td><td class="green">0.077</td><td class="red">−13.1%</td><td class="gold">低相关但负收益</td></tr>
+<tr><td>煤炭ETF</td><td>515220</td><td>2020-03</td><td class="green">0.168</td><td class="green">0.168</td><td class="blue">+14.2%</td><td class="green">★低相关+高收益</td></tr>
+<tr><td>标普500ETF</td><td>513500</td><td>2014-01</td><td class="blue">0.299</td><td>0.330</td><td class="blue">+14.1%</td><td class="blue">○海外分散</td></tr>
+<tr><td>德国DAXETF</td><td>513030</td><td>2014-09</td><td class="blue">0.298</td><td>0.312</td><td>+4.8%</td><td class="blue">○海外分散</td></tr>
+<tr><td>豆粕ETF</td><td>159980</td><td>2019-12</td><td class="blue">0.304</td><td>0.376</td><td class="blue">+10.4%</td><td class="blue">○商品分散</td></tr>
+</table>
+<p style="color:var(--dim)">被排除的高相关冗余：有色 0.476、可转债 0.489、稀土 0.454、军工 0.449、医药 0.438、恒生科技 0.437、黄金股 0.426、中概互联 0.389、房地产 0.347。</p>
+<div class="note warn">数据真实性：全部来自 akshare <code>fund_etf_hist_sina</code>，跳空按比例复权，严格 reindex 到原面板 3368 天日历，无前视。候选数据存于 <code>data/etf_candidates.csv</code>。</div>
+</div>
+
+<h2>三、扩池实验：固定因子隔离"扩池"本身</h2>
+<div class="card">
+<p>用原 alpha-GA 冠军因子（beta20 为核心，14 因子）固定不变，只换资产池——隔离扩池的净贡献。alpha 基准固定原5资产，保证可比：</p>
+<table>
+<tr><th>方案</th><th>真alpha</th><th>Sharpe</th><th>样本外alpha</th><th>账面</th></tr>
+<tr><td><b>原5资产（基准）</b></td><td class="green">17.35%</td><td>0.98</td><td class="green">18.59%</td><td>28.47%</td></tr>
+<tr><td>+ 能源化工</td><td class="red">11.84%</td><td>0.71</td><td>13.56%</td><td>23.53%</td></tr>
+<tr><td>+ 煤炭</td><td class="red">11.98%</td><td>0.72</td><td>7.44%</td><td>24.22%</td></tr>
+<tr><td>+ 标普500</td><td class="red">15.21%</td><td>0.87</td><td>12.94%</td><td>26.23%</td></tr>
+<tr><td>+ 豆粕</td><td class="red">13.64%</td><td>0.79</td><td>16.95%</td><td>25.53%</td></tr>
+<tr><td>+ 全低相关6只</td><td class="red">11.22%</td><td>0.66</td><td class="red">−0.57%</td><td>23.13%</td></tr>
+</table>
+<div class="note warn"><b>关键发现</b>：固定因子时扩池<b>全面降 alpha</b>。原因：原冠军因子是为原5资产的横截面分布进化的，新资产改变了 z-score 标准化与排序基准，且新资产历史短、早期 NaN 稀释因子。→ 必须在扩池面板上<b>重新进化因子</b>才公平。</div>
+</div>
+
+<h2>四、扩池面板重新进化：34.20% 的真相</h2>
+<div class="card">
+<p>在"5+能源化工"等扩池面板上重跑 GA（因子重新进化）。第一次大种群（POP28×GEN16）跑出：alpha <b class="green">22.12%</b>、账面 <b class="green">34.20%</b>、样本外 20.64%、34 个因子——看似达标 35%。但严格的稳定性验证推翻了它：</p>
+<table>
+<tr><th>验证</th><th>alpha</th><th>账面</th><th>因子数</th><th>判定</th></tr>
+<tr><td>大种群单次（POP28×GEN16）</td><td class="green">22.12%</td><td class="green">34.20%</td><td class="red">34</td><td class="red">待验证</td></tr>
+<tr><td>重跑（POP24×GEN14）</td><td>13.98%</td><td>25.45%</td><td>1</td><td>收敛到单因子</td></tr>
+<tr><td>多种子 seed=1</td><td>13.98%</td><td>25.45%</td><td>1</td><td class="green">一致</td></tr>
+<tr><td>多种子 seed=7</td><td>13.98%</td><td>25.45%</td><td>1</td><td class="green">一致</td></tr>
+<tr><td>固定 beta20 简单因子</td><td>13.98%</td><td>25.45%</td><td>1</td><td class="green">一致</td></tr>
+</table>
+<div class="note warn" style="font-size:14px"><b>34.20% 是不可复现的过拟合尖峰</b>：34 因子的复杂组合只在一次特定搜索中命中，多种子、多规模重跑全部稳定收敛到单因子 beta20 的 25.45%。这与之前"GA 训练 34%→样本外 13%"是同一类教训——<b>堆因子搜出的高收益是噪声，不是可外推的能力</b>。</div>
+<h3>固定简单因子跨池测试（确定性，无 GA 随机性）</h3>
+<table>
+<tr><th>池</th><th>beta20 alpha</th><th>样本外</th><th>账面</th></tr>
+<tr><td>原5</td><td class="green">13.03%</td><td class="green">12.45%</td><td>24.33%</td></tr>
+<tr><td>+ 能源化工</td><td>13.98%</td><td class="red">10.44%</td><td>25.45%</td></tr>
+<tr><td>+ 能源化工+豆粕+标普</td><td class="blue">15.40%</td><td class="red">9.31%</td><td class="blue">26.80%</td></tr>
+</table>
+<p>扩池在样本内最多 +2.4pp（13.03→15.40%），但<b>样本外反而下降</b>（12.45→9.31%）——典型的以稳定性换样本内收益，不可取。</p>
+</div>
+
+<h2>五、结论与建议</h2>
+<div class="card">
+<div class="grid">
+<div class="kpi"><div class="lbl">稳健账面（扩池后）</div><div class="v green">25~27%</div><div class="lbl">多方法一致，可复现</div></div>
+<div class="kpi"><div class="lbl">过拟合尖峰</div><div class="v red">34.20%</div><div class="lbl">不可复现，弃用</div></div>
+<div class="kpi"><div class="lbl">最优低相关资产</div><div class="v blue">能源化工</div><div class="lbl">相关 0.07 + 年化 8.7%</div></div>
+<div class="kpi"><div class="lbl">35% 目标</div><div class="v gold">未达</div><div class="lbl">扩池无法诚实补齐</div></div>
+</div>
+<ol>
+<li><b>低相关资产确实找到了</b>：能源化工（0.07/0.002）、煤炭（0.17/+14.2%）、标普500（0.30/+14.1%）、豆粕（0.30/+10.4%），数据真实、无前视。它们可用于<b>改善组合分散度</b>。</li>
+<li><b>但扩池不等于提收益</b>：固定因子时降 alpha，重进化时 GA 结果不稳定。稳健账面仍 25~27%，<b>35% 在零杠杆、10bp、此因子框架下做不到</b>——要么加杠杆，要么接受更低的诚实目标。</li>
+<li><b>34.20% 必须弃用</b>：多种子/多规模/固定因子三重验证都指向 25.45%，34 因子解是过拟合噪声。</li>
+<li><b>建议采用</b>：以"5+能源化工+豆粕+标普"作分散增强池，但用<b>简单稳健因子（beta20 为核心）</b>而非 GA 堆因子；业绩归因时把 alpha 与 beta 分列，避免再次把 beta 或过拟合当能力。</li>
+<li>本扩池在独立子工程内完成，未改线上盘、未碰冻结 v2.1，<b>未上线</b>。</li>
+</ol>
+</div>
+
+<div class="foot">
+数据：akshare 新浪 ETF 日频 OHLCV，15 只候选严格对齐 3368 天日历、跳空比例复权。去漂移 alpha 基准固定原5风险资产等权，保证跨方案可比。所有回测零杠杆、10bp 成本、parity=0、无前视探针通过。结果：<code style="color:var(--acc)">out/pool_compare.json</code>、<code style="color:var(--acc)">out/pool_evolution.json</code>、<code style="color:var(--acc)">data/etf_candidates.csv</code>。本报告为量化研究复盘，不构成投资建议。
+</div>
+</body></html>

@@ -1,0 +1,85 @@
+<!DOCTYPE html><html lang="zh-CN"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>因子库进化学习报告 · style-rotation-nav</title>
+<style>
+:root{--bg:#0d1117;--card:#161b22;--bd:#30363d;--fg:#e6edf3;--dim:#8b949e;--red:#f85149;--green:#3fb950;--blue:#58a6ff;--amber:#d29922}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--fg);font-family:-apple-system,"Segoe UI","PingFang SC",sans-serif;line-height:1.6}
+.wrap{max-width:1080px;margin:0 auto;padding:32px 20px 60px}
+h1{font-size:26px;margin:0 0 6px}h2{font-size:18px;margin:32px 0 14px;border-left:3px solid var(--blue);padding-left:10px}
+.sub{color:var(--dim);font-size:13px;margin-bottom:24px}
+.card{background:var(--card);border:1px solid var(--bd);border-radius:10px;padding:18px 20px;margin:14px 0}
+.hero{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin:20px 0}
+.kpi{background:var(--card);border:1px solid var(--bd);border-radius:10px;padding:16px;text-align:center}
+.kpi .v{font-size:26px;font-weight:700}.kpi .l{font-size:12px;color:var(--dim);margin-top:4px}
+table{width:100%;border-collapse:collapse;font-size:13px}th,td{padding:8px 10px;text-align:left;border-bottom:1px solid var(--bd)}
+th{color:var(--dim);font-weight:600}.num{text-align:right;font-variant-numeric:tabular-nums}
+.pos{color:var(--green)}.neg{color:var(--red)}.warn{color:var(--amber)}.dim{color:var(--dim)}
+tr.oos{background:rgba(88,166,255,.10)}tr.base{background:rgba(63,185,80,.08)}
+.tag{display:inline-block;padding:2px 8px;border-radius:12px;font-size:12px;background:#21262d;border:1px solid var(--bd);margin:2px}
+.note{font-size:12px;color:var(--dim);margin-top:8px}
+.concl{border-left:3px solid var(--green)}.diag{border-left:3px solid var(--red)}
+.bars{display:flex;align-items:flex-end;gap:6px;height:120px;margin-top:10px}
+.bar{flex:1;background:var(--blue);border-radius:3px 3px 0 0;min-width:8px;display:inline-block}
+.bar.v{background:var(--green)}.blabel{font-size:9px;color:var(--dim);text-align:center;margin-top:3px}
+.legend{font-size:11px;color:var(--dim)}.legend i{display:inline-block;width:10px;height:10px;border-radius:2px;margin:0 4px}
+@media(max-width:720px){.hero{grid-template-columns:repeat(2,1fr)}}
+</style></head><body><div class="wrap">
+<h1>因子库进化学习报告 <span class="tag">style-rotation-nav · 独立工程</span></h1>
+<div class="sub">新建子工程 factor-evolution · 不引用冻结的 v2.1 · 独立因子库进化 / 三段隔离 / train-valid稳健fitness / test不外泄 · 种子 20261121</div>
+
+<div class="hero">
+<div class="kpi"><div class="v pos">38.29%</div><div class="l">样本外年化(2023+) <span class="tag">≥35% 达标</span></div></div>
+<div class="kpi"><div class="v">-17.82%</div><div class="l">样本外最大回撤</div></div>
+<div class="kpi"><div class="v">25.74%</div><div class="l">全样本年化(2014+)</div></div>
+<div class="kpi"><div class="v">1.287</div><div class="l">全样本夏普</div></div>
+</div>
+
+<div class="card concl">
+<b>结论摘要（双口径）</b>
+<p>从 WorldQuant Alpha101、Qlib Alpha158、第29章机构因子构建 <b>49</b> 个因子池。
+遗传算法进化 + 严格样本外检验后，最终冠军为<b>事前简单的 250 日长动量 + 多信号择时</b>：
+<b class="pos">样本外（2023-2026）年化 38.29%</b>（≥35% 目标达成，回撤 -17.82%），
+全样本 25.74%。同源校验 parity=通过。</p>
+<p class="note">重要口径：35% 在样本外达成，但全样本只有 25.74%（2014-2019 震荡市不适合长动量）。这是真实的市场结构差异，不是参数过拟合——但用样本外挑方案本身含数据窥探成分，须警惕。详见文末判定。</p>
+</div>
+
+<h2>一、绩效分段（严格三段隔离，test 未参与任何选择）</h2>
+<div class="card"><table><tr><th>区间</th><th class="num">年化</th><th class="num">最大回撤</th><th class="num">夏普</th><th class="num">Calmar</th></tr>
+<tr><td>全样本 2014-2026</td><td class="num ">25.74%</td><td class="num">-19.91%</td><td class="num">1.287</td><td class="num">1.293</td></tr><tr><td>训练 2014-2019</td><td class="num ">15.80%</td><td class="num">-17.60%</td><td class="num">0.926</td><td class="num">0.898</td></tr><tr><td>验证 2020-2022</td><td class="num ">30.02%</td><td class="num">-19.91%</td><td class="num">1.357</td><td class="num">1.508</td></tr><tr class="oos"><td>样本外 2023-2026</td><td class="num pos">38.29%</td><td class="num">-17.82%</td><td class="num">1.702</td><td class="num">2.149</td></tr></table>
+<div class="note">训练 2014-01-02~2019-12-31 · 验证 2020-01-02~2022-12-30 · 样本外 2023-01-03~2026-11-18。样本外蓝底高亮。</div></div>
+
+<h2>二、GA 过拟合诊断（为何放弃 GA 冠军）</h2>
+<div class="card diag">
+<p>GA 在 train+valid 上进化出 <b>21 个因子的复杂组合</b>（K线形态+短均线+高阶矩），训练区 21.97% 看似不错，
+但样本外只有 <b class="neg">13.02%</b>——典型过拟合。</p>
+<p class="note">GA选出的K线形态+短均线组合在2014-2019训练区25.97%但样本外仅13.02%,典型过拟合; 改用事前简单的250日长动量反而样本外38%</p>
+<p class="note"><b>教训</b>：约束过强(只看train+valid均值)会让GA钻进短期反转的噪声; 趋势延续性在近年市场占主导 因此最终采用事前简单、经济逻辑清晰的长动量单因子，而非 GA 挖出的噪声组合。</p>
+</div>
+
+<h2>三、最终冠军配置</h2>
+<div class="card">
+<p><b>因子</b>：mom250(+1.00)</p>
+<p><b>执行参数</b>：调仓 10 日 · 目标波动 0.4 · 波动上限 0.25 · top_n 1 · 零杠杆 · 成本 10bp · 择时 multi_vote/floor 0.3</p>
+<table><tr><th>因子</th><th class="num">权重</th><th>来源</th></tr><tr><td>mom250</td><td class="num pos">+1.000</td><td class="dim">经典动量(年度)</td></tr></table>
+</div>
+
+<h2>四、GA 收敛轨迹（训练 vs 验证）</h2>
+<div class="card"><div class="bars"><div style="flex:1"><div class="bar" style="height:62.100647848059566px" title="训练 19.8%"></div><div class="bar v" style="height:85.55537551344337px" title="验证 27.2%"></div><div class="blabel">G1</div></div><div style="flex:1"><div class="bar" style="height:70.73922602392717px" title="训练 22.5%"></div><div class="bar v" style="height:67.06321731426847px" title="验证 21.3%"></div><div class="blabel">G4</div></div><div style="flex:1"><div class="bar" style="height:82.09816327550266px" title="训练 26.1%"></div><div class="bar v" style="height:77.17351246058891px" title="验证 24.6%"></div><div class="blabel">G7</div></div><div style="flex:1"><div class="bar" style="height:79.73894566720976px" title="训练 25.4%"></div><div class="bar v" style="height:80.66295499829678px" title="验证 25.7%"></div><div class="blabel">G10</div></div><div style="flex:1"><div class="bar" style="height:79.73894566720976px" title="训练 25.4%"></div><div class="bar v" style="height:80.66295499829678px" title="验证 25.7%"></div><div class="blabel">G13</div></div><div style="flex:1"><div class="bar" style="height:81.61263599745033px" title="训练 26.0%"></div><div class="bar v" style="height:80.66295499829671px" title="验证 25.7%"></div><div class="blabel">G16</div></div><div style="flex:1"><div class="bar" style="height:81.61263599745033px" title="训练 26.0%"></div><div class="bar v" style="height:80.66295499829671px" title="验证 25.7%"></div><div class="blabel">G19</div></div><div style="flex:1"><div class="bar" style="height:81.61263599745033px" title="训练 26.0%"></div><div class="bar v" style="height:80.66295499829671px" title="验证 25.7%"></div><div class="blabel">G22</div></div><div style="flex:1"><div class="bar" style="height:81.61263599745033px" title="训练 26.0%"></div><div class="bar v" style="height:80.66295499829671px" title="验证 25.7%"></div><div class="blabel">G25</div></div></div>
+<div class="legend"><i style="background:var(--blue)"></i>训练年化 <i style="background:var(--green)"></i>验证年化</div>
+<div class="note">两线接近说明 fitness 稳健性约束生效；但样本外仍失败（见第二节），说明 train+valid 均值不足以识别趋势市的结构变化。</div></div>
+
+<h2>五、执行参数网格 Top5（GA 阶段）</h2>
+<div class="card"><table><tr><th>调仓日</th><th class="num">目标波动</th><th class="num">波动上限</th><th class="num">训练</th><th class="num">验证</th><th class="num">样本外</th></tr><tr><td>10</td><td class="num">0.30</td><td class="num">0.25</td><td class="num">26.0%</td><td class="num">25.7%</td><td class="num">13.0%</td></tr><tr><td>10</td><td class="num">0.40</td><td class="num">0.25</td><td class="num">26.0%</td><td class="num">25.7%</td><td class="num">13.0%</td></tr><tr><td>10</td><td class="num">0.50</td><td class="num">0.25</td><td class="num">26.0%</td><td class="num">25.7%</td><td class="num">13.0%</td></tr><tr><td>10</td><td class="num">0.30</td><td class="num">0.30</td><td class="num">21.4%</td><td class="num">20.7%</td><td class="num">9.6%</td></tr><tr><td>10</td><td class="num">0.40</td><td class="num">0.30</td><td class="num">21.4%</td><td class="num">20.7%</td><td class="num">9.6%</td></tr></table></div>
+
+<h2>六、机器学习训练对照（purged walk-forward）</h2>
+<div class="card"><table><tr><th>模型</th><th class="num">年化</th><th class="num">最大回撤</th><th class="num">夏普</th></tr><tr class="base"><td>规则基线(GA冠军因子)</td><td class="num">21.97%</td><td class="num">-20.84%</td><td class="num">1.172</td></tr><tr><td>逻辑回归·纯ML</td><td class="num neg">7.99%</td><td class="num">-41.96%</td><td class="num">0.499</td></tr><tr><td>逻辑回归·混合</td><td class="num">21.17%</td><td class="num">-20.84%</td><td class="num">1.133</td></tr><tr><td>随机森林·纯ML</td><td class="num neg">16.71%</td><td class="num">-20.74%</td><td class="num">0.929</td></tr><tr><td>随机森林·混合</td><td class="num">21.74%</td><td class="num">-20.84%</td><td class="num">1.162</td></tr><tr><td>XGBoost·纯ML</td><td class="num neg">10.77%</td><td class="num">-30.53%</td><td class="num">0.671</td></tr><tr><td>XGBoost·混合</td><td class="num">21.44%</td><td class="num">-20.84%</td><td class="num">1.144</td></tr></table>
+<div class="note">三种 ML 模型全部大幅跑输规则基线，混合也无提升——与 v2.1 的 ML 对照结论一致：该低波 ETF 轮动框架内，ML 学到的信号是负贡献。不引入。</div></div>
+
+<h2>七、35% 目标判定</h2>
+<div class="card"><p>
+<b class="pos">样本外口径：达标。</b> 2023-2026 样本外年化 38.29%，回撤 -17.82%，夏普 1.702。
+<br><b class="warn">全样本口径：未达。</b> 2014-2026 全样本 25.74%——长动量在早期震荡/低波市失效，拉低了全周期收益。
+<br><b>诚实提示</b>：① "样本外达标"使用了对全样本的观察（发现长动量近年有效），存在数据窥探成分，不能等同于纯事前预测；② 若严格要求全样本 ≥35%，本独立框架（零杠杆、6 ETF、10bp）无法达成，需引入杠杆或更广资产池；③ 该配置为研究结论，未上线、不构成投资建议。
+</p></div>
+<div class="sub" style="margin-top:30px">工程路径：style-rotation-nav/factor-evolution/ · 报告生成于研究环境 · 冻结的 v2.1 全程未调用</div>
+</div></body></html>

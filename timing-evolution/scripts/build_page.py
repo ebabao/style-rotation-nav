@@ -1,0 +1,232 @@
+#!/usr/bin/env python3.11
+# -*- coding: utf-8 -*-
+"""生成择时因子机构版看板（Q-learning 监管层主线，移植 sr-nav/evolution_guard）。
+
+零内嵌数据：页面 fetch evolution_report.json / evolution_summary.json，
+模型跑完写接口后刷新即同步。移动端兼容。
+"""
+from pathlib import Path
+
+ROOT = Path(__file__).resolve().parent.parent
+OUT = ROOT / "index.html"
+
+HTML = r"""<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>择时因子进化学习 · 机构版（Q-learning 监管层）</title>
+<style>
+:root{--navy:#132a4a;--navy2:#1f3a5f;--brand:#2c5282;--gold:#b8860b;--ink:#22303f;
+ --mut:#6b7a8c;--line:#dde4ec;--bg:#f4f6f9;--up:#d93025;--down:#0f9d58;--blue:#2563eb;
+ --card:#fff;--shadow:0 2px 12px rgba(20,40,70,.06)}
+*{box-sizing:border-box}html{scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--ink);font-size:14px;line-height:1.6;
+ font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;
+ -webkit-font-smoothing:antialiased}
+a{color:var(--brand);text-decoration:none}
+.topnav{position:sticky;top:0;z-index:20;background:rgba(19,42,74,.97);backdrop-filter:blur(12px);
+ border-bottom:1px solid rgba(255,255,255,.10)}
+.topnav .wrap{display:flex;align-items:center;gap:20px;height:56px;flex-wrap:wrap}
+.brand{display:flex;align-items:center;gap:9px;color:#fff;font-weight:700;white-space:nowrap;font-size:15px}
+.brand .mark{width:26px;height:26px;border-radius:8px;background:linear-gradient(135deg,#e8b64c,#f6dda0);
+ display:grid;place-items:center;color:#3a2a00;font-weight:800;font-size:13px}
+.vtag{background:#e8b64c;color:#3a2a00;font-size:11px;font-weight:800;padding:2px 8px;border-radius:4px}
+.navlinks{display:flex;gap:2px;overflow-x:auto;scrollbar-width:none;white-space:nowrap;flex:1}
+.navlinks::-webkit-scrollbar{display:none}
+.navlinks a{color:rgba(255,255,255,.74);font-size:12.5px;padding:7px 9px;border-radius:7px}
+.navlinks a:hover{color:#fff;background:rgba(255,255,255,.10)}
+.wrap{max-width:1220px;margin:0 auto;padding:0 22px 60px}
+.sec{margin-top:26px}.sec h2{font-size:18px;margin:0 0 12px;padding-left:11px;border-left:4px solid var(--brand);color:var(--navy)}
+.card{background:var(--card);border:1px solid var(--line);border-radius:10px;box-shadow:var(--shadow);overflow:hidden}
+.card h3{font-size:15px;margin:0;padding:13px 18px;border-bottom:1px solid var(--line);color:var(--navy)}
+.body{padding:16px 18px}
+.kpis{display:grid;grid-template-columns:repeat(4,1fr)}
+.kpi{padding:16px;border-right:1px solid var(--line);border-bottom:1px solid var(--line);position:relative}
+.kpi:nth-child(4n){border-right:0}.kpi:nth-last-child(-n+4){border-bottom:0}
+.kpi:before{content:"";position:absolute;left:16px;top:0;width:26px;height:3px;border-radius:0 0 3px 3px;background:var(--brand)}
+.kpi.hl:before{background:var(--up);width:38px}
+.kpi .k{font-size:11.5px;color:var(--mut);margin-bottom:5px}
+.kpi .v{font-size:21px;font-weight:800;letter-spacing:-.5px;font-variant-numeric:tabular-nums}
+.kpi .s{font-size:10.5px;color:var(--mut);margin-top:3px}
+.kpi.hl{background:#fffbe8}
+table{width:100%;border-collapse:collapse;font-size:13px}
+th,td{padding:8px 14px;text-align:right;border-bottom:1px solid var(--line);white-space:nowrap}
+th{color:var(--mut);font-weight:600;background:#fbfcff;font-size:12px}
+th:first-child,td:first-child{text-align:left}
+tr:last-child td{border-bottom:0}
+.chartbox{padding:10px 12px;min-height:280px}.chartbox svg{display:block;width:100%;height:auto}
+.legend{display:flex;gap:14px;flex-wrap:wrap;font-size:12px;color:var(--mut);padding:2px 8px 10px}
+.legend i{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:6px}
+.pill{font-size:11.5px;color:#475569;background:#f7f9fc;border:1px solid var(--line);
+ border-radius:999px;padding:4px 10px;white-space:nowrap;display:inline-block;margin:2px 4px 2px 0}
+.pill.ok{border-color:#bfe6cf;background:#f1fbf5;color:#0b6b39}
+.pill.warn{border-color:#f0dcae;background:#fffaef;color:#7a5a14}
+.pill.err{border-color:#f0c9c4;background:#fff5f4;color:#a52a1e}
+.note{font-size:12px;color:var(--mut);line-height:1.9;margin-top:10px}.note strong{color:var(--ink)}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.scroll{max-height:360px;overflow:auto}
+.loading{color:var(--mut);padding:40px;text-align:center}
+.up{color:var(--up)}.down{color:var(--down)}
+@media(max-width:760px){.kpis{grid-template-columns:repeat(2,1fr)}.kpi:nth-child(4n){border-right:1px solid var(--line)}.kpi:nth-child(2n){border-right:0}
+ .grid2{grid-template-columns:1fr}.wrap{padding:0 14px 40px}th,td{padding:7px 8px;font-size:12px}}
+</style>
+</head>
+<body>
+<div class="topnav"><div class="wrap">
+ <div class="brand"><span class="mark">时</span>择时因子进化 · 机构版 <span class="vtag">Q-learning 监管</span></div>
+ <nav class="navlinks">
+  <a href="#overview">总览</a><a href="#closedloop">闭环验证</a><a href="#shadow">影子净值</a><a href="#q">信誉Q演化</a>
+  <a href="#events">监管事件</a><a href="#ledger">影子台账</a><a href="#perf">挑战者绩效</a>
+ </nav>
+</div></div>
+<div class="wrap">
+ <div id="loading" class="loading">正在加载监管层数据…</div>
+ <div id="app" style="display:none">
+  <div class="sec" id="overview"><h2>监管层总览</h2>
+   <div class="card"><div class="kpis" id="kpis"></div></div>
+   <div style="margin-top:12px" id="paradigm"></div>
+   <div class="note" id="verdict"></div>
+  </div>
+
+  <div class="sec" id="closedloop"><h2>影子切换闭环验证（按 Q 提名真实切换）</h2>
+   <div class="card"><div class="body"><div id="clSummary"></div>
+    <div class="chartbox" id="clChart" style="min-height:220px"></div>
+    <div class="legend"><span><i style="background:#2c5282"></i>按Q提名切换组合</span><span><i style="background:#d93025"></i>冠军(冻结alpha) HOLD</span></div>
+    <div class="note" id="clNote"></div>
+   </div></div>
+  </div>
+
+  <div class="sec" id="shadow"><h2>影子净值对比（冠军 vs 择时挑战者）</h2>
+   <div class="card"><div class="chartbox" id="navChart"></div><div class="legend" id="navLegend"></div></div>
+  </div>
+
+  <div class="sec" id="q"><h2>信誉 Q 演化（EWMA 在线学习）</h2>
+   <div class="card"><div class="chartbox" id="qChart"></div><div class="legend" id="qLegend"></div></div>
+   <div class="note">每 20 交易日评估一次：State(滚动夏普/回撤+因子IC+市场ER) → Reward(相对冠军滚动夏普超额) → Q←(1−α)Q+α·Reward → argmax 提名。Q 越高代表该择时变体持续相对占优。</div>
+  </div>
+
+  <div class="sec" id="events"><h2>监管事件</h2>
+   <div class="card"><div class="body"><div id="eventStats"></div>
+    <div class="sec-title">最近事件</div><div class="scroll"><table><thead><tr><th>日期</th><th>类型</th><th>详情</th></tr></thead><tbody id="eventTable"></tbody></table></div>
+   </div></div>
+  </div>
+
+  <div class="sec" id="ledger"><h2>影子台账（滚动评估逐期）</h2>
+   <div class="card"><div class="body"><div class="scroll"><table><thead><tr>
+    <th>日期</th><th>冠军夏普</th><th>冠军回撤</th><th>因子IC(阈)</th><th>当期领先</th><th>领先Q</th><th>晋升</th><th>预警</th>
+   </tr></thead><tbody id="ledgerTable"></tbody></table></div></div></div>
+  </div>
+
+  <div class="sec" id="perf"><h2>挑战者全区间绩效</h2>
+   <div class="card"><div class="body"><table><thead><tr><th>方案</th><th>年化</th><th>夏普</th><th>回撤</th><th>平均仓位</th></tr></thead><tbody id="perfTable"></tbody></table>
+    <div class="note">冠军为冻结 alpha（零杠杆），全区间绩效逐点校验一致；挑战者为择时参数变体影子回测，<strong>不执行、不影响冠军</strong>。</div>
+   </div></div>
+  </div>
+
+  <div class="note" id="footer"></div>
+ </div>
+</div>
+<script>
+const RPT='./model/timing_out/data/evolution_report.json';
+const SUM='./model/timing_out/data/evolution_summary.json';
+let R=null,S=null;
+const COL=['#2c5282','#d93025','#b8860b','#2563eb','#0f9d58','#8b5cf6','#0891b2','#db2777'];
+const f=(x,d=2)=> (x==null||isNaN(x)?'—':Number(x).toFixed(d));
+const pc=(x,d=2)=> (x==null||isNaN(x)?'—':(x>0?'+':'')+Number(x).toFixed(d)+'%');
+async function load(){
+ try{const a=await fetch(RPT,{cache:'no-store'}),b=await fetch(SUM,{cache:'no-store'});R=await a.json();S=await b.json();}
+ catch(e){document.getElementById('loading').textContent='加载失败：'+e.message+'（请先运行 python3.11 -m model.timing_regulator）';return;}
+ render();
+}
+function render(){
+ document.getElementById('loading').style.display='none';document.getElementById('app').style.display='block';
+ const sm=S.summary||S;
+ const sw=sm.shadow_switch||{};const swm=sw.metrics?sw.metrics.shadow:null;
+ const kp=[['冠军年化',pc(sm.champion_ann,1),'冻结alpha·零杠杆','hl'],
+  ['评估期数',sm.n_eval,'每20交易日评估',''],
+  ['风险调整胜者',(sm.better_than_champion||[]).length,'Sharpe/Calmar口径','hl'],
+  ['IC反转预警',sm.n_icrev+'次','自适应阈值 '+(sm.icrev_rate*100).toFixed(0)+'%',''],
+  ['晋升候选',sm.n_promote,'仅提名不切换',''],
+  ['影子切换夏普',swm?f(swm.sharpe,3):'—',sw&&sw.target_sharpe_met?'目标1.74 达标':'目标未达','hl'],
+  ['影子切换年化',swm?pc(swm.cagr*100,1):'—',sw?('HOLD '+((1-sw.switch_ratio)*100).toFixed(0)+'%'):'',''],
+  ['冠军校验差',sm.champion_diff.toExponential(1),'影子台账成立','']];
+ document.getElementById('kpis').innerHTML=kp.map(x=>`<div class="kpi ${x[3]}"><div class="k">${x[0]}</div><div class="v">${x[1]}</div><div class="s">${x[2]}</div></div>`).join('');
+ document.getElementById('paradigm').innerHTML=
+  `<span class="pill">${S.paradigm||'Q-learning 监管层'}</span>`+
+  `<span class="pill ok">冠军净值逐点一致</span>`+
+  `<span class="pill warn">晋升仅建议 · 不切换线上</span>`+
+  `<span class="pill">评估 ${sm.eval_first} ~ ${sm.eval_last}</span>`;
+ document.getElementById('verdict').innerHTML='<strong>结论：</strong>监管层仅记录/预警/提名，冠军（冻结 alpha）不被切换；'+
+  '按收益口径无挑战者跑赢（'+(sm.better_by_cagr_only||[]).length+'个），但按<strong>风险调整口径有 '+(sm.better_than_champion||[]).length+' 个胜出</strong>（'+(sm.better_than_champion||[]).join('、')+'）——择时以收益换回撤/夏普，符合机构版稳健定位。'+
+  '<br><strong>v3.1 优化：</strong>IC 反转阈值改自适应分位数（预警率降至 '+(sm.icrev_rate*100).toFixed(0)+'%）；新增 HOLD 治理（Q 未过门槛则保持冠军）；胜率改风险调整口径；新增影子切换闭环验证。';
+ // 闭环验证
+ const sn=R.shadow_nav||{};
+ if(sn.nav&&swm){
+  const cm=sw.metrics.champion;
+  document.getElementById('clSummary').innerHTML=
+   `<div class="pill ${sw.target_sharpe_met?'ok':'err'}">目标夏普1.74 ${sw.target_sharpe_met?'达标':'未达'}</div>`+
+   `<div class="pill ${sw.target_mdd_met?'ok':'warn'}">目标回撤18.39% ${sw.target_mdd_met?'达标':'未达'}</div>`+
+   `<span class="pill">切换 ${sw.n_switches} 次 · 持仓占比 ${(sw.switch_ratio*100).toFixed(0)}%</span>`+
+   `<table style="margin-top:10px"><thead><tr><th>组合</th><th>年化</th><th>夏普</th><th>回撤</th><th>Calmar</th></tr></thead><tbody>`+
+   `<tr style="background:#fff5f4"><td>Q提名切换</td><td>${pc(swm.cagr*100,2)}</td><td>${f(swm.sharpe,4)}</td><td>${pc(swm.maxdd*100,2)}</td><td>${f(swm.calmar,3)}</td></tr>`+
+   `<tr style="background:#fffbe8"><td>冠军HOLD</td><td>${pc(cm.cagr*100,2)}</td><td>${f(cm.sharpe,4)}</td><td>${pc(cm.maxdd*100,2)}</td><td>${f(cm.calmar,3)}</td></tr>`+
+   `</tbody></table>`;
+  drawLines('clChart',{Q提名切换:sn.nav.shadow,冠军HOLD:sn.nav.champion},['Q提名切换','冠军HOLD'],'净值',false);
+  document.getElementById('clNote').innerHTML='按每期 argmax Q 真实切换品种（Q 未过门槛则 HOLD 冠军）滚动拼接的累计净值。'+
+   'Δ夏普 <strong>'+(sw.sharpe_edge>0?'+':'')+f(sw.sharpe_edge,4)+'</strong>（相对冠军）——'+
+   '这是"只提名不切换"治理的可验证依据：提名组合风险调整后占优，但绝对收益与回撤仍需权衡。';
+ }else{document.getElementById('clSummary').textContent='无闭环数据（请重跑监管层）';}
+ // 影子净值
+ drawLines('navChart',R.nav,R.names,'净值',false);
+ document.getElementById('navLegend').innerHTML=R.names.map((n,i)=>`<span><i style="background:${COL[i%COL.length]}"></i>${n}</span>`).join('');
+ // Q演化
+ const qh=R.q_hist||[];
+ const qSeries={};R.challengers.forEach(c=>{const key='Q_'+c;qSeries[c]=qh.map(h=>h[key]);});
+ drawLines('qChart',qSeries,R.challengers,'Q',true);
+ document.getElementById('qLegend').innerHTML=R.challengers.map((n,i)=>`<span><i style="background:${COL[(i+1)%COL.length]}"></i>${n}</span>`).join('');
+ // 事件
+ const ec={};(R.events||[]).forEach(e=>{ec[e.type]=(ec[e.type]||0)+1;});
+ document.getElementById('eventStats').innerHTML=Object.entries(ec).map(([k,v])=>{
+  const cls=k.includes('PROMOTE')?'ok':(k.includes('反转')||k.includes('退化')?'err':'warn');
+  return `<span class="pill ${cls}">${k} ${v}次</span>`;}).join('');
+ const ev=(R.events||[]).slice().reverse().slice(0,30);
+ document.getElementById('eventTable').innerHTML=ev.map(e=>`<tr><td>${e.date}</td><td style="text-align:left">${e.type}</td><td style="text-align:left;color:var(--mut)">${e.detail||''}</td></tr>`).join('');
+ // 台账
+ const led=(R.ledger||[]).slice().reverse().slice(0,60);
+ document.getElementById('ledgerTable').innerHTML=led.map(r=>{
+  const al=(r.alerts||'').replace(/\|/g,' / ');
+  const icv=(r.ic_mean==null?'—':f(r.ic_mean,3))+'<span style="color:var(--mut);font-size:11px">/'+f(r.ic_th,2)+'</span>';
+  const isHold=(r.leader||'').indexOf('冠军')>=0;
+  return `<tr><td>${r.date}</td><td>${f(r.champ_sharpe)}</td><td>${pc(r.champ_mdd,1)}</td><td>${icv}</td><td style="text-align:left;color:${isHold?'var(--brand)':''};font-weight:${isHold?600:400}">${r.leader}</td><td>${f(r.leader_Q,3)}</td><td style="text-align:left">${r.promoted||'—'}</td><td style="text-align:left;color:${al==='正常'?'var(--mut)':'var(--up)'}">${al}</td></tr>`;}).join('');
+ // 绩效
+ const met=sm.metrics||{};
+ document.getElementById('perfTable').innerHTML=R.names.map(n=>{
+  const m=met[n]||{};const isChamp=n.indexOf('冠军')>=0;
+  return `<tr style="${isChamp?'background:#fffbe8':''}"><td>${n}${isChamp?' ★':''}</td><td>${pc(m.cagr)}</td><td>${f(m.sharpe,3)}</td><td>${pc(m.maxdd)}</td><td>${f(m.avg_exp,2)}</td></tr>`;}).join('');
+ document.getElementById('footer').innerHTML='<strong>方法来源：</strong>移植 ebabao/sr-nav 的 evolution_guard.py（表格化 Q-learning 监管 + Champion/Challenger 影子台账），应用于 6 ETF 风格轮动的择时因子。本研究为工程验证，未接入实盘，未改动线上策略 / 看板 / 每日工作流。';
+}
+function drawLines(id,series,names,label,zeroLine){
+ const box=document.getElementById(id);const ks=names.filter(n=>series[n]&&series[n].length);
+ if(!ks.length){box.textContent='无数据';return;}
+ const W=1000,H=300,PL=52,PR=14,PT=14,PB=26;
+ let all=[];ks.forEach(n=>series[n].forEach(v=>{if(v!=null&&isFinite(v))all.push(v)}));
+ let lo=Math.min(...all),hi=Math.max(...all);const pad=(hi-lo)*0.06||1;lo-=pad;hi+=pad;
+ const len=Math.max(...ks.map(n=>series[n].length));
+ const x=i=>PL+(W-PL-PR)*i/(len-1),y=v=>PT+(H-PT-PB)*(1-(v-lo)/(hi-lo));
+ let grid='';for(let g=0;g<=4;g++){const v=lo+(hi-lo)*g/4,yy=y(v);grid+=`<line x1="${PL}" y1="${yy}" x2="${W-PR}" y2="${yy}" stroke="#eef2f7"/><text x="${PL-6}" y="${yy+4}" text-anchor="end" font-size="11" fill="#8a97a8">${v.toFixed(label==='Q'?2:1)}</text>`}
+ if(zeroLine&&lo<0&&hi>0){const zy=y(0);grid+=`<line x1="${PL}" y1="${zy}" x2="${W-PR}" y2="${zy}" stroke="#cbd5e1" stroke-dasharray="4 3"/>`}
+ let paths='';ks.forEach((n,idx)=>{const arr=series[n];let p='';let started=false;
+  for(let i=0;i<arr.length;i++){const v=arr[i];if(v==null||!isFinite(v)){started=false;continue;}
+   p+=(started?'L':'M')+x(i).toFixed(1)+','+y(v).toFixed(1);started=true;}
+  paths+=`<path d="${p}" fill="none" stroke="${COL[idx%COL.length]}" stroke-width="${idx===0?2.2:1.5}" opacity="${idx===0?1:0.82}"/>`;});
+ box.innerHTML=`<svg viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg">${grid}${paths}</svg>`;
+}
+load();
+</script>
+</body>
+</html>
+"""
+
+OUT.write_text(HTML, encoding="utf-8")
+print(f"看板已生成：{OUT}（{len(HTML)} 字符）")

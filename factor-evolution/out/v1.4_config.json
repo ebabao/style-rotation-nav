@@ -1,0 +1,49 @@
+{
+  "version": "v1.4",
+  "engineering": "style-rotation-nav/factor-evolution",
+  "name": "mom250 零杠杆单因子（出路B固化）",
+  "decision": "2026-11-22 用户指定：出路B定为v1.4",
+  "params": {
+    "rebal": 10,
+    "vol_win": 20,
+    "vol_target": 0.4,
+    "vol_cap": 0.25,
+    "top_n": 1,
+    "dd_limit": 0.45,
+    "cost_bps": 10,
+    "warmup": 260,
+    "factors": {
+      "mom250": 1.0
+    }
+  },
+  "metrics": {
+    "full": {
+      "cagr": 25.16,
+      "maxdd": -19.8,
+      "sharpe": 1.26,
+      "calmar": 1.27
+    },
+    "train": {
+      "cagr": 15.05,
+      "maxdd": -17.6,
+      "sharpe": 0.89,
+      "calmar": 0.85
+    },
+    "valid": {
+      "cagr": 29.48,
+      "maxdd": -19.8,
+      "sharpe": 1.34,
+      "calmar": 1.49
+    },
+    "test": {
+      "cagr": 38.02,
+      "maxdd": -18.03,
+      "sharpe": 1.69,
+      "calmar": 2.11
+    }
+  },
+  "parity": true,
+  "source_factors": 49,
+  "note": "全样本25%级零杠杆诚实天花板; 收益主体为市场beta, 真alpha需看市场中性口径; parity=0无前视; 与冻结v2.1完全独立",
+  "frozen_v21_untouched": true
+}
