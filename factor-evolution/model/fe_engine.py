@@ -49,6 +49,21 @@ def run(panel, F, params, scores=None):
     for j in range(A):
         vol[:, j] = pd_roll_std(ret[:, j], vol_win) * np.sqrt(252)
 
+    # v1.4.2 可选 double 走熊过滤：价格 < MA200 且 mom250 < 0 的资产在选券时剔除。
+    # 默认关闭（bear_filter=False），不影响历史进化/ML 复现；仅生产 v1.4.2 配置开启。
+    use_bear = bool(p.get('bear_filter', False)) and ('mom250' in F)
+    bear = np.zeros((T, A), dtype=bool)
+    if use_bear:
+        ma_n = int(p.get('bear_ma', 200))
+        ma = np.full((T, A), np.nan)
+        for j in range(A):
+            for t in range(T):
+                seg = c[max(0, t - ma_n + 1):t + 1, j]
+                seg = seg[np.isfinite(seg)]
+                if len(seg) >= ma_n * 0.8:
+                    ma[t, j] = seg.mean()
+        bear = (c < ma) & (F['mom250'] < 0)
+
     # 逐因子横截面标准化 (z-score, t 日可见)
     Fz = {}
     for name, w in fw.items():
@@ -78,7 +93,8 @@ def run(panel, F, params, scores=None):
                 score += np.nan_to_num(scores[t], nan=0.0)
         elig = np.zeros(A, dtype=bool)
         for j in range(5):
-            elig[j] = np.isfinite(vol[t, j]) and vol[t, j] <= vol_cap and np.isfinite(c[t, j])
+            elig[j] = (np.isfinite(vol[t, j]) and vol[t, j] <= vol_cap
+                       and np.isfinite(c[t, j]) and not (use_bear and bear[t, j]))
         n_ok = elig.sum()
         if n_ok == 0:
             nw = np.zeros(A); nw[5] = 1.0

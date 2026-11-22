@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>卫星仓验证：v1.3多因子 + 风险预算提升</title>
+<style>
+:root{--bg:#0d1117;--card:#161b22;--bd:#30363d;--fg:#e6edf3;--dim:#8b949e;--red:#f85149;--green:#3fb950;--blue:#58a6ff;--amber:#d29922;--purple:#bc8cff}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--fg);font-family:-apple-system,'PingFang SC','Microsoft YaHei',sans-serif;line-height:1.7;padding:24px;max-width:1140px;margin:0 auto}
+h1{font-size:24px;margin-bottom:6px;background:linear-gradient(90deg,#58a6ff,#bc8cff);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.sub{color:var(--dim);font-size:13px;margin-bottom:24px}
+.card{background:var(--card);border:1px solid var(--bd);border-radius:10px;padding:20px;margin-bottom:18px}
+h2{font-size:18px;margin-bottom:12px;color:var(--blue);border-left:3px solid var(--blue);padding-left:10px}
+table{width:100%;border-collapse:collapse;font-size:12.5px;margin-top:8px}
+th,td{padding:7px 9px;text-align:right;border-bottom:1px solid var(--bd)}
+th{color:var(--dim);font-weight:600;background:#1c2128}
+td:first-child,th:first-child{text-align:left}
+.g{color:var(--green)}.r{color:var(--red)}.a{color:var(--amber)}.b{color:var(--blue)}.dim{color:var(--dim)}
+.verdict{background:linear-gradient(135deg,#1a1025,#161b22);border:1px solid var(--purple);border-radius:10px;padding:24px;margin-bottom:18px}
+.verdict .big{font-size:19px;font-weight:700;color:var(--purple);margin-bottom:10px}
+ul{margin-left:18px}li{margin:6px 0}
+.foot{color:var(--dim);font-size:12px;margin-top:20px;border-top:1px solid var(--bd);padding-top:12px}
+.hl{background:rgba(63,185,80,.12)}.bad{background:rgba(248,81,73,.08)}
+.warn{background:rgba(248,81,73,.10);border-left:3px solid var(--red);padding:10px 14px;margin-top:12px;border-radius:4px}
+.note{background:rgba(88,166,255,.08);border-left:3px solid var(--blue);padding:10px 14px;margin-top:12px;border-radius:4px}
+.ok{background:rgba(63,185,80,.08);border-left:3px solid var(--green);padding:10px 14px;margin-top:12px;border-radius:4px}
+code{background:#1c2128;padding:1px 5px;border-radius:4px;color:var(--amber);font-size:12px}
+</style>
+</head>
+<body>
+<h1>卫星仓验证：v1.3 多因子打分 + 风险预算提升</h1>
+<div class="sub">style-rotation-alert / rotation_core.py 真实引擎 · 2026-11-22 · 保留 v1.3 因子打分、只调风险预算与熔断，并与 v1.4 主仓组合 · 研究线，未碰线上与冻结 v2.1</div>
+
+<div class="verdict">
+<div class="big">验证通过：主仓80% + 卫星20% 是全样本最优——年化 25.61%（+1.2pp）、回撤 −18.27%（比纯主仓还浅）、夏普 1.54（vs 1.25）</div>
+卫星仓 = v1.3 多因子打分（能选中高波真趋势）+ 低风险预算 + 放宽熔断。单独用卫星仓回撤达 −24.56% 不可用，但<b>作为 20% 配比重组后，收益升、回撤反降、夏普大涨</b>——这是两套策略低相关带来的分散红利，与之前"单独放开高波标的全崩塌"本质不同：卫星仓的负期望被主仓稀释，正弹性被保留。
+</div>
+
+<div class="card">
+<h2>一、卫星仓设计</h2>
+<div class="note">
+<b>因子打分完全不变</b>（沿用 v1.3）：0.657·z(160动量) − 0.685·z(40波动) + 0.009·z(加速度) + 0.358·z(风险调整动量) + 0.137·z(趋势)。<br>
+<b>只调三个旋钮：</b>vol_target 0.1→0.2、熔断 13%/40日→25%/60日、权重保持 inv_vol。<br>
+<b>为什么必须放宽熔断：</b>单纯提高风险预算会触发 v1.3 原本的 13% 熔断线，3-6 月整段锁死在国债（选券变 0）。放宽熔断后，卫星仓 3-6 月才选中创业板 6 次、科创50 1 次。
+</div>
+</div>
+
+<div class="card">
+<h2>二、风险预算 + 熔断联合扫描</h2>
+<table>
+<thead><tr><th>配置</th><th>3-6月</th><th>年化</th><th>回撤</th><th>夏普</th><th>创业/科创入选</th></tr></thead>
+<tbody>
+<tr><td>v1.4 主仓（对照）</td><td>+13.1%</td><td class="g">24.42%</td><td>−18.64%</td><td>1.25</td><td>0 / 0</td></tr>
+<tr><td>v1.3 原版 vt=0.1/熔13%</td><td>+11.3%</td><td>19.27%</td><td class="g">−13.34%</td><td>1.51</td><td>6 / 1</td></tr>
+<tr class="bad"><td>只提vt=0.4/熔13%（未改熔断）</td><td class="r">−3.0%</td><td>19.31%</td><td>−23.21%</td><td>1.16</td><td class="r">0 / 0</td></tr>
+<tr><td>vt=0.2/熔18%</td><td>+22.9%</td><td>20.90%</td><td>−21.86%</td><td>1.10</td><td>6 / 1</td></tr>
+<tr class="hl"><td><b>卫星B：vt=0.2/熔25%</b></td><td class="g">+22.9%</td><td class="g">25.89%</td><td class="r">−24.56%</td><td>1.25</td><td>6 / 1</td></tr>
+<tr><td>vt=0.3/熔18%</td><td class="g">+34.8%</td><td>23.85%</td><td>−21.86%</td><td>1.14</td><td>6 / 1</td></tr>
+</tbody>
+</table>
+<div class="note">卫星B 单独看年化 25.89% 已超 v1.4，3-6 月 +22.9% 也更好，但回撤 −24.56% 太深，不能单独用。注意一个教训：<b>只提高风险预算不改熔断，会适得其反</b>——3-6 月变成 −3.0%、选券归零，因为高仓位触发了旧熔断被锁死。</div>
+</div>
+
+<div class="card">
+<h2>三、决定性结果：主仓 + 卫星组合配比</h2>
+<p class="dim" style="font-size:13px;margin-bottom:8px">主仓 = v1.4（24.42%/−18.64%），卫星 = 卫星B（25.89%/−24.56%），逐日按固定权重再平衡：</p>
+<table>
+<thead><tr><th>配比</th><th>年化</th><th>回撤</th><th>夏普</th><th>评价</th></tr></thead>
+<tbody>
+<tr><td>主100%（纯v1.4）</td><td>24.40%</td><td>−18.64%</td><td>1.25</td><td>现状</td></tr>
+<tr><td>主90% / 卫10%</td><td>25.05%</td><td class="g">−18.20%</td><td>1.39</td><td>稳健</td></tr>
+<tr class="hl"><td><b>主80% / 卫20%</b></td><td class="g">25.61%</td><td class="g">−18.27%</td><td class="g">1.54</td><td><b>推荐</b></td></tr>
+<tr><td>主70% / 卫30%</td><td>26.07%</td><td>−18.70%</td><td>1.68</td><td>进取</td></tr>
+<tr><td>主50% / 卫50%</td><td>26.71%</td><td class="r">−19.64%</td><td>1.80</td><td>回撤开始升</td></tr>
+<tr><td>主0%（纯卫星）</td><td>26.57%</td><td class="r">−24.56%</td><td>1.28</td><td class="r">回撤太深</td></tr>
+</tbody>
+</table>
+<div class="ok"><b>分散红利清晰可见：</b>卫星从 0→20%，年化 +1.2pp、回撤反而从 −18.64% 浅化到 −18.27%、夏普从 1.25 跃升到 1.54。原因是 v1.4（单因子动量、高仓位）和 v1.3 多因子（低仓位、多信号）的净值波动不同步，组合后互相抵消了部分回撤。20% 是甜点——再往上（50%）回撤开始变深，夏普虽高但风险收益比转差。</div>
+<div class="note">3-6 月组合 80/20 净值 +15.3%（主仓 +13.0%、卫星 +22.9%）——确实比纯主仓多吃了一些弹性，但不夸张，因为卫星仓自己在这段也受了熔断损耗。<b>组合的真正价值在全样本的风险调整收益，而非单段追涨。</b></div>
+</div>
+
+<div class="card">
+<h2>四、稳健性：卫星优势是否只靠个别年份</h2>
+<p class="dim" style="font-size:13px;margin-bottom:8px">卫星B 逐年收益 vs v1.3 原版（全样本年化 25.89% vs 19.27%）：</p>
+<table>
+<thead><tr><th>年</th><th>原版</th><th>卫星B</th><th>年</th><th>原版</th><th>卫星B</th></tr></thead>
+<tbody>
+<tr><td>2014</td><td>+21.7%</td><td class="g">+33.8%</td><td>2020</td><td>+40.5%</td><td class="g">+72.3%</td></tr>
+<tr><td>2015</td><td>+17.2%</td><td class="g">+36.5%</td><td>2021</td><td>+6.9%</td><td class="g">+11.3%</td></tr>
+<tr><td>2017</td><td>+23.1%</td><td class="g">+25.5%</td><td>2023</td><td>+30.4%</td><td class="g">+34.5%</td></tr>
+<tr><td>2019</td><td>+21.5%</td><td class="g">+23.9%</td><td>2024</td><td>+48.5%</td><td class="g">+69.8%</td></tr>
+<tr class="bad"><td>2022</td><td>−7.4%</td><td class="r">−17.6%</td><td>2025</td><td>+42.2%</td><td class="g">+60.2%</td></tr>
+</tbody>
+</table>
+<div class="warn"><b>与前几轮的关键区别：这次改善是系统性的，不是单一事件。</b>卫星B 在 11 个年份里 10 个优于原版，改善分散在 2014/2015/2020/2024/2025 等多个年份——因为提升风险预算是<b>结构性地放大了策略暴露</b>，而非拟合某次行情。唯一明显恶化是 2022（−17.6% vs −7.4%），这正是高仓位在熊市年的代价，也是为什么必须用 20% 配比限制它。这比之前"全靠 2026 一次"的因子健康得多。</div>
+</div>
+
+<div class="card">
+<h2>五、结论与建议</h2>
+<ul>
+<li><b>验证通过：</b>v1.3 多因子打分 + 更高风险预算（vt=0.2/熔断25%）做成卫星仓，与主仓 80/20 组合后，年化 25.61%（+1.2pp）、回撤 −18.27%（更浅）、夏普 1.54（+0.29）。这是整个研究里第一个"收益升、回撤降、夏普大涨"的三赢方案。</li>
+<li><b>机制成立：</b>卫星仓贡献了 v1.3 的选券广度（能选中高波真趋势）和分散化价值，主仓贡献 v1.4 的高收益核心；两者低相关，组合互抵回撤。负期望被 20% 配比限制，正弹性被保留。</li>
+<li><b>两个必须遵守的约束：</b>① 卫星不能超过 30%——50% 配比回撤开始升到 −19.64%；② 提高风险预算时<b>必须同步放宽熔断</b>，否则高仓位触发旧熔断把行情全锁死（vt=0.4/熔13% 的 3-6 月是 −3.0%）。</li>
+<li><b>建议下一步：</b>这是一条独立于主策略的新研究线，建议先做样本外/walk-forward 验证（当前是全样本），确认 20% 配比的夏普优势稳定；再考虑是否引入执行层。主仓 v1.4 保持不变，不回退 v1.3。</li>
+</ul>
+</div>
+
+<div class="foot">数据源：style-rotation-alert 生产快照（截至 2026-11-20）· 引擎：rotation_core.py（v1.3 因子）+ v14_engine（v1.4 主仓）真实回放 · 组合按逐日固定权重再平衡 · 无前视 · 复现脚本：nav/satellite_scan.py · 研究线验证，未上线、未触碰冻结 v2.1 · 仅供研究记录，不构成投资建议。</div>
+</body>
+</html>

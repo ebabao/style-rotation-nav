@@ -37,8 +37,8 @@ import fe_engine as FE           # noqa: E402
 DATA = os.path.join(ROOT, "data")
 CFG_PATH = os.path.join(ROOT, "out", "v1.4_config.json")
 
-MODEL_NAME = "v1.4 · mom250 零杠杆单因子"
-MODEL_CODE = "v1.4_mom250_zero_lev_single"
+MODEL_NAME = "v1.4.2 · mom250 零杠杆单因子 + 走熊过滤"
+MODEL_CODE = "v1.4.2_mom250_zero_lev_bear_filter"
 BASIS_START = "2014-02-10"       # 与页面历史口径一致：起点净值归一化日
 REPORT_END = "2026-11-18"        # 对账基准日（数据快照末日），固定不随行情漂移
 TRADING_DAYS = 252
@@ -123,6 +123,20 @@ def build():
     fw = p["factors"]
     Fz = {n: FE.zscore_cross(F[n]) for n in fw if n in F and abs(fw[n]) > 1e-12}
 
+    # v1.4.2 double 走熊过滤（与 fe_engine.run 同口径）
+    use_bear = bool(p.get('bear_filter', False)) and ('mom250' in F)
+    bear = np.zeros((T, A), dtype=bool)
+    if use_bear:
+        ma_n = int(p.get('bear_ma', 200))
+        ma = np.full((T, A), np.nan)
+        for j in range(A):
+            for t in range(T):
+                seg = c[max(0, t - ma_n + 1):t + 1, j]
+                seg = seg[np.isfinite(seg)]
+                if len(seg) >= ma_n * 0.8:
+                    ma[t, j] = seg.mean()
+        bear = (c < ma) & (F['mom250'] < 0)
+
     # ---- 逐日回放，记录持仓/仓位（与 fe_engine.run 同逻辑，附加记录） ----
     equity = 1.0
     peak = 1.0
@@ -144,7 +158,8 @@ def build():
                     score += wgt * np.nan_to_num(Fz[name][t], nan=0.0)
         elig = np.zeros(A, dtype=bool)
         for j in range(5):
-            elig[j] = np.isfinite(vol[t, j]) and vol[t, j] <= vol_cap and np.isfinite(c[t, j])
+            elig[j] = (np.isfinite(vol[t, j]) and vol[t, j] <= vol_cap
+                       and np.isfinite(c[t, j]) and not (use_bear and bear[t, j]))
         n_ok = int(elig.sum())
         if n_ok == 0:
             nw = np.zeros(A); nw[5] = 1.0
@@ -303,7 +318,8 @@ def build():
             capital=round(float(w[j] * 100.0), 2),
             price=_r(c[min(t_last, T - 1), j], 3),
         ))
-    if in_circuit:
+    has_risk = bool(cur_items)
+    if in_circuit or not cur_items:
         cur_items.append(dict(
             code=CODES["BondETF"], name=ASSET_CN["BondETF"], asset="BondETF",
             role="防御", weight=100.0, capital=0.0,
@@ -328,12 +344,16 @@ def build():
     for j, a in enumerate(FF.ALL):
         raw = F["mom250"][t_last, j] if "mom250" in F else np.nan
         z = Fz["mom250"][t_last, j] if "mom250" in Fz else np.nan
-        eligible = bool(np.isfinite(vol[t_last, j]) and vol[t_last, j] <= vol_cap and np.isfinite(c[t_last, j])) and j < 5
+        is_bear = bool(use_bear and j < 5 and bear[t_last, j])
+        eligible = bool(np.isfinite(vol[t_last, j]) and vol[t_last, j] <= vol_cap
+                        and np.isfinite(c[t_last, j]) and not is_bear) and j < 5
+        why = ("合格" if eligible else "避险位" if j == 5 else
+               "走熊过滤" if is_bear else
+               "波动超限" if np.isfinite(vol[t_last, j]) else "无效价")
         factor_rows.append(dict(
             code=CODES[a], name=ASSET_CN[a], asset=a,
             mom=_pct(raw, 2), vol=_pct(vol[t_last, j], 2),
-            score=_r(z, 3), eligible=eligible,
-            why="合格" if eligible else ("避险位" if j == 5 else "波动超限" if np.isfinite(vol[t_last, j]) else "无效价"),
+            score=_r(z, 3), eligible=eligible, why=why,
         ))
 
     sig = dict(
@@ -345,7 +365,9 @@ def build():
         target_exposure=round(last_exp * 100.0, 2),
         will_change=False, changed=[], circuit=in_circuit,
         reason=("回撤触及熔断线 → 次日全退国债防御，收敛后逢调仓日恢复"
-                if in_circuit else "mom250 横截面动量 · 波动率倒数定仓 · 零杠杆"),
+                if in_circuit else
+                ("全部风险标的走熊/波动超限 → 空仓退国债防御" if not has_risk else
+                 "mom250 横截面动量 · 波动率倒数定仓 · 零杠杆 · 走熊过滤")),
         drawdown=round(ddser[-1], 2), dd_limit=_pct(dd_limit, 2),
         pv=None, factors=factor_rows,
     )

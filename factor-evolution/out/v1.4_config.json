@@ -1,8 +1,8 @@
 {
-  "version": "v1.4.1",
+  "version": "v1.4.2",
   "engineering": "style-rotation-nav/factor-evolution",
-  "name": "mom250 零杠杆单因子（出路B固化）+ 即时熔断",
-  "decision": "2026-11-22 用户指定：出路B定为v1.4；同日确认熔断即时化——每日检查、触线次日全退国债、回撤收敛逢调仓恢复",
+  "name": "mom250 零杠杆单因子（出路B固化）+ 即时熔断 + double 走熊过滤",
+  "decision": "2026-11-22 用户指定：出路B定为v1.4；同日确认熔断即时化——每日检查、触线次日全退国债、回撤收敛逢调仓恢复；2026-11-22 再确认加入 double 走熊过滤（价格<MA200 且 mom250<0）并发布到线上主仓",
   "params": {
     "rebal": 10,
     "vol_win": 20,
@@ -14,6 +14,8 @@
     "dd_cooldown": 60,
     "cost_bps": 10,
     "warmup": 260,
+    "bear_filter": true,
+    "bear_ma": 200,
     "factors": {
       "mom250": 1.0
     }
@@ -26,38 +28,46 @@
     "history_events": ["2022-01-26", "2026-11-18"],
     "verdict": "把最大回撤从 -22.55% 压到 -18.64%、卡玛从 1.09 升到 1.31，收益几乎不降（24.57%→24.42%）；剔除最近危机段后仍生效，非过拟合"
   },
+  "bear_filter_rule": {
+    "name": "double 走熊过滤",
+    "trigger": "价格 < MA200 且 mom250 < 0 → 判定慢性走熊，选券入池时剔除",
+    "complement": "与每日熔断互补：熔断管组合级急跌、走熊过滤管标的级慢性阴跌",
+    "structure": "纳指走熊判定率仅6%（全资产最低，几乎不误伤），黄金21%/沪深300 32%/创业板36%",
+    "verdict": "全样本年化 24.42%→25.55%、卡玛 1.31→1.37、回撤仍 -18.64%（熔断决定）；定位防守型过滤器，收益改善主要来自规避单次走熊事件，不宜外推为持续选券 alpha",
+    "source": "factor-evolution/选券因子进化报告.html"
+  },
   "metrics": {
     "full": {
-      "cagr": 24.42,
+      "cagr": 25.55,
       "maxdd": -18.64,
-      "sharpe": 1.25,
-      "calmar": 1.31
+      "sharpe": 1.30,
+      "calmar": 1.37
     },
     "anchor_1118": {
-      "cagr": 24.4583,
+      "cagr": 25.5599,
       "maxdd": -18.6409
     },
     "train": {
-      "cagr": 15.05,
+      "cagr": 15.78,
       "maxdd": -17.6,
-      "sharpe": 0.89,
-      "calmar": 0.85
+      "sharpe": 0.95,
+      "calmar": 0.90
     },
     "valid": {
-      "cagr": 26.4,
+      "cagr": 26.0,
       "maxdd": -18.64,
-      "sharpe": 1.27,
-      "calmar": 1.42
+      "sharpe": 1.28,
+      "calmar": 1.40
     },
     "test": {
-      "cagr": 37.83,
+      "cagr": 40.98,
       "maxdd": -18.24,
-      "sharpe": 1.69,
-      "calmar": 2.07
+      "sharpe": 1.82,
+      "calmar": 2.25
     }
   },
   "parity": true,
   "source_factors": 49,
-  "note": "零杠杆诚实天花板；收益主体为市场beta，真alpha需看市场中性口径；parity=0无前视；即时熔断为尾部保护，非收益来源；与冻结v2.1完全独立",
+  "note": "零杠杆诚实天花板；收益主体为市场beta，真alpha需看市场中性口径；parity=0无前视；即时熔断为尾部保护、double 为标的级防守过滤，均非收益来源；与冻结v2.1完全独立",
   "frozen_v21_untouched": true
 }

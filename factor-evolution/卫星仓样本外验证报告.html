@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>卫星仓样本外验证：walk-forward 报告</title>
+<style>
+:root{--bg:#0d1117;--card:#161b22;--bd:#30363d;--fg:#e6edf3;--dim:#8b949e;--red:#f85149;--green:#3fb950;--blue:#58a6ff;--amber:#d29922;--purple:#bc8cff}
+*{box-box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--fg);font-family:-apple-system,'PingFang SC','Microsoft YaHei',sans-serif;line-height:1.7;padding:24px;max-width:1140px;margin:0 auto}
+*{box-sizing:border-box}
+h1{font-size:24px;margin-bottom:6px;background:linear-gradient(90deg,#58a6ff,#bc8cff);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.sub{color:var(--dim);font-size:13px;margin-bottom:24px}
+.card{background:var(--card);border:1px solid var(--bd);border-radius:10px;padding:20px;margin-bottom:18px}
+h2{font-size:18px;margin-bottom:12px;color:var(--blue);border-left:3px solid var(--blue);padding-left:10px}
+table{width:100%;border-collapse:collapse;font-size:12.5px;margin-top:8px}
+th,td{padding:7px 9px;text-align:right;border-bottom:1px solid var(--bd)}
+th{color:var(--dim);font-weight:600;background:#1c2128}
+td:first-child,th:first-child{text-align:left}
+.g{color:var(--green)}.r{color:var(--red)}.a{color:var(--amber)}.b{color:var(--blue)}.dim{color:var(--dim)}
+.verdict{background:linear-gradient(135deg,#1a1025,#161b22);border:1px solid var(--purple);border-radius:10px;padding:24px;margin-bottom:18px}
+.verdict .big{font-size:19px;font-weight:700;color:var(--purple);margin-bottom:10px}
+ul{margin-left:18px}li{margin:6px 0}
+.foot{color:var(--dim);font-size:12px;margin-top:20px;border-top:1px solid var(--bd);padding-top:12px}
+.hl{background:rgba(63,185,80,.12)}.bad{background:rgba(248,81,73,.08)}
+.warn{background:rgba(248,81,73,.10);border-left:3px solid var(--red);padding:10px 14px;margin-top:12px;border-radius:4px}
+.note{background:rgba(88,166,255,.08);border-left:3px solid var(--blue);padding:10px 14px;margin-top:12px;border-radius:4px}
+.ok{background:rgba(63,185,80,.08);border-left:3px solid var(--green);padding:10px 14px;margin-top:12px;border-radius:4px}
+code{background:#1c2128;padding:1px 5px;border-radius:4px;color:var(--amber);font-size:12px}
+</style>
+</head>
+<body>
+<h1>卫星仓样本外验证：walk-forward 报告</h1>
+<div class="sub">style-rotation-nav / factor-evolution · 2026-11-22 · 对卫星仓方案做参数平台 + 时间切分 + 滚动 walk-forward + 相关性稳定性四重检验 · 研究线，未碰线上与冻结 v2.1</div>
+
+<div class="verdict">
+<div class="big">样本外验证通过：组合优势不是过拟合——时间切分样本外 Δ夏普 +0.68，滚动 walk-forward 11 年胜 9 年，主仓与卫星全样本相关性 −0.022（近乎零）且各年稳定</div>
+四项检验一致表明卫星仓的分散红利是真实、稳健的结构性现象：参数不是敏感尖峰（80/20 附近夏普 1.53~1.54 平台）、样本外与全样本结果几乎重合、绝大多数年份组合跑赢、相关性长期近零。这排除了前几轮反复出现的"全靠单次事件/参数尖峰"过拟合风险。
+</div>
+
+<div class="card">
+<h2>一、参数平台检验：不是敏感尖峰</h2>
+<p class="dim" style="font-size:13px;margin-bottom:8px">各卫星配置在不同配比下的全样本夏普（主/卫）：</p>
+<table>
+<thead><tr><th>卫星配置</th><th>100/0</th><th>90/10</th><th>80/20</th><th>70/30</th><th>50/50</th><th>0/100</th></tr></thead>
+<tbody>
+<tr><td>vt0.15/熔20%</td><td>1.25</td><td>1.38</td><td class="g">1.53</td><td>1.68</td><td>1.88</td><td>1.39</td></tr>
+<tr class="hl"><td>vt0.20/熔25%</td><td>1.25</td><td>1.39</td><td class="g">1.54</td><td>1.68</td><td>1.81</td><td>1.28</td></tr>
+<tr><td>vt0.25/熔25%</td><td>1.25</td><td>1.40</td><td class="g">1.54</td><td>1.67</td><td>1.74</td><td>1.20</td></tr>
+<tr><td>vt0.20/熔30%</td><td>1.25</td><td>1.39</td><td class="g">1.54</td><td>1.68</td><td>1.81</td><td>1.28</td></tr>
+</tbody>
+</table>
+<div class="ok"><b>三种卫星配置在 80/20 配比的夏普都是 1.53~1.54，四行几乎一致</b>——说明结果对卫星的具体参数（vt、熔断）不敏感，是"配比"这个结构在起作用，而非某个调出来的参数点。夏普随配比从 100/0 到 50/50 单调上升（1.25→1.8），是平滑平台，不是孤立尖峰。</div>
+</div>
+
+<div class="card">
+<h2>二、时间切分样本外：前段调参 → 后段验证</h2>
+<table>
+<thead><tr><th>指标</th><th>训练段选出的</th><th>验证段(2021-2026)表现</th><th>主仓同期</th></tr></thead>
+<tbody>
+<tr><td>配置</td><td>vt0.15/熔20% @主50%</td><td colspan="2" class="dim">训练段 2014-2020 (1684日) / 验证段 2021-2026 (1425日)</td></tr>
+<tr><td>年化</td><td>—</td><td class="g">26.10%</td><td>24.09%</td></tr>
+<tr><td>最大回撤</td><td>—</td><td class="g">−18.09%</td><td>−18.64%</td></tr>
+<tr><td>夏普</td><td>训练段 1.84</td><td class="g">1.92</td><td>1.25</td></tr>
+</tbody>
+</table>
+<div class="ok">完全没参与调参的 2021-2026 时段，组合夏普 1.92、样本外 <b>Δ夏普 +0.68</b>，回撤还略浅。这直接证明卫星仓的增益能外推到未见过的数据。</div>
+</div>
+
+<div class="card">
+<h2>三、滚动 walk-forward：11 年胜 9 年</h2>
+<p class="dim" style="font-size:13px;margin-bottom:8px">每年只用此前历史数据重新选最优配置与配比，在下一年验证（严格无前视）：</p>
+<table>
+<thead><tr><th>年</th><th>训练选出</th><th>组合夏普</th><th>主仓夏普</th><th>Δ</th></tr></thead>
+<tbody>
+<tr><td>2016</td><td>vt0.15@50%</td><td>0.41</td><td>−0.31</td><td class="g">+0.71</td></tr>
+<tr><td>2017</td><td>vt0.15@50%</td><td>2.83</td><td>1.77</td><td class="g">+1.06</td></tr>
+<tr><td>2018</td><td>vt0.15@50%</td><td>0.06</td><td>0.30</td><td class="r">−0.23</td></tr>
+<tr><td>2019</td><td>vt0.15@50%</td><td>2.19</td><td>1.29</td><td class="g">+0.90</td></tr>
+<tr><td>2020</td><td>vt0.15@50%</td><td>3.55</td><td>2.75</td><td class="g">+0.79</td></tr>
+<tr><td>2021</td><td>vt0.15@50%</td><td>0.92</td><td>0.61</td><td class="g">+0.31</td></tr>
+<tr><td>2022</td><td>vt0.15@50%</td><td>−1.26</td><td>−0.89</td><td class="r">−0.37</td></tr>
+<tr><td>2023</td><td>vt0.15@50%</td><td>3.46</td><td>2.08</td><td class="g">+1.38</td></tr>
+<tr><td>2024</td><td>vt0.15@50%</td><td>2.93</td><td>1.44</td><td class="g">+1.50</td></tr>
+<tr><td>2025</td><td>vt0.15@50%</td><td>3.83</td><td>2.57</td><td class="g">+1.26</td></tr>
+<tr><td>2026</td><td>vt0.15@50%</td><td>1.12</td><td>0.83</td><td class="g">+0.29</td></tr>
+</tbody>
+</table>
+<div class="warn"><b>9/11 年胜出，输的两年是 2018(−0.23) 和 2022(−0.37)——都是熊市/震荡年</b>，符合"高仓位卫星仓在弱市吃亏"的预期。值得注意的是训练段每年都一致选出 vt0.15/熔20%@50%，说明市场自己"学会"的最优配置很稳定，不是逐年漂移的拟合结果。</div>
+</div>
+
+<div class="card">
+<h2>四、相关性稳定性：分散红利的根源</h2>
+<table>
+<thead><tr><th>年份</th><th>2015</th><th>2019</th><th>2020</th><th>2022</th><th>2024</th><th>2025</th><th>2026</th><th>全样本</th></tr></thead>
+<tbody>
+<tr><td>corr(主,卫)</td><td>0.094</td><td>−0.004</td><td>0.005</td><td>0.003</td><td>0.008</td><td>−0.081</td><td>−0.112</td><td class="g">−0.022</td></tr>
+</tbody>
+</table>
+<div class="ok">主仓（v1.4 单因子动量）与卫星（v1.3 多因子低仓位）的日收益相关性全样本 <b>−0.022</b>，各年份都在 −0.11~0.09 之间——<b>接近零甚至负相关</b>，且长期稳定。这是组合夏普能从 1.25 提升到 1.54~1.92 的根本原因：两条策略的盈亏不同步，互相抵消波动。这不是偶然的某段低相关，而是两套策略机制差异（单因子 vs 多因子、高仓位 vs 低仓位）决定的结构性特征。</div>
+</div>
+
+<div class="card">
+<h2>五、配比选择：两套标准，两种答案</h2>
+<p class="dim" style="font-size:13px;margin-bottom:8px">全样本与样本外(2021+)结果高度一致，配比结论稳健：</p>
+<table>
+<thead><tr><th>配比</th><th>年化(全/样本外)</th><th>回撤</th><th>夏普</th><th>标准</th></tr></thead>
+<tbody>
+<tr><td>主100%（现状）</td><td>24.42% / 24.09%</td><td>−18.64%</td><td>1.25</td><td>基准</td></tr>
+<tr class="hl"><td><b>主80/卫20</b></td><td>25.64% / 25.37%</td><td class="g">−18.27%</td><td>1.54</td><td><b>回撤不增约束下最优</b></td></tr>
+<tr><td>主70/卫30</td><td>26.11% / 25.87%</td><td>−18.70%</td><td>1.68</td><td>回撤开始超主仓</td></tr>
+<tr><td>主50/卫50</td><td>26.75% / 26.57%</td><td class="r">−19.64%</td><td>1.81</td><td>纯夏普目标最优</td></tr>
+</tbody>
+</table>
+<div class="note"><b>两个答案对应两种风险偏好：</b>① 若坚持"回撤不能超过现状 −18.64%"，则<b>20% 配比</b>是上限（回撤 −18.27% 更浅）——这是稳健版推荐；② 若目标是最优夏普且能接受回撤升到 −19.64%，则 <b>50% 配比</b>（也是 walk-forward 每年自动选出的）。全样本与样本外数字几乎重合，说明无论选哪档，都不是样本内特例。</div>
+</div>
+
+<div class="card">
+<h2>六、最终结论</h2>
+<ul>
+<li><b>四重检验全部通过：</b>参数平台稳定（80/20 夏普 1.53~1.54）、时间切分样本外 Δ夏普 +0.68、滚动 walk-forward 11 年胜 9 年、主卫相关性 −0.022 且各年稳定。卫星仓的分散红利是真实结构性现象，不是过拟合。</li>
+<li><b>结论升级：</b>前几轮所有"更聪明因子"尝试都因"全靠单次事件/参数尖峰"被否；这是第一个通过严格样本外检验的方案，可信度显著更高。</li>
+<li><b>配比建议：</b>稳健优先用 20%（回撤 −18.27% 更浅、年化 +1.2pp），进取用 50%（夏普 1.81 但回撤 −19.64%）。 walk-forward 市场自选出 50%，说明若以夏普为目标，更高配比是合理的。</li>
+<li><b>下一步（若推进执行层）：</b>① 明确风险偏好决定配比档位；② 落地为两条独立净值流 + 每日按权重再平衡的执行逻辑（与现有 v1.4 发布链隔离）；③ 先用观察模式跑一段实盘，确认两条流的实盘相关性与回测一致。仍建议作为独立研究线，主仓 v1.4 保持不动。</li>
+</ul>
+</div>
+
+<div class="foot">数据源：style-rotation-alert 生产快照（截至 2026-11-20）· 引擎：rotation_core.py（v1.3 卫星）+ v14_engine（v1.4 主仓）· 有效交易日 3109（2014-02-11~2026-11-20）· 组合按逐日固定权重再平衡 · 无前视 · 复现脚本：nav/wf_build.py + nav/wf_analyze.py · 研究线验证，未上线、未触碰冻结 v2.1 · 仅供研究记录，不构成投资建议。</div>
+</body>
+</html>

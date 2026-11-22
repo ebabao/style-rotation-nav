@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>选券缺陷诊断：3-6月为何踏空高波涨幅 · 因子进化边界</title>
+<style>
+:root{--bg:#0d1117;--card:#161b22;--bd:#30363d;--fg:#e6edf3;--dim:#8b949e;--red:#f85149;--green:#3fb950;--blue:#58a6ff;--amber:#d29922;--purple:#bc8cff}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--fg);font-family:-apple-system,'PingFang SC','Microsoft YaHei',sans-serif;line-height:1.7;padding:24px;max-width:1140px;margin:0 auto}
+h1{font-size:24px;margin-bottom:6px;background:linear-gradient(90deg,#58a6ff,#bc8cff);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.sub{color:var(--dim);font-size:13px;margin-bottom:24px}
+.card{background:var(--card);border:1px solid var(--bd);border-radius:10px;padding:20px;margin-bottom:18px}
+h2{font-size:18px;margin-bottom:12px;color:var(--blue);border-left:3px solid var(--blue);padding-left:10px}
+table{width:100%;border-collapse:collapse;font-size:12.5px;margin-top:8px}
+th,td{padding:7px 9px;text-align:right;border-bottom:1px solid var(--bd)}
+th{color:var(--dim);font-weight:600;background:#1c2128}
+td:first-child,th:first-child{text-align:left}
+.g{color:var(--green)}.r{color:var(--red)}.a{color:var(--amber)}.b{color:var(--blue)}.dim{color:var(--dim)}
+.verdict{background:linear-gradient(135deg,#1a1025,#161b22);border:1px solid var(--purple);border-radius:10px;padding:24px;margin-bottom:18px}
+.verdict .big{font-size:19px;font-weight:700;color:var(--purple);margin-bottom:10px}
+ul{margin-left:18px}li{margin:6px 0}
+.foot{color:var(--dim);font-size:12px;margin-top:20px;border-top:1px solid var(--bd);padding-top:12px}
+.hl{background:rgba(63,185,80,.12)}.bad{background:rgba(248,81,73,.08)}
+.warn{background:rgba(248,81,73,.10);border-left:3px solid var(--red);padding:10px 14px;margin-top:12px;border-radius:4px}
+.note{background:rgba(88,166,255,.08);border-left:3px solid var(--blue);padding:10px 14px;margin-top:12px;border-radius:4px}
+.ok{background:rgba(63,185,80,.08);border-left:3px solid var(--green);padding:10px 14px;margin-top:12px;border-radius:4px}
+code{background:#1c2128;padding:1px 5px;border-radius:4px;color:var(--amber);font-size:12px}
+</style>
+</head>
+<body>
+<h1>选券缺陷诊断：3-6月为何踏空高波涨幅</h1>
+<div class="sub">style-rotation-nav / factor-evolution · 2026-11-22 · 触发：科创50 +77% / 创业板 +37% / 纳指 +32% 的行情被错过 · 诊断 + 6 轮因子进化验证 · 研究线，未碰线上与冻结 v2.1</div>
+
+<div class="verdict">
+<div class="big">根因不是选券打分滞后，而是 vol_cap=25% 把高波动标的 100% 挡在门外——但这道门槛是保护，不是缺陷</div>
+诊断：3月底 mom250 排名里创业板 +46%、科创50 +17% 已排前二，模型"想选"它们；但它们 vol20 中位 33%/40%，全区间超 25% 门槛，<b>一次都没资格入池</b>。我做了 6 轮因子进化试图放开门槛（自适应/下行波动/突破确认/软权重/上涨一致性/趋势质量），<b>全部崩塌</b>——收益从 25% 掉到 2~20%。决定性证据：科创50 高动量后 60 日胜率仅 <b>45%</b>（低于抛硬币），3-6 月 +77% 是事后罕见特例，不是可复制规律。结论：现有零杠杆框架下，这段涨幅<b>无法在不破坏长期收益的前提下捕获</b>。
+</div>
+
+<div class="card">
+<h2>一、诊断：不是打分错，是没资格入场</h2>
+<table>
+<thead><tr><th>资产</th><th>3-31→6-30 涨幅</th><th>3月底mom250排名</th><th>vol20中位</th><th>被25%门槛挡</th></tr></thead>
+<tbody>
+<tr><td>科创50 STAR50</td><td class="g">+77.0%</td><td>第2（+17%）</td><td class="r">40%</td><td class="r">100% 全程挡</td></tr>
+<tr><td>创业板 ChiNext</td><td class="g">+37.1%</td><td>第1（+46%）</td><td class="r">33%</td><td class="r">100% 全程挡</td></tr>
+<tr><td>纳指 NDX100</td><td class="g">+31.7%</td><td>第4（+16%）</td><td>24%</td><td class="g">部分入池 ✓</td></tr>
+<tr><td>沪深300</td><td>+12.5%</td><td>第5（+9%）</td><td>17%</td><td class="g">入池 ✓</td></tr>
+<tr><td>黄金</td><td class="r">−13.6%</td><td>第3（+43%）</td><td class="r">46%</td><td class="r">挡（正确）</td></tr>
+</tbody>
+</table>
+<div class="note">模型在 3-6 月实际净值只涨 <b>+13.1%</b>（主要来自纳指和沪深300），错过了科创50/创业板。但注意：<b>mom250 排名是对的</b>——创业板一直第一、科创50 一直第二，问题纯粹出在 vol 门槛把它们挡在门外。这和"选券因子不够聪明"是两码事。</div>
+</div>
+
+<div class="card">
+<h2>二、6 轮因子进化：全部失败</h2>
+<p class="dim" style="font-size:13px;margin-bottom:8px">目标：让高波动的真趋势标的能入池，同时不在假突破期追高。基线（含double走熊过滤）= 年化25.34% / 回撤−18.64% / 卡玛1.36。</p>
+<table>
+<thead><tr><th>尝试方向</th><th>机制</th><th>年化</th><th>回撤</th><th>卡玛</th><th>结果</th></tr></thead>
+<tbody>
+<tr class="hl"><td>基线</td><td>vol_cap 25% 硬门槛</td><td class="g">25.34%</td><td>−18.64%</td><td class="g">1.36</td><td>基准</td></tr>
+<tr class="bad"><td>直接放宽 vol_cap</td><td>40%/50% 门槛</td><td class="r">5~6%</td><td class="r">−22%</td><td class="r">0.25</td><td class="r">✗ 崩塌</td></tr>
+<tr class="bad"><td>动量自适应门槛</td><td>m250越高门槛越宽</td><td class="r">5.46%</td><td class="r">−22.96%</td><td class="r">0.24</td><td class="r">✗ 崩塌</td></tr>
+<tr class="bad"><td>下行波动率</td><td>只算负收益波动</td><td class="r">2.89%</td><td class="r">−21.65%</td><td class="r">0.13</td><td class="r">✗ 崩塌</td></tr>
+<tr class="bad"><td>突破确认</td><td>接近新高才放宽</td><td class="r">4~14%</td><td class="r">−22%</td><td class="r">0.2~0.6</td><td class="r">✗ 崩塌</td></tr>
+<tr class="bad"><td>上涨一致性</td><td>上涨天数占比≥55%</td><td class="r">2~6%</td><td class="r">−21%</td><td class="r">0.1~0.3</td><td class="r">✗ 崩塌</td></tr>
+<tr class="bad"><td>趋势质量 R²</td><td>回归R²≥0.6/0.7</td><td class="r">16~21%</td><td class="r">−19~22%</td><td class="r">0.7~1.1</td><td class="r">✗ 仍不及基线</td></tr>
+</tbody>
+</table>
+<div class="warn"><b>6 种机制、十几个参数组合，没有一个能接近基线。</b>这不是参数没调好，而是策略结构决定的：科创50/创业板这类高波动标的，在全样本里"高动量时买入"长期是负期望。放开门槛的每一次尝试，都把它们在下跌趋势中反弹的假信号也放了进来，反复追高被套，吃掉了 3-6 月那点额外收益还倒亏。</div>
+</div>
+
+<div class="card">
+<h2>三、决定性证据：高波动标的高动量 = 负期望</h2>
+<table>
+<thead><tr><th>统计</th><th>科创50 STAR50</th><th>创业板 ChiNext</th></tr></thead>
+<tbody>
+<tr><td>m250>40% 后 60 日上涨概率</td><td class="r">45%（99涨/121跌）</td><td>52%（416涨/384跌）</td></tr>
+<tr><td>m250>50% 后 20 日均收益</td><td class="g">+0.66%</td><td class="dim">接近0</td></tr>
+<tr><td>vol20 中位</td><td class="r">40%</td><td class="r">33%</td></tr>
+</tbody>
+</table>
+<div class="warn">科创50 在高动量状态买入后，60 日下跌概率 55%——<b>比抛硬币还差</b>。3-6 月 +77% 是样本里罕见的强趋势段，但同样的"高动量"信号在过去反复出现，多数以回落收尾。这意味着：<b>"抓住这次涨幅"和"长期少亏"在这类资产上是冲突的</b>。25% 的 vol 门槛看似"错过"，实则是在系统性规避这类负期望交易。</div>
+<div class="note">补充：3-6 月科创50 的上涨本身极不平滑，趋势质量 R² 在 3-31 只有 0.33、4-28 只有 0.21（5月底才升到 0.66~0.78）。连"趋势质量"因子都无法在早期识别它是真趋势——事后看是 +77%，事中看和假突破没区别。</div>
+</div>
+
+<div class="card">
+<h2>四、结论与真正的出路</h2>
+<ul>
+<li><b>诚实结论：</b>在"零杠杆 + top_n=1 + 月度轮动 + vol_cap 保护"这套框架下，3-6 月科创50/创业板的涨幅<b>无法被系统性捕获</b>。6 轮进化验证表明，任何试图纳入高波动标的的改动都会让全样本收益崩塌。这不是因子不够聪明，而是这类资产的动量信号长期负期望。</li>
+<li><b>期间定位：</b>3-6 月策略 +13.1% 虽低于科创50 +77%，但避开了黄金同期 −13.6%（mom250 排第3 但被 vol 正确挡住），且全年 25.34% 的收益是长期最优解的一部分。单次踏空是这套"高胜率防守型"策略的必然代价。</li>
+<li><b>真正的出路（若一定要追求弹性）：</b>① <b>提升 risk budget</b>——接受更高波动目标（vol_target 从 0.40 提到 0.6~0.8），配合更快的熔断，用更大回撤换更高弹性，但这违反"稳健"初衷；② <b>双引擎并行</b>——主仓保守策略 + 一个小比例（如 20%）"高弹性卫星仓"专门追高动量高波动资产，单独用更严格的止损，把负期望限制在卫星仓；③ <b>事件驱动增强</b>——只在"跌破后重新站上 MA200 且 m250 转正"的反转起点做一次性右侧交易，而非全程持有高波标的。</li>
+<li><b>建议：</b>不改动现有主策略（vol_cap 25% + double 走熊过滤已是充分验证的稳健解）。若你对弹性有明确诉求，建议单独开一条"卫星仓"研究线验证出路②③，与主策略隔离，用真实样本外数据决定是否纳入。这条线我可以继续做，但明确告知：它不是"免费提升"，是"用更高风险换弹性"。</li>
+</ul>
+</div>
+
+<div class="foot">数据源：style-rotation-alert 生产快照（截至 2026-11-20）· 引擎口径：v14_engine（mom250 / top_n=1 / 零杠杆 / 每日熔断18%-0.95-60 / 10bp）· 无前视 · 6 轮因子进化脚本：/tmp 下 adaptive/downside/breakout/quality scan + factor-evolution/bear_evolution_scan.py · 研究线，未上线、未触碰冻结 v2.1 · 仅供研究记录，不构成投资建议。</div>
+</body>
+</html>

@@ -301,8 +301,8 @@
     <div class="metaline" id="metaline"></div>
     <div class="note" style="margin-top:10px">
       <strong>口径说明：</strong>全部指标由策略模型 <code>v14_engine</code> 对 6 只 ETF 前复权收盘价逐日回放生成，
-      与固化配置 <code>v1.4_config.json</code> 对账完全一致；<strong>mom250 单因子、零杠杆、满仓一只</strong>，
-      单边 10bp 成本、国债 ETF 补位均已计入。
+      与固化配置 <code>v1.4_config.json</code> 对账完全一致；<strong>mom250 单因子、零杠杆、走熊过滤、满仓一只</strong>，
+      单边 10bp 成本、国债 ETF 补位均已计入。当前版本 <strong>v1.4.2</strong>（新增 double 走熊过滤）。
       <span id="reconNote"></span>
     </div>
   </section>
@@ -316,15 +316,18 @@
       <div class="strategy-grid">
         <div>
           <h3 style="border:0;padding:0 0 10px">策略定位与运行逻辑</h3>
-          <p>版本 <strong>v1.4</strong>：策略在 <strong>沪深 300、纳指 100、黄金、创业板、科创 50、国债</strong> 六类 ETF 之间轮动。
-          每个再平衡日只对单一因子 <strong>mom250（250 日长动量）</strong>做横截面 z-score 打分，<strong>持有得分最高且通过波动上限的一只标的</strong>；
+          <p>版本 <strong>v1.4.2</strong>：策略在 <strong>沪深 300、纳指 100、黄金、创业板、科创 50、国债</strong> 六类 ETF 之间轮动。
+          每个再平衡日只对单一因子 <strong>mom250（250 日长动量）</strong>做横截面 z-score 打分，<strong>持有得分最高且同时通过波动上限与走熊过滤的一只标的</strong>；
           无标的合格或触发熔断时，组合退守国债 ETF。不堆因子、不加择时、不叠杠杆。</p>
+          <p><strong>v1.4.2 新增 double 走熊过滤</strong>：价格低于 MA200 且 mom250 为负的资产视为进入慢性熊市，在选券入池时直接剔除——
+          这与每日熔断互补：<strong>熔断管组合级急跌，走熊过滤管标的级阴跌</strong>。该过滤器对长期趋势最强、走熊判定率仅 6% 的纳指几乎不误伤，
+          对持续阴跌资产（如黄金）则提前挡在门外。其定位是防守型过滤（平时不触发、与基线等价），收益提升主要来自规避单次走熊事件，<strong>不宜外推为持续的选券 alpha</strong>。</p>
           <p>仓位按波动率倒数定权、目标波动 0.40 缩放，<strong>硬顶 1.0 倍（零杠杆，绝不借钱）</strong>；策略为 <strong>T 日收盘出信号、T+1 生效</strong>。
           风控为<strong>每日即时熔断</strong>：收盘回撤触及 18% 即触发、次日全退国债，待回撤收敛到 17.1% 后逢调仓日恢复。
           因此看板上的净值、仓位与调仓记录同源，不存在两套口径。</p>
           <div class="tagrow">
             <span class="tag">六资产 ETF</span><span class="tag">单因子 mom250</span>
-            <span class="tag">满仓一只</span><span class="tag">零杠杆</span>
+            <span class="tag">double 走熊过滤</span><span class="tag">满仓一只</span><span class="tag">零杠杆</span>
             <span class="tag">每日即时熔断</span><span class="tag">固定参数回放</span>
           </div>
         </div>
@@ -333,8 +336,9 @@
           <ol class="steps">
             <li><span class="n">1</span><div><b>资产池</b><span>沪深300ETF、纳指100ETF、黄金ETF、创业板ETF、科创50ETF、国债ETF</span></div></li>
             <li><span class="n">2</span><div><b>因子打分</b><span>只对 mom250（250 日累计收益）做横截面 z-score，不加权其他因子</span></div></li>
-            <li><span class="n">3</span><div><b>形成组合</b><span>20 日年化波动 ≤ 25% 者入池，取得分最高一只，波动率倒数定仓、硬顶 1.0 倍</span></div></li>
-            <li><span class="n">4</span><div><b>风控与执行</b><span>每日检查回撤，触及 18% 次日立即退国债，收敛到 17.1% 后恢复；10 日调仓、单边 10bp</span></div></li>
+            <li><span class="n">3</span><div><b>入池过滤</b><span>20 日年化波动 ≤ 25%，且未触发 double 走熊（价格 ≥ MA200 或 mom250 ≥ 0）者入池</span></div></li>
+            <li><span class="n">4</span><div><b>形成组合</b><span>合格池内取得分最高一只，波动率倒数定仓、硬顶 1.0 倍；无合格标的退国债</span></div></li>
+            <li><span class="n">5</span><div><b>风控与执行</b><span>每日检查回撤，触及 18% 次日立即退国债，收敛到 17.1% 后恢复；10 日调仓、单边 10bp</span></div></li>
           </ol>
         </div>
       </div>
@@ -345,8 +349,8 @@
         <div><span>参数指纹</span><b id="factFp">—</b></div>
       </div>
       <div class="riskbox"><span class="ic">!</span>
-        <div><strong>研究边界：</strong>v1.4 的收益主体来自风险资产的长期 beta（市场中性口径下 mom250 的真 alpha 约为 −1%），
-        这<strong>一套纯多头规则不可外推为选券能力</strong>。另有<strong>可外推的真 alpha 方案</strong>：去漂移市场中性组合真 alpha 17.07%、样本外 17.04%（主权重因子 beta20 单因子为真 alpha 13%），
+        <div><strong>研究边界：</strong>v1.4.2 的收益主体来自风险资产的长期 beta（市场中性口径下 mom250 的真 alpha 约为 −1%），
+        这<strong>一套纯多头规则不可外推为选券能力</strong>；新增的 double 走熊过滤是防守型规则（规避慢性阴跌），其收益改善主要来自单次事件，同样<strong>不宜外推为持续 alpha</strong>。另有<strong>可外推的真 alpha 方案</strong>：去漂移市场中性组合真 alpha 17.07%、样本外 17.04%（主权重因子 beta20 单因子为真 alpha 13%），
         但它靠对冲剥离 beta、不适合零杠杆纯多头账户复制。零杠杆下 25% 收益与 19% 回撤已近效率前沿，35% 须借杠杆（L≈1.38，回撤放大到 −26%）。
         页面仅用于纸上跟踪与信号复核，不构成投资建议。</div>
       </div>
@@ -481,18 +485,19 @@
 
   <section class="section" id="factors">
     <div class="section-head">
-      <h2>规则与口径 <span class="vbadge">v1.4</span></h2>
+      <h2>规则与口径 <span class="vbadge">v1.4.2</span></h2>
     </div>
     <div class="card">
       <div class="strategy-grid">
         <div>
-          <h3 style="border:0;padding:0 0 10px">五步固化规则</h3>
+          <h3 style="border:0;padding:0 0 10px">六步固化规则</h3>
           <ul class="factor-flow">
             <li><span class="n">1</span><div><b>单一因子 · 250 日长动量</b><p>对每个资产取过去 250 个交易日累计收益 <span class="code">mom250</span>，横截面 z-score 打分；不堆因子。</p></div></li>
             <li><span class="n">2</span><div><b>合格池 · 25% 波动上限</b><p>20 日年化波动 ≤ 25% 且价格有效者入池，过滤长期高波动标的；对突发急跌（波动率滞后）则由每日熔断兜底。</p></div></li>
-            <li><span class="n">3</span><div><b>选券 · 得分最高一只</b><p><span class="code">top_n=1</span>，满仓一只不分散；多资产配置实测把收益压到 14~19%。</p></div></li>
-            <li><span class="n">4</span><div><b>仓位 · 零杠杆封顶</b><p>目标波动 0.40 除以组合波动定仓，硬顶 <strong>1.0 倍</strong>，余下配国债 ETF。</p></div></li>
-            <li><span class="n">5</span><div><b>风控 · 每日即时熔断</b><p>每日检查回撤，触及 18% 次日全退国债，收敛到 17.1% 后逢调仓日恢复；10 日调仓、单边 10bp。</p></div></li>
+            <li><span class="n">3</span><div><b>走熊过滤 · double</b><p>价格低于 MA200 <strong>且</strong> mom250 为负者判为慢性走熊、当次剔除；与熔断互补（熔断管急跌、此管阴跌）。</p></div></li>
+            <li><span class="n">4</span><div><b>选券 · 得分最高一只</b><p><span class="code">top_n=1</span>，满仓一只不分散；多资产配置实测把收益压到 14~19%。</p></div></li>
+            <li><span class="n">5</span><div><b>仓位 · 零杠杆封顶</b><p>目标波动 0.40 除以组合波动定仓，硬顶 <strong>1.0 倍</strong>，余下配国债 ETF。</p></div></li>
+            <li><span class="n">6</span><div><b>风控 · 每日即时熔断</b><p>每日检查回撤，触及 18% 次日全退国债，收敛到 17.1% 后逢调仓日恢复；10 日调仓、单边 10bp。</p></div></li>
           </ul>
         </div>
         <div>
@@ -502,18 +507,18 @@
             <div><span>最大回撤</span><b class="down" id="apMdd">—</b></div>
             <div><span>夏普比率</span><b id="apSharpe">—</b></div>
             <div><span>卡玛比率</span><b id="apCalmar">—</b></div>
-            <div><span>训练区 14–19</span><b>15.05%</b></div>
-            <div><span>验证区 20–22</span><b>26.40%</b></div>
-            <div><span>样本外 23–26</span><b class="up">37.83%</b></div>
+            <div><span>训练区 14–19</span><b>15.78%</b></div>
+            <div><span>验证区 20–22</span><b>26.00%</b></div>
+            <div><span>样本外 23–26</span><b class="up">40.98%</b></div>
             <div><span>同源对账</span><b class="down">parity = 0</b></div>
           </div>
           <div class="tagrow">
-            <span class="tag">单因子 mom250</span><span class="tag">零杠杆</span>
+            <span class="tag">单因子 mom250</span><span class="tag">double 走熊过滤</span><span class="tag">零杠杆</span>
             <span class="tag">满仓一只</span><span class="tag">10bp 成本</span>
-            <span class="tag">无前视</span><span class="tag">49 因子库筛选</span>
+            <span class="tag">无前视</span><span class="tag">固定参数回放</span>
           </div>
           <p class="note" style="margin-top:6px">
-            三段隔离：训练区 15.05% / 验证区 26.40% / 样本外（2023+）<strong>37.83%</strong>，样本外最强，未过拟合历史段。
+            三段隔离（年化）：训练区 15.78% / 验证区 26.00% / 样本外（2023+）<strong>40.98%</strong>，样本外最强，未过拟合历史段。
             熔断阈值取自 18% 尾部保护，在 2022 与 2026 两次真实危机中触发；上方四个绩效格与页面 KPI 均由本页实时接口回放给出、口径一致。
           </p>
         </div>
@@ -528,7 +533,7 @@
     </div>
   </section>
 
-  <footer>数据来源：v1.4 固定参数回放 · 研究底稿见 <a href="factor-evolution/路径穷尽最终裁决.html">路径穷尽裁决</a> 与 <a href="factor-evolution/入池过滤参数核查报告.html">入池过滤核查</a> · 另见 <a href="observer/index.html">进取版双引擎观察版（非执行信号）</a> · 页面仅用于研究记录，不构成任何投资建议。市场有风险，投资需谨慎。</footer>
+  <footer>数据来源：v1.4.2 固定参数回放（mom250 + double 走熊过滤） · 研究底稿见 <a href="factor-evolution/路径穷尽最终裁决.html">路径穷尽裁决</a> 与 <a href="factor-evolution/入池过滤参数核查报告.html">入池过滤核查</a> · 另见 <a href="observer/index.html">进取版双引擎观察版（非执行信号）</a> · 页面仅用于研究记录，不构成任何投资建议。市场有风险，投资需谨慎。</footer>
 </div>
 
 <script>
@@ -817,7 +822,7 @@ function render(){
      <span>调仓 <b>${fmtPlain(m.trades,"",0)} 次</b> · 累计换手 ${fmtPlain(m.turnover,"",1)}x</span>`;
   if(rc.actual){
     $("#reconNote").textContent=`对账基准日 ${rc.window}：年化 ${Number(rc.actual.cagr).toFixed(4)}%、`+
-      `回撤 ${Number(rc.actual.maxdd).toFixed(4)}%，与固化目标 ${Number((rc.target&&rc.target.cagr)||24.4583).toFixed(2)}% / `+
+      `回撤 ${Number(rc.actual.maxdd).toFixed(4)}%，与固化目标 ${Number((rc.target&&rc.target.cagr)||25.5599).toFixed(2)}% / `+
       `${Number((rc.target&&rc.target.maxdd)||18.6409).toFixed(2)}% 偏差 ${Number(rc.max_abs_diff_pp).toFixed(2)}pp（parity=0，无前视）。`+
       `数据截至 ${nv.as_of}，全区间年化 ${Number((rc.display&&rc.display.cagr)||m.cagr).toFixed(4)}%（即上方 KPI）。`;
   }

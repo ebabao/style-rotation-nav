@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>选券因子进化：纳指上涨捕获 + 阴跌资产过滤</title>
+<style>
+:root{--bg:#0d1117;--card:#161b22;--bd:#30363d;--fg:#e6edf3;--dim:#8b949e;--red:#f85149;--green:#3fb950;--blue:#58a6ff;--amber:#d29922;--purple:#bc8cff}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--fg);font-family:-apple-system,'PingFang SC','Microsoft YaHei',sans-serif;line-height:1.7;padding:24px;max-width:1140px;margin:0 auto}
+h1{font-size:25px;margin-bottom:6px;background:linear-gradient(90deg,#58a6ff,#bc8cff);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.sub{color:var(--dim);font-size:13px;margin-bottom:24px}
+.card{background:var(--card);border:1px solid var(--bd);border-radius:10px;padding:20px;margin-bottom:18px}
+h2{font-size:18px;margin-bottom:12px;color:var(--blue);border-left:3px solid var(--blue);padding-left:10px}
+table{width:100%;border-collapse:collapse;font-size:12.5px;margin-top:8px}
+th,td{padding:7px 9px;text-align:right;border-bottom:1px solid var(--bd)}
+th{color:var(--dim);font-weight:600;background:#1c2128}
+td:first-child,th:first-child{text-align:left}
+.g{color:var(--green)}.r{color:var(--red)}.a{color:var(--amber)}.b{color:var(--blue)}.dim{color:var(--dim)}
+.verdict{background:linear-gradient(135deg,#1a1025,#161b22);border:1px solid var(--purple);border-radius:10px;padding:24px;margin-bottom:18px}
+.verdict .big{font-size:20px;font-weight:700;color:var(--purple);margin-bottom:10px}
+ul{margin-left:18px}li{margin:6px 0}
+.foot{color:var(--dim);font-size:12px;margin-top:20px;border-top:1px solid var(--bd);padding-top:12px}
+.hl{background:rgba(63,185,80,.12)}.bad{background:rgba(248,81,73,.08)}
+.warn{background:rgba(248,81,73,.10);border-left:3px solid var(--red);padding:10px 14px;margin-top:12px;border-radius:4px}
+.note{background:rgba(88,166,255,.08);border-left:3px solid var(--blue);padding:10px 14px;margin-top:12px;border-radius:4px}
+.ok{background:rgba(63,185,80,.08);border-left:3px solid var(--green);padding:10px 14px;margin-top:12px;border-radius:4px}
+code{background:#1c2128;padding:1px 5px;border-radius:4px;color:var(--amber);font-size:12px}
+.bar{height:9px;border-radius:5px;background:linear-gradient(90deg,#3fb950,#d29922);display:inline-block;vertical-align:middle;margin-left:6px}
+</style>
+</head>
+<body>
+<h1>选券因子进化：既要纳指涨幅，也要过滤阴跌走熊</h1>
+<div class="sub">style-rotation-nav / factor-evolution · 2026-11-22 · 目标：找组合因子，不误伤纳指强势期、同时剔除黄金式持续阴跌 · 复用 v14_engine 口径 / 无前视 / parity=0 · 研究线本地回测，未触碰线上盘与冻结 v2.1</div>
+
+<div class="verdict">
+<div class="big">找到结构性更优解：「跌破MA200 且 m250&lt;0」（double）在纳指强势期零误伤、2019 不踏空、挡住黄金 11-09，且全样本收益 25.34%（+1.11pp）、卡玛 1.36（基线 1.30）</div>
+但必须同时说清楚：<strong>+1.11pp 几乎全部来自 2026 这一次黄金事件</strong>——剔除 2026 后 double=24.84% vs 基线 24.57%，差异仅 0.27pp，样本外没有"免费午餐"。真正的价值不在多赚，而在<b>结构性区分能力</b>：纳指走熊判定率仅 6%（全资产最低），黄金 21%、创业板 36%、沪深300 32%——这个因子天然对"长期趋势最强的资产"宽容、对"持续阴跌资产"严格，正好命中你的需求。
+</div>
+
+<div class="card">
+<h2>一、上一轮因子为什么会错过纳指</h2>
+<p class="dim" style="font-size:13px;margin-bottom:8px">上一轮最优是「跌破MA200 且 mom120&lt;0」，但它用 mom120 判断中期趋势，会踩到两个坑：</p>
+<table>
+<thead><tr><th>时点</th><th>纳指 m60</th><th>纳指 m120</th><th>问题</th></tr></thead>
+<tbody>
+<tr><td>2025-06-30</td><td class="g">+15.5%</td><td class="r">−2.7%</td><td>m60 已强涨，但 m120 还覆盖旧低点 → 被误判走熊、错过涨幅</td></tr>
+<tr><td>2019 全年</td><td colspan="2" class="dim">熊转牛</td><td>MA200 滞后 → 踏空 −9.4pp（上一轮已验证）</td></tr>
+</tbody>
+</table>
+<div class="note">根因：m120 是"固定 120 日窗口的净涨幅"，在一波快速反转里，它会同时装着"过去的下跌"和"最近上涨"，方向信号被污染。<b>改用 m250（更长期的净趋势方向）+ MA200（价格位置），反而更干净</b>：纳指 m250 长期为正，m120 的短期扰动被过滤掉了。</div>
+</div>
+
+<div class="card">
+<h2>二、9 类候选因子进化对比</h2>
+<p class="dim" style="font-size:13px;margin-bottom:8px">基线 = 24.23% / −18.64% / 夏普1.24 / 卡玛1.30。Δ收益/Δ回撤相对基线。"挡黄金"=11-09 是否剔除黄金。"纳指入选"=全样本纳指被选中的调仓次数（基线约143）。</p>
+<table>
+<thead><tr><th>因子方案</th><th>年化</th><th>回撤</th><th>夏普</th><th>卡玛</th><th>Δ收益</th><th>挡黄金</th><th>纳指入选</th><th>2019</th></tr></thead>
+<tbody>
+<tr><td class="dim">基线</td><td>24.23%</td><td>−18.64%</td><td>1.24</td><td>1.30</td><td>基线</td><td class="r">—</td><td>143</td><td>+20.4%</td></tr>
+<tr class="hl"><td><b>double：破MA200 且 m250&lt;0</b></td><td class="g">25.34%</td><td>−18.64%</td><td class="g">1.29</td><td class="g">1.36</td><td class="g">+1.11</td><td class="g">✓</td><td class="g">143</td><td class="g">+20.4%</td></tr>
+<tr class="hl"><td>triple：double 且 m60&lt;0</td><td class="g">25.03%</td><td>−18.64%</td><td class="g">1.28</td><td class="g">1.34</td><td class="g">+0.80</td><td class="g">✓</td><td class="g">143</td><td class="g">+20.4%</td></tr>
+<tr><td>ma200_mom120（上一轮最优）</td><td>23.46%</td><td class="g">−17.75%</td><td>1.22</td><td>1.32</td><td class="r">−0.77</td><td class="g">✓</td><td>143</td><td class="r">+12.0%</td></tr>
+<tr><td>score3（4信号≥3）</td><td>19.98%</td><td class="r">−21.53%</td><td>1.18</td><td>0.93</td><td class="r">−4.24</td><td class="g">✓</td><td>93</td><td>+18.4%</td></tr>
+<tr class="bad"><td>score2（4信号≥2）</td><td class="r">15.72%</td><td class="r">−21.68%</td><td>1.00</td><td>0.72</td><td class="r">−8.51</td><td class="g">✓</td><td>91</td><td class="dim">—</td></tr>
+<tr class="bad"><td>exempt（破MA200且m60&lt;0但m20&gt;0豁免）</td><td class="r">16.99%</td><td class="r">−21.53%</td><td>1.05</td><td>0.79</td><td class="r">−7.24</td><td class="g">✓</td><td>78</td><td class="dim">—</td></tr>
+<tr class="bad"><td>mid（破MA200 且 m60&lt;0）</td><td class="r">2.33%</td><td class="r">−21.53%</td><td>0.35</td><td>0.11</td><td class="r">−21.90</td><td class="g">✓</td><td class="r">36</td><td class="dim">—</td></tr>
+<tr class="bad"><td>dyn_recover（状态机动态恢复）</td><td class="r">2.22%</td><td class="r">−21.53%</td><td>0.33</td><td>0.10</td><td class="r">−22.01</td><td class="r">✗</td><td class="r">33</td><td class="r">−0.5%</td></tr>
+<tr class="bad"><td>decel（破MA200 且动量减速）</td><td class="r">2.65%</td><td class="r">−24.12%</td><td>0.37</td><td>0.11</td><td class="r">−21.58</td><td class="r">✗</td><td class="r">31</td><td class="dim">—</td></tr>
+</tbody>
+</table>
+<div class="ok"><b>只有 double / triple 同时满足全部四个目标：</b>挡黄金 ✓、纳指入选 143 次（与基线完全一致，零误伤）、2019 不踏空（+20.4%）、收益卡玛双升。其余方案要么误伤纳指（入选掉到 31~93 次），要么收益崩塌。<b>核心区别：用 m250（长期净趋势方向），不用 m60/m120/动量斜率等短周期信号</b>——短信号在轮动里反复洗仓，正是之前标的级止损失败的根源。</div>
+</div>
+
+<div class="card">
+<h2>三、真实机制：为什么这个因子天然对纳指友好</h2>
+<p class="dim" style="font-size:13px;margin-bottom:8px">各资产被 double 判定走熊的时间占比（越低=越不会被过滤）：</p>
+<table>
+<thead><tr><th>资产</th><th>走熊判定占比</th><th>可视化</th></tr></thead>
+<tbody>
+<tr><td>NDX100 纳指</td><td class="g">6%</td><td class="g"><span class="bar" style="width:12px"></span></td></tr>
+<tr><td>STAR50 科创50</td><td>19%</td><td><span class="bar" style="width:38px"></span></td></tr>
+<tr><td>Gold 黄金</td><td class="a">21%</td><td><span class="bar" style="width:42px"></span></td></tr>
+<tr><td>CSI300 沪深300</td><td class="r">32%</td><td><span class="bar" style="width:64px"></span></td></tr>
+<tr><td>ChiNext 创业板</td><td class="r">36%</td><td><span class="bar" style="width:72px"></span></td></tr>
+</tbody>
+</table>
+<div class="note">纳指的走熊判定率只有 6%，是全部资产里最低的——因为它长期上升趋势最稳，m250 转负叠加跌破 MA200 的组合极少在它身上出现。而黄金 21%、沪深300 32%、创业板 36%——<b>越是持续阴跌、趋势反复的资产，越容易被这条规则挡在门外</b>。这不是事后拟合出来的参数，而是"长期趋势方向 + 价格位置"双条件本身的结构属性，正好实现你要的"保纳指、滤阴跌"。</div>
+<div class="ok">纳指强势期（m60&gt;10%，共 745 个交易日）误伤检查：double 仅误伤 7 天（0.9%），triple 与 ma200_mom120 为 0 天。黄金判定区间：2026-10-21 ~ 11-20 连续走熊，11-09 调仓时 px/MA200=−10.6%、m250=−2.6%，被准确剔除。</div>
+</div>
+
+<div class="card">
+<h2>四、诚实标注：收益提升的来源与样本外警示</h2>
+<p class="dim" style="font-size:13px;margin-bottom:8px">逐年收益（%）：double 相对基线的优势集中在哪一年？</p>
+<table>
+<thead><tr><th>年</th><th>基线</th><th>double</th><th>Δ</th><th>年</th><th>基线</th><th>double</th><th>Δ</th></tr></thead>
+<tbody>
+<tr><td>2014</td><td>7.7</td><td>11.2</td><td class="g">+3.5</td><td>2020</td><td>87.7</td><td>87.7</td><td>0</td></tr>
+<tr><td>2015</td><td>46.4</td><td>45.4</td><td class="r">−1.0</td><td>2021</td><td>6.3</td><td>5.6</td><td class="r">−0.7</td></tr>
+<tr><td>2016</td><td>−4.9</td><td>−4.9</td><td>0</td><td>2022</td><td>−5.4</td><td>−5.4</td><td>0</td></tr>
+<tr><td>2017</td><td>23.1</td><td>23.1</td><td>0</td><td>2023</td><td>34.1</td><td>34.1</td><td>0</td></tr>
+<tr><td>2018</td><td>4.2</td><td>4.8</td><td class="g">+0.6</td><td>2024</td><td>25.6</td><td>25.6</td><td>0</td></tr>
+<tr><td>2019</td><td>20.4</td><td>20.4</td><td>0</td><td>2025</td><td>68.7</td><td>68.7</td><td>0</td></tr>
+<tr class="hl"><td><b>2026</b></td><td>14.0</td><td>24.2</td><td class="g"><b>+10.2</b></td><td colspan="4" class="dim">全样本 +1.11pp 几乎全靠这一年</td></tr>
+</tbody>
+</table>
+<div class="warn"><b>剔除 2026 后的真相：</b>基线 24.57% / double 24.84% / triple 24.50%——三者几乎无差别。所以 double 的收益优势<b>本质就是"精准避开了 2026 这次黄金阴跌"</b>，样本外并没有额外免费收益。这不否定它的价值（解决的就是这次问题），但不要误以为它是"全面更优的收益因子"。它的定位应是<b>防守型过滤器</b>：平时不触发、和基线等价；真有资产进入长期走熊时，把它挡在门外。</div>
+</div>
+
+<div class="card">
+<h2>五、判断与建议</h2>
+<ul>
+<li><b>最优组合因子：double =「价格 &lt; MA200 且 m250 &lt; 0」</b>，在入池时剔除同时满足"跌破长期牛熊线 + 长期净趋势转负"的资产。triple 加 m60&lt;0 更严格但收益略低，double 已是效率最优。</li>
+<li><b>四目标全部达成：</b>挡住黄金 11-09 ✓ / 纳指强势期零误伤（入选 143 次与基线一致）✓ / 2019 不踏空 ✓ / 收益卡玛双升（25.34% / 1.36）✓。上一轮的 ma200_mom120 会误伤纳指+踏空 2019，double 明显更优。</li>
+<li><b>机制真实而非拟合：</b>纳指走熊判定率 6%（最低）、黄金 21%、创业板 36%——长期趋势方向双条件天然对强趋势资产宽容、对阴跌资产严格，这是结构性属性，不是调参调出来的。</li>
+<li><b>但收益提升不可外推：</b>+1.11pp 全靠 2026 一次事件，剔除后与基线等价。定位为"防守型过滤器"而非"收益增强因子"，不要向"年化更高"方向宣传。</li>
+<li><b>建议下一步：</b>① 先以信号层提示运行（标记"某资产已长期走熊、建议下个调仓日剔除"），验证实盘表现；② 若采纳进执行层，double 替换现有 vol_cap 之上叠加，作为第二道过滤；③ 它与每日熔断互补——熔断管组合级急跌，double 管标的级慢性走熊，两者不冲突。</li>
+</ul>
+</div>
+
+<div class="foot">数据源：style-rotation-alert 生产快照（截至 2026-11-20）· 引擎口径：v14_engine（mom250 / top_n=1 / 零杠杆 / 每日熔断18%-0.95-60 / 10bp）· 无前视，因子仅用 t 及之前数据 · 复现脚本：factor-evolution/bear_evolution_scan.py · 研究线本地回测，未上线、未触碰冻结 v2.1 · 仅供研究记录，不构成投资建议。</div>
+</body>
+</html>

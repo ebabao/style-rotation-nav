@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>v1.3多因子打分：会错过3-6月涨幅吗</title>
+<style>
+:root{--bg:#0d1117;--card:#161b22;--bd:#30363d;--fg:#e6edf3;--dim:#8b949e;--red:#f85149;--green:#3fb950;--blue:#58a6ff;--amber:#d29922;--purple:#bc8cff}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--fg);font-family:-apple-system,'PingFang SC','Microsoft YaHei',sans-serif;line-height:1.7;padding:24px;max-width:1140px;margin:0 auto}
+h1{font-size:24px;margin-bottom:6px;background:linear-gradient(90deg,#58a6ff,#bc8cff);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.sub{color:var(--dim);font-size:13px;margin-bottom:24px}
+.card{background:var(--card);border:1px solid var(--bd);border-radius:10px;padding:20px;margin-bottom:18px}
+h2{font-size:18px;margin-bottom:12px;color:var(--blue);border-left:3px solid var(--blue);padding-left:10px}
+table{width:100%;border-collapse:collapse;font-size:12.5px;margin-top:8px}
+th,td{padding:7px 9px;text-align:right;border-bottom:1px solid var(--bd)}
+th{color:var(--dim);font-weight:600;background:#1c2128}
+td:first-child,th:first-child{text-align:left}
+.g{color:var(--green)}.r{color:var(--red)}.a{color:var(--amber)}.b{color:var(--blue)}.dim{color:var(--dim)}
+.verdict{background:linear-gradient(135deg,#1a1025,#161b22);border:1px solid var(--purple);border-radius:10px;padding:24px;margin-bottom:18px}
+.verdict .big{font-size:19px;font-weight:700;color:var(--purple);margin-bottom:10px}
+ul{margin-left:18px}li{margin:6px 0}
+.foot{color:var(--dim);font-size:12px;margin-top:20px;border-top:1px solid var(--bd);padding-top:12px}
+.hl{background:rgba(63,185,80,.12)}.bad{background:rgba(248,81,73,.08)}
+.warn{background:rgba(248,81,73,.10);border-left:3px solid var(--red);padding:10px 14px;margin-top:12px;border-radius:4px}
+.note{background:rgba(88,166,255,.08);border-left:3px solid var(--blue);padding:10px 14px;margin-top:12px;border-radius:4px}
+.ok{background:rgba(63,185,80,.08);border-left:3px solid var(--green);padding:10px 14px;margin-top:12px;border-radius:4px}
+code{background:#1c2128;padding:1px 5px;border-radius:4px;color:var(--amber);font-size:12px}
+</style>
+</head>
+<body>
+<h1>v1.3 多因子打分：会错过 3-6 月涨幅吗？</h1>
+<div class="sub">style-rotation-alert / rotation_core.py 真实引擎回测 · 2026-11-22 · 用生产快照跑 v1.3 打分公式与回放 · 研究验证，未碰线上与冻结 v2.1</div>
+
+<div class="verdict">
+<div class="big">答案分两层：打分"选得中"，但净值"赚不到"——v1.3 每次都把创业板/科创50 选进前二，3-6月净值却只涨 +11.3%，反而低于 v1.4 的 +13.1%</div>
+v1.3 的波动是<b>软惩罚</b>（score 里 −0.685·z(波动)），vol_cap=74% 几乎不设限，所以高波标的不被挡门外、靠高动量加分仍被选中。<b>真正让它错过涨幅的不是打分，而是仓位</b>：vol_target=0.1 的低风险预算让总敞口只有 33%~52%，inv_vol 加权又给高波动的科创50更低权重（48%）。方向选对、却只用了不到一半资金参与，最终收益反而不如满仓的 v1.4。
+</div>
+
+<div class="card">
+<h2>一、v1.3 打分公式（真实参数）</h2>
+<div class="note">
+<code>score = 0.657·z(160日动量) − 0.685·z(40日波动) + 0.009·z(加速度) + 0.358·z(风险调整动量) + 0.137·z(趋势)</code><br>
+跨资产 z-score 标准化（nanmean/nanstd, ddof=0）后加权；权重经绝对值和归一化。<br>
+准入：动量> −1.09% · vol&lt;74% · 距120日高点不过深 · 趋势>0。<br>
+top_n=2 · rebal=10 · vol_target=0.1 · weight_mode=inv_vol · 熔断13%/40日冷却。
+</div>
+<div class="warn"><b>与 v1.4 的本质区别：</b>v1.3 把波动当"扣分项"（软），v1.4 把波动当"硬门槛"（vol&gt;25% 直接剔除）。所以单看"能否选中高波标的"，v1.3 明显更宽容——但也正因如此，它把风险预算摊到了高波标的上，仓位被压得很低。</div>
+</div>
+
+<div class="card">
+<h2>二、v1.3 在 3-6 月每次都选对标的</h2>
+<table>
+<thead><tr><th>调仓日</th><th>v1.3 选中（前二）</th><th>创业板score</th><th>科创50score</th><th>v1.4 选中的</th></tr></thead>
+<tbody>
+<tr><td>2026-03-31</td><td class="g">创业板、沪深300</td><td class="g">+0.769</td><td>距高点深✗</td><td>纳指/沪深300</td></tr>
+<tr><td>2026-04-14</td><td class="g">创业板、科创50</td><td class="g">+0.670</td><td>−0.003✓</td><td>纳指</td></tr>
+<tr><td>2026-04-28</td><td class="g">创业板、纳指</td><td class="g">+0.531</td><td>−0.321✓</td><td>纳指</td></tr>
+<tr><td>2026-05-14</td><td class="g">创业板、科创50</td><td class="g">+0.407</td><td>+0.150✓</td><td>纳指</td></tr>
+<tr><td>2026-05-28</td><td class="g">创业板、纳指</td><td class="g">+0.463</td><td>−0.066✓</td><td>纳指</td></tr>
+<tr><td>2026-06-11</td><td class="g">创业板、纳指</td><td class="g">+0.655</td><td>−0.322✓</td><td>沪深300</td></tr>
+<tr><td>2026-06-26</td><td class="g">创业板、科创50</td><td class="g">+0.443</td><td>+0.280✓</td><td>熔断/国债</td></tr>
+</tbody>
+</table>
+<div class="ok"><b>创业板 7 次全部 score 第一、全部入选；科创50 4 次入选</b>。单看选券，v1.3 完美抓住了这波行情的方向——它不会因为"高波动"把这两个标的挡在门外。这一点确实比 v1.4 的硬门槛更聪明。</div>
+</div>
+
+<div class="card">
+<h2>三、但赚不到：低仓位 + 逆波动加权</h2>
+<table>
+<thead><tr><th>调仓日</th><th>总敞口</th><th>持仓权重</th><th>问题</th></tr></thead>
+<tbody>
+<tr><td>2026-04-07</td><td class="r">52%</td><td>沪深300 60% / 创业板 40%</td><td>近半资金空仓</td></tr>
+<tr><td>2026-04-21</td><td class="r">33%</td><td>创业板 52% / 科创50 48%</td><td>选对标的但只投 1/3</td></tr>
+<tr><td>2026-05-08</td><td class="r">38%</td><td>纳指 52% / 创业板 48%</td><td>近 2/3 空仓</td></tr>
+<tr><td>2026-05-22</td><td class="r">38%</td><td>纳指 53% / 创业板 47%</td><td>高波标的权重被压</td></tr>
+<tr><td>2026-06-05</td><td class="r">43%</td><td>纳指 52% / 创业板 48%</td><td>仓位不足</td></tr>
+<tr><td>2026-06-22</td><td class="r">37%</td><td>纳指 52% / 创业板 48%</td><td>仓位不足</td></tr>
+</tbody>
+</table>
+<div class="warn"><b>两个机制叠加把涨幅稀释掉了：</b>① vol_target=0.1（目标波动仅10%）→ 总敞口只有 33~52%，一半以上资金在债券/空仓；② weight_mode=inv_vol（波动倒数加权）→ 波动越高的科创50/创业板权重越低（48% < 纳指52%），涨得最猛的反而买得最少。所以即使 7 次选中创业板，也只有约 40% 仓位 × 50% 敞口 ≈ 20% 的有效资金参与那波 +37% 行情。</div>
+</div>
+
+<div class="card">
+<h2>四、净值对账：v1.3 vs v1.4</h2>
+<table>
+<thead><tr><th>口径</th><th>v1.3 多因子</th><th>v1.4 当前线上</th></tr></thead>
+<tbody>
+<tr><td>3-31 → 6-30 净值</td><td class="r">+11.3%</td><td class="g">+13.1%</td></tr>
+<tr><td>全样本年化</td><td class="r">19.27%</td><td class="g">24.42%</td></tr>
+<tr><td>全样本最大回撤</td><td class="g">−13.34%</td><td class="r">−18.64%</td></tr>
+<tr><td>月胜率</td><td>66.88%</td><td>~69%</td></tr>
+<tr><td>选券能力（这段）</td><td class="g">选中创业板7/7、科创50 4/7</td><td class="r">两者0次（被vol挡）</td></tr>
+</tbody>
+</table>
+<div class="note">v1.3 是"选中了但仓位太轻"，v1.4 是"仓位足但标的被挡"。两者在这段行情里殊途同归——都没充分吃到科创50/创业板的涨幅。差别在风险特征：v1.3 用低仓位换来 −13.34% 的浅回撤，v1.4 用高仓位博 24.42% 的收益但回撤 −18.64%。</div>
+</div>
+
+<div class="card">
+<h2>五、结论</h2>
+<ul>
+<li><b>直接回答"是否会错过"：</b>v1.3 的打分<b>不会错过选券</b>——创业板每次第一、科创50 频繁入选，明显比 v1.4 的硬门槛更能识别高波动真趋势。但它的低风险预算（vol_target=0.1）和逆波动加权把它变成了"看对做不大"，最终净值 +11.3% 仍低于 v1.4 的 +13.1%。</li>
+<li><b>这印证了核心矛盾：</b>问题从来不是"能否识别高波动标的的上涨"（因子打分做得到），而是"识别之后敢不敢重仓"——重仓就要承受更大波动和回撤，这正是 v1.4 的选择。v1.3 选择不重仓，就注定吃不到这种弹性行情。</li>
+<li><b>真正的启发：</b>如果要两全，方向是把 v1.3 的"识别能力"和 v1.4 的"重仓能力"结合——用 v1.3 的多因子打分（波动软惩罚、能选中真趋势）做选券，但给它更高的 vol_target 和风险预算，同时对高波标的设更严格的熔断/止损来控制尾部。这就是"卫星仓"思路：识别用多因子，仓位独立于主策略。</li>
+<li><b>建议：</b>现有 v1.4（24.42%/−18.64%）仍是收益最优的主策略，不建议回退 v1.3（收益更低）。若要追求弹性，可单开研究线把 v1.3 打分 + 更高风险预算做成卫星仓验证，与主策略隔离。我可以继续这条线。</li>
+</ul>
+</div>
+
+<div class="foot">数据源：style-rotation-alert 生产快照（截至 2026-11-20）· 引擎：rotation_core.py（v1.3 C线固定参数）真实 replay 与 score/eligible 计算 · v1.4 数据来自 v14_engine 生产回放 · 无前视 · 研究验证，未上线、未触碰冻结 v2.1 · 仅供研究记录，不构成投资建议。</div>
+</body>
+</html>
