@@ -36,7 +36,9 @@ def run(panel, F, params, scores=None):
     vol_target = p.get('vol_target', 0.40)
     vol_cap = p.get('vol_cap', 0.25)
     top_n = int(p.get('top_n', 1))
-    dd_limit = p.get('dd_limit', 0.45)
+    dd_limit = p.get('dd_limit', 0.18)
+    dd_recover = p.get('dd_recover', 0.95)
+    dd_cooldown = int(p.get('dd_cooldown', 60))
     cost = p.get('cost_bps', 10.0) / 1e4
     warmup = int(p.get('warmup', 260))
     floor = p.get('timing_floor', 0.0)
@@ -62,8 +64,39 @@ def run(panel, F, params, scores=None):
     turn = 0.0
     trades = 0
     rebal_days = []
-    cooldown = 0
+    circuit = False; cd = 0
     tstate = 1.0  # 择时状态
+
+    def select(t, score=None):
+        """正常选券: 返回 (new_w, new_exp, order, score)。t 日收盘可见。"""
+        if score is None:
+            score = np.zeros(A)
+            for name, w in fw.items():
+                if name in Fz:
+                    score += w * np.nan_to_num(Fz[name][t], nan=0.0)
+            if scores is not None:
+                score += np.nan_to_num(scores[t], nan=0.0)
+        elig = np.zeros(A, dtype=bool)
+        for j in range(5):
+            elig[j] = np.isfinite(vol[t, j]) and vol[t, j] <= vol_cap and np.isfinite(c[t, j])
+        n_ok = elig.sum()
+        if n_ok == 0:
+            nw = np.zeros(A); nw[5] = 1.0
+            return nw, 0.0, [], score
+        cand = np.where(elig)[0]
+        k = min(top_n, n_ok)
+        order = cand[np.argsort(-score[cand])][:k]
+        nw = np.zeros(A)
+        iv = 1.0 / np.maximum(vol[t, order], 1e-6)
+        iv = iv / iv.sum()
+        for idx, j in enumerate(order):
+            nw[j] = iv[idx]
+        vsel = np.nan_to_num(vol[t, order], nan=0.0)
+        port_vol = float(np.sqrt(np.sum((iv * vsel)**2) + 2e-6))
+        raw_exp = np.clip(vol_target / (port_vol + 1e-9), 0.0, 1.0) * tstate
+        new_exp = np.clip(raw_exp, floor, 1.0)
+        nw[5] = 1.0 - new_exp
+        return nw, new_exp, [int(j) for j in order], score
 
     for t in range(warmup, T):
         # --- 持仓承担 t 日收益 (t-1 已定好 cur_w, cur_exp) ---
@@ -76,54 +109,22 @@ def run(panel, F, params, scores=None):
         peak = max(peak, equity)
         dd = equity / peak - 1.0
 
-        # --- 再平衡日: 用 t 日收盘数据决策, 下期 t+1 生效 ---
-        if (t - warmup) % rebal == 0 and t < T - 1:
-            # 打分: 加权 z-score 求和 (风险资产)
-            score = np.zeros(A)
-            for name, w in fw.items():
-                if name in Fz:
-                    z = Fz[name][t]
-                    score += w * np.nan_to_num(z, nan=0.0)
-            if scores is not None:
-                score += np.nan_to_num(scores[t], nan=0.0)
-            # 合格池: 波动 <= vol_cap 且 有有效价格
-            elig = np.zeros(A, dtype=bool)
-            for j in range(5):
-                elig[j] = np.isfinite(vol[t, j]) and vol[t, j] <= vol_cap and np.isfinite(c[t, j])
-            n_ok = elig.sum()
-            if n_ok == 0:
-                # 全不合格 → 持债/现金
-                new_w = np.zeros(A); new_w[5] = 1.0
-                new_exp = 0.0
-            else:
-                cand = np.where(elig)[0]
-                k = min(top_n, n_ok)
-                # 选 score 最高的 k 个
-                order = cand[np.argsort(-score[cand])][:k]
-                new_w = np.zeros(A)
-                # 波动率倒数加权
-                iv = 1.0 / np.maximum(vol[t, order], 1e-6)
-                iv = iv / iv.sum()
-                for idx, j in enumerate(order):
-                    new_w[j] = iv[idx]
-                # 目标仓位: vol_target / 组合波动, 零杠杆封顶 1.0
-                # 只累加被选中资产的方差贡献, 避免未上市资产(vol=nan)污染
-                vsel = np.nan_to_num(vol[t, order], nan=0.0)
-                port_vol = float(np.sqrt(np.sum((iv * vsel)**2) + 2e-6))
-                raw_exp = np.clip(vol_target / (port_vol + 1e-9), 0.0, 1.0)
-                # 择时 overlay
-                raw_exp *= tstate
-                new_exp = np.clip(raw_exp, floor, 1.0)
-                # 回撤熔断
-                if dd <= -dd_limit:
-                    cooldown = int(p.get('dd_cooldown', 10))
-                if cooldown > 0:
-                    new_exp *= 0.5
-                    cooldown -= 1
-                # 债/现金补位
-                new_w[5] = 1.0 - new_exp
+        new_w = None; new_exp = None; acted = False
+        # --- 每日熔断检查 (t 日收盘 → t+1 生效) ---
+        if (not circuit) and dd <= -dd_limit:
+            circuit = True; cd = dd_cooldown
+            new_w = np.zeros(A); new_w[5] = 1.0; new_exp = 0.0; acted = True
+        if circuit and not acted:
+            cd -= 1
+            recovered = dd >= -dd_limit * dd_recover
+            if cd <= 0 and recovered and (t - warmup) % rebal == 0 and t < T - 1:
+                circuit = False
+                new_w, new_exp, _, _ = select(t); acted = True
+        # --- 常规再平衡 (非熔断、非熔断触发日) ---
+        if not acted and (t - warmup) % rebal == 0 and t < T - 1 and (not circuit):
+            new_w, new_exp, _, _ = select(t); acted = True
 
-            # 换手 & 成本
+        if acted and new_w is not None:
             delta = np.abs(new_w - cur_w).sum() + abs(new_exp - cur_exp)
             turn += delta
             equity *= (1.0 - cost * delta)
@@ -131,8 +132,6 @@ def run(panel, F, params, scores=None):
             cur_w = new_w
             cur_exp = new_exp
             rebal_days.append(t)
-
-            # 更新择时状态 (多信号投票, t 日可见)
             if p.get('timing_mode', 'none') != 'none':
                 tstate = timing_state(panel, F, t, p, tstate)
 

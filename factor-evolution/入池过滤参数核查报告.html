@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>入池过滤参数核查 — vol_cap 25% / vol_win 20 是否合理</title>
+<style>
+:root{--bg:#0d1117;--card:#161b22;--bd:#30363d;--fg:#e6edf3;--dim:#8b949e;--red:#f85149;--green:#3fb950;--blue:#58a6ff;--amber:#d29922;--purple:#bc8cff}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--fg);font-family:-apple-system,'PingFang SC','Microsoft YaHei',sans-serif;line-height:1.7;padding:24px;max-width:1080px;margin:0 auto}
+h1{font-size:25px;margin-bottom:6px;background:linear-gradient(90deg,#58a6ff,#bc8cff);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.sub{color:var(--dim);font-size:13px;margin-bottom:24px}
+.card{background:var(--card);border:1px solid var(--bd);border-radius:10px;padding:20px;margin-bottom:18px}
+h2{font-size:18px;margin-bottom:12px;color:var(--blue);border-left:3px solid var(--blue);padding-left:10px}
+table{width:100%;border-collapse:collapse;font-size:13px;margin-top:8px}
+th,td{padding:7px 9px;text-align:right;border-bottom:1px solid var(--bd)}
+th{color:var(--dim);font-weight:600;background:#1c2128}
+td:first-child,th:first-child{text-align:left}
+.g{color:var(--green)}.r{color:var(--red)}.a{color:var(--amber)}.b{color:var(--blue)}.dim{color:var(--dim)}
+.verdict{background:linear-gradient(135deg,#1a1025,#161b22);border:1px solid var(--purple);border-radius:10px;padding:24px;margin-bottom:18px}
+.verdict .big{font-size:20px;font-weight:700;color:var(--purple);margin-bottom:10px}
+ul{margin-left:18px}li{margin:6px 0}
+.foot{color:var(--dim);font-size:12px;margin-top:20px;border-top:1px solid var(--bd);padding-top:12px}
+.hl{background:rgba(63,185,80,.12)}
+.warn{background:rgba(248,81,73,.10);border-left:3px solid var(--red);padding:10px 14px;margin-top:12px;border-radius:4px}
+.note{background:rgba(88,166,255,.08);border-left:3px solid var(--blue);padding:10px 14px;margin-top:12px;border-radius:4px}
+</style>
+</head>
+<body>
+<h1>入池过滤参数核查：vol_cap 25% / vol_win 20 是否合理</h1>
+<div class="sub">style-rotation-nav / factor-evolution · 2026-11-22 · 质疑起点：黄金近一个月急跌，为何没被"高波门槛"挡在门外 · 全程复用线上引擎口径、无前视、parity=0</div>
+
+<div class="verdict">
+<div class="big">结论：门槛对"急跌"结构性失效，但调参无法救——当前 20/25% 恰是全网格最优尖峰，任何改动都更差</div>
+波动率是<strong>滞后指标</strong>（20 日已实现波动），黄金整波下跌期间 vol20 一直在 17%~24%，从未越过 25% 门槛，直到跌完的 11-19 才触及。所以"高波标的被挡在门外"这句描述，对<strong>阴跌/急跌初期</strong>是失效的——它只能挡住已经持续高波动的标的。真正压住这次回撤的是每日即时熔断，不是入池门槛。但三方向回测都显示：改这个参数救不了回撤，反而牺牲收益。
+</div>
+
+<div class="card">
+<h2>一、黄金近一个月逐日核查：门槛全程放行</h2>
+<table>
+<thead><tr><th>日期</th><th>黄金收盘</th><th>vol10</th><th>vol20</th><th>vol40</th><th>25%门槛</th></tr></thead>
+<tbody>
+<tr><td>2026-10-12</td><td>8.585</td><td>20.9%</td><td>18.5%</td><td>21.9%</td><td class="g">入池 ✓</td></tr>
+<tr><td>2026-10-26</td><td>8.185</td><td>12.7%</td><td>16.9%</td><td>19.6%</td><td class="g">入池 ✓</td></tr>
+<tr><td>2026-11-13</td><td>7.954</td><td>31.6%</td><td>23.4%</td><td>20.8%</td><td class="g">入池 ✓</td></tr>
+<tr><td>2026-11-17</td><td>7.897</td><td>30.3%</td><td>23.7%</td><td>20.8%</td><td class="g">入池 ✓</td></tr>
+<tr><td>2026-11-19</td><td>7.612</td><td>21.1%</td><td>25.0%</td><td>21.4%</td><td class="r">才挡门外 ✗</td></tr>
+</tbody>
+</table>
+<div class="note">黄金从 8.585 跌到 7.612（<b>−11.3%</b>）的全程，20 日波动率都没超过 25%。11-09 调仓日黄金 mom250 得分最高被满仓选中，随后连跌——门槛全程放行。注意 vol10 在 11-05~11-17 已升到 26%~32%，短窗口更早预警，但它不是当前参数。</div>
+</div>
+
+<div class="card">
+<h2>二、vol_win × vol_cap 全网格扫描（48 组）</h2>
+<p class="dim" style="font-size:13px;margin-bottom:8px">基线 = win20/cap0.25：年化 24.42% / 回撤 −18.64% / 夏普 1.25 / 卡玛 1.31。★=回撤更浅且收益不降超 1pp（帕累托改进）。</p>
+<table>
+<thead><tr><th>win</th><th>cap</th><th>年化</th><th>回撤</th><th>夏普</th><th>卡玛</th><th>Δ回撤</th><th>Δ卡玛</th></tr></thead>
+<tbody>
+<tr class="hl"><td>20</td><td>0.25</td><td class="g">24.42%</td><td class="g">−18.64%</td><td class="g">1.25</td><td class="g">1.31</td><td>基线</td><td>基线</td></tr>
+<tr><td>10</td><td>0.25</td><td>24.01%</td><td>−21.80%</td><td>1.37</td><td>1.10</td><td class="r">−3.16</td><td class="r">−0.21</td></tr>
+<tr><td>15</td><td>0.20</td><td>19.71%</td><td>−22.23%</td><td>1.19</td><td>0.89</td><td class="r">−3.59</td><td class="r">−0.42</td></tr>
+<tr><td>30</td><td>0.20</td><td>20.30%</td><td class="g">−17.97%</td><td>1.17</td><td>1.13</td><td class="g">+0.67</td><td class="r">−0.18</td></tr>
+<tr><td>40</td><td>0.15</td><td>16.22%</td><td class="g">−15.79%</td><td>1.21</td><td>1.03</td><td class="g">+2.86</td><td class="r">−0.28</td></tr>
+<tr><td>60</td><td>0.15</td><td>15.61%</td><td class="g">−17.27%</td><td>1.22</td><td>0.90</td><td class="g">+1.37</td><td class="r">−0.41</td></tr>
+<tr><td>20</td><td>0.30</td><td>18.84%</td><td>−21.59%</td><td>1.06</td><td>0.87</td><td class="r">−2.94</td><td class="r">−0.44</td></tr>
+<tr><td>20</td><td>0.20</td><td>15.37%</td><td>−19.22%</td><td>1.03</td><td>0.80</td><td class="r">−0.58</td><td class="r">−0.51</td></tr>
+</tbody>
+</table>
+<div class="warn"><b>两个警示：</b>① <b>无任何帕累托改进</b>——回撤能压更浅的组（40/0.15、60/0.15、30/0.20）收益都掉到 15~20%、卡玛全低于基线；② <b>当前参数是个"尖峰"</b>：win20 下 cap 从 0.25→0.30 收益从 24.42% 崩到 18.84%，cap 0.35 更是只有 3.96%。这种对参数极度敏感的最优点，本身是过拟合的红旗——它"恰好"坐在这次样本的最优上，样本外未必稳。</div>
+</div>
+
+<div class="card">
+<h2>三、标的级止损对照（针对"持仓自身阴跌"）</h2>
+<p class="dim" style="font-size:13px;margin-bottom:8px">尝试在组合熔断之外，对持仓标的从 N 日高点回撤超阈值就次日退国债，看能否比组合级熔断更早避险。</p>
+<table>
+<thead><tr><th>方案</th><th>年化</th><th>回撤</th><th>夏普</th><th>卡玛</th></tr></thead>
+<tbody>
+<tr class="hl"><td>现状（仅组合级熔断）</td><td class="g">24.42%</td><td>−18.64%</td><td class="g">1.25</td><td class="g">1.31</td></tr>
+<tr><td>+标的止损 8% / 20日高点</td><td class="r">8.45%</td><td>−21.60%</td><td>0.76</td><td>0.39</td></tr>
+<tr><td>+标的止损 10% / 20日高点</td><td class="r">8.72%</td><td>−21.60%</td><td>0.77</td><td>0.40</td></tr>
+<tr><td>+标的止损 12% / 20日高点</td><td class="r">13.23%</td><td>−21.60%</td><td>0.98</td><td>0.61</td></tr>
+<tr><td>+标的止损 10% / 10日高点</td><td class="r">11.47%</td><td>−21.60%</td><td>0.91</td><td>0.53</td></tr>
+</tbody>
+</table>
+<div class="warn"><b>标的级止损是灾难：</b>收益崩到 8~13%、回撤反而更深。原因与之前验证过的"无条件恢复"一样——在月度轮动里叠加日频止损，会反复把仓位洗出，逃顶的同时也踏空了反弹。频繁择时对这套低换手轮动是负贡献。</div>
+</div>
+
+<div class="card">
+<h2>四、判断与建议</h2>
+<ul>
+<li><b>规则描述需要修正：</b>页面"高波标的被挡在门外"对急跌初期不成立，应改为"过滤长期高波动标的；对突发急跌依靠每日熔断保护"。</li>
+<li><b>不建议改 vol_cap/vol_win：</b>48 组里当前参数卡玛最高，改动全是更差解；且它本身是敏感尖峰，不宜再围绕它做优化（那是样本内开卷）。</li>
+<li><b>不建议加标的级止损：</b>三档测试都是负贡献，会破坏低换手轮动的结构。</li>
+<li><b>压回撤的真正杠杆不在入池门槛：</b>而在持仓集中度（top_n=1 全押一只）+ 每日熔断的触发速度。若要更稳，方向是适度分散（top_n=2，但收益会压到 14~19%）或更早的熔断信号——两者都要付出收益代价。</li>
+</ul>
+</div>
+
+<div class="foot">数据源：style-rotation-alert 生产快照（截至 2026-11-20）· 引擎复用 v14_engine（mom250 / top_n=1 / 零杠杆 / 每日熔断18%-0.95-60 / 10bp）· 仅供研究记录，不构成投资建议。</div>
+</body>
+</html>

@@ -1,27 +1,41 @@
 {
-  "version": "v1.4",
+  "version": "v1.4.1",
   "engineering": "style-rotation-nav/factor-evolution",
-  "name": "mom250 零杠杆单因子（出路B固化）",
-  "decision": "2026-11-22 用户指定：出路B定为v1.4",
+  "name": "mom250 零杠杆单因子（出路B固化）+ 即时熔断",
+  "decision": "2026-11-22 用户指定：出路B定为v1.4；同日确认熔断即时化——每日检查、触线次日全退国债、回撤收敛逢调仓恢复",
   "params": {
     "rebal": 10,
     "vol_win": 20,
     "vol_target": 0.4,
     "vol_cap": 0.25,
     "top_n": 1,
-    "dd_limit": 0.45,
+    "dd_limit": 0.18,
+    "dd_recover": 0.95,
+    "dd_cooldown": 60,
     "cost_bps": 10,
     "warmup": 260,
     "factors": {
       "mom250": 1.0
     }
   },
+  "circuit_rule": {
+    "check_freq": "每个交易日收盘",
+    "trigger": "回撤 <= 18% 且未处于熔断态 → 次日开盘全退国债（风险敞口 0）",
+    "recover": "回撤收敛到 >= 17.1%（=18%×0.95）且逢再平衡日 → 恢复选券",
+    "min_cooldown_days": 60,
+    "history_events": ["2022-01-26", "2026-11-18"],
+    "verdict": "把最大回撤从 -22.55% 压到 -18.64%、卡玛从 1.09 升到 1.31，收益几乎不降（24.57%→24.42%）；剔除最近危机段后仍生效，非过拟合"
+  },
   "metrics": {
     "full": {
-      "cagr": 25.16,
-      "maxdd": -19.8,
-      "sharpe": 1.26,
-      "calmar": 1.27
+      "cagr": 24.42,
+      "maxdd": -18.64,
+      "sharpe": 1.25,
+      "calmar": 1.31
+    },
+    "anchor_1118": {
+      "cagr": 24.4583,
+      "maxdd": -18.6409
     },
     "train": {
       "cagr": 15.05,
@@ -30,20 +44,20 @@
       "calmar": 0.85
     },
     "valid": {
-      "cagr": 29.48,
-      "maxdd": -19.8,
-      "sharpe": 1.34,
-      "calmar": 1.49
+      "cagr": 26.4,
+      "maxdd": -18.64,
+      "sharpe": 1.27,
+      "calmar": 1.42
     },
     "test": {
-      "cagr": 38.02,
-      "maxdd": -18.03,
+      "cagr": 37.83,
+      "maxdd": -18.24,
       "sharpe": 1.69,
-      "calmar": 2.11
+      "calmar": 2.07
     }
   },
   "parity": true,
   "source_factors": 49,
-  "note": "全样本25%级零杠杆诚实天花板; 收益主体为市场beta, 真alpha需看市场中性口径; parity=0无前视; 与冻结v2.1完全独立",
+  "note": "零杠杆诚实天花板；收益主体为市场beta，真alpha需看市场中性口径；parity=0无前视；即时熔断为尾部保护，非收益来源；与冻结v2.1完全独立",
   "frozen_v21_untouched": true
 }

@@ -65,10 +65,21 @@ def params_fingerprint(params: dict) -> str:
     return hashlib.sha1(raw).hexdigest()[:10]
 
 
+def _json_default(o):
+    # numpy 标量/NaN 兜底，避免 np.bool_/np.float64 中断序列化
+    if isinstance(o, (np.bool_,)):
+        return bool(o)
+    if isinstance(o, (np.floating,)):
+        return None if not np.isfinite(o) else float(o)
+    if isinstance(o, (np.integer,)):
+        return int(o)
+    raise TypeError(f"Object of type {type(o).__name__} is not JSON serializable")
+
+
 def _write_json(path, obj):
     tmp = path + ".tmp"
     with open(tmp, "w", encoding="utf-8") as f:
-        json.dump(obj, f, ensure_ascii=False, separators=(",", ":"), sort_keys=False)
+        json.dump(obj, f, ensure_ascii=False, separators=(",", ":"), sort_keys=False, default=_json_default)
         f.write("\n")
     os.replace(tmp, path)
 
@@ -104,7 +115,8 @@ def build():
     vol_target = p["vol_target"]
     top_n = int(p["top_n"])
     dd_limit = p["dd_limit"]
-    dd_cooldown = int(p.get("dd_cooldown", 10))
+    dd_recover = p.get("dd_recover", 0.95)
+    dd_cooldown = int(p.get("dd_cooldown", 60))
     cost = p.get("cost_bps", 10.0) / 1e4
 
     vol = compute_vol(c, r, vol_win)
@@ -121,8 +133,36 @@ def build():
     cur_exp = 0.0
     turn = 0.0
     trades = 0
-    cooldown = 0
+    circuit = False; cd = 0
     rebal_log = []
+
+    def select(t, score=None):
+        if score is None:
+            score = np.zeros(A)
+            for name, wgt in fw.items():
+                if name in Fz:
+                    score += wgt * np.nan_to_num(Fz[name][t], nan=0.0)
+        elig = np.zeros(A, dtype=bool)
+        for j in range(5):
+            elig[j] = np.isfinite(vol[t, j]) and vol[t, j] <= vol_cap and np.isfinite(c[t, j])
+        n_ok = int(elig.sum())
+        if n_ok == 0:
+            nw = np.zeros(A); nw[5] = 1.0
+            return nw, 0.0, [], score
+        cand = np.where(elig)[0]
+        k = min(top_n, n_ok)
+        order = cand[np.argsort(-score[cand])][:k]
+        nw = np.zeros(A)
+        iv = 1.0 / np.maximum(vol[t, order], 1e-6)
+        iv = iv / iv.sum()
+        for idx, j in enumerate(order):
+            nw[j] = iv[idx]
+        vsel = np.nan_to_num(vol[t, order], nan=0.0)
+        port_vol = float(np.sqrt(np.sum((iv * vsel) ** 2) + 2e-6))
+        raw_exp = np.clip(vol_target / (port_vol + 1e-9), 0.0, 1.0)
+        new_exp = np.clip(raw_exp, 0.0, 1.0)
+        nw[5] = 1.0 - new_exp
+        return nw, new_exp, [int(j) for j in order], score
 
     for t in range(warm, T):
         day_ret = 0.0
@@ -136,49 +176,31 @@ def build():
         peak = max(peak, equity)
         dd = equity / peak - 1.0
 
-        if (t - warm) % rebal == 0 and t < T - 1:
-            score = np.zeros(A)
-            for name, wgt in fw.items():
-                if name in Fz:
-                    score += wgt * np.nan_to_num(Fz[name][t], nan=0.0)
-            elig = np.zeros(A, dtype=bool)
-            for j in range(5):
-                elig[j] = np.isfinite(vol[t, j]) and vol[t, j] <= vol_cap and np.isfinite(c[t, j])
-            n_ok = int(elig.sum())
-            if n_ok == 0:
-                new_w = np.zeros(A); new_w[5] = 1.0
-                new_exp = 0.0
-                picked = []
-            else:
-                cand = np.where(elig)[0]
-                k = min(top_n, n_ok)
-                order = cand[np.argsort(-score[cand])][:k]
-                new_w = np.zeros(A)
-                iv = 1.0 / np.maximum(vol[t, order], 1e-6)
-                iv = iv / iv.sum()
-                for idx, j in enumerate(order):
-                    new_w[j] = iv[idx]
-                vsel = np.nan_to_num(vol[t, order], nan=0.0)
-                port_vol = float(np.sqrt(np.sum((iv * vsel) ** 2) + 2e-6))
-                raw_exp = np.clip(vol_target / (port_vol + 1e-9), 0.0, 1.0)
-                if dd <= -dd_limit:
-                    cooldown = dd_cooldown
-                if cooldown > 0:
-                    raw_exp *= 0.5
-                    cooldown -= 1
-                new_exp = np.clip(raw_exp, 0.0, 1.0)
-                new_w[5] = 1.0 - new_exp
-                picked = [int(j) for j in order]
+        new_w = None; new_exp = None; picked = None; score = None; acted = False
+        # 每日熔断检查 (t 日收盘 → t+1 生效)
+        if (not circuit) and dd <= -dd_limit:
+            circuit = True; cd = dd_cooldown
+            new_w = np.zeros(A); new_w[5] = 1.0; new_exp = 0.0; picked = []; acted = True
+        if circuit and not acted:
+            cd -= 1
+            recovered = dd >= -dd_limit * dd_recover
+            if cd <= 0 and recovered and (t - warm) % rebal == 0 and t < T - 1:
+                circuit = False
+                new_w, new_exp, picked, score = select(t); acted = True
+        if not acted and (t - warm) % rebal == 0 and t < T - 1 and (not circuit):
+            new_w, new_exp, picked, score = select(t); acted = True
 
+        if acted and new_w is not None:
             delta = np.abs(new_w - cur_w).sum() + abs(new_exp - cur_exp)
             turn += delta
             equity *= (1.0 - cost * delta)
             trades += int(np.sum(np.abs(new_w[:5] - cur_w[:5]) > 1e-6))
             cur_w, cur_exp = new_w, new_exp
-            hold_names = [FF.ALL[j] for j in picked]
+            hold_names = [FF.ALL[j] for j in (picked or [])]
             rebal_log.append(dict(
-                date=str(dates[t])[:10], exp=float(new_exp), picked=picked,
-                names=hold_names, score=float(max(score[picked])) if picked else None,
+                date=str(dates[t])[:10], exp=float(new_exp), picked=picked or [],
+                names=hold_names, score=float(max(score[i] for i in picked)) if picked else None,
+                circuit=bool(circuit and not picked),
             ))
 
     # ---- 报告口径序列：从 BASIS_START 起，起点归一化为 1 ----
@@ -270,6 +292,7 @@ def build():
     last = rebal_log[-1]
     t_last = date_strs.index(last["date"])
     last_exp = last["exp"]
+    in_circuit = bool(last.get("circuit")) and not last["picked"]
     # 当前持仓：最后决策日选中，权重按波动率倒数
     cur_items = []
     for j in last["picked"]:
@@ -279,6 +302,12 @@ def build():
             role=ROLE.get(FF.ALL[j], "风险"), weight=round(float(w[j] * 100.0), 2),
             capital=round(float(w[j] * 100.0), 2),
             price=_r(c[min(t_last, T - 1), j], 3),
+        ))
+    if in_circuit:
+        cur_items.append(dict(
+            code=CODES["BondETF"], name=ASSET_CN["BondETF"], asset="BondETF",
+            role="防御", weight=100.0, capital=0.0,
+            price=_r(c[min(t_last, T - 1), 5], 3),
         ))
     # 下一调仓日：最后决策日 + rebal 个交易日；超出快照则用工作日外推
     from datetime import date, timedelta
@@ -314,8 +343,9 @@ def build():
         current=cur_items, target=cur_items,
         current_exposure=round(last_exp * 100.0, 2),
         target_exposure=round(last_exp * 100.0, 2),
-        will_change=False, changed=[], circuit=False,
-        reason="mom250 横截面动量 · 波动率倒数定仓 · 零杠杆",
+        will_change=False, changed=[], circuit=in_circuit,
+        reason=("回撤触及熔断线 → 次日全退国债防御，收敛后逢调仓日恢复"
+                if in_circuit else "mom250 横截面动量 · 波动率倒数定仓 · 零杠杆"),
         drawdown=round(ddser[-1], 2), dd_limit=_pct(dd_limit, 2),
         pv=None, factors=factor_rows,
     )
@@ -324,12 +354,14 @@ def build():
     prev_names = None
     for e in rebal_log:
         names = e["names"]
-        kind = "换仓" if (prev_names is None or set(names) != set(prev_names)) else "权重微调"
+        is_circ = bool(e.get("circuit")) and not names
+        kind = "熔断" if is_circ else ("换仓" if (prev_names is None or set(names) != set(prev_names)) else "权重微调")
         rebalances.append(dict(
             date=e["date"], exposure=round(e["exp"] * 100.0, 2), names=" / ".join(ASSET_CN[a] for a in names) if names else "国债ETF",
-            changed=(kind == "换仓"), kind=kind,
-            reason=f"mom250 得分最高 {ASSET_CN[names[0]]}" if names else "无合格标的 → 国债ETF",
-            circuit=False,
+            changed=(kind in ("换仓", "熔断")), kind=kind,
+            reason=("回撤熔断 → 全退国债" if is_circ else
+                    (f"mom250 得分最高 {ASSET_CN[names[0]]}" if names else "无合格标的 → 国债ETF")),
+            circuit=is_circ,
         ))
         prev_names = names
 
@@ -340,7 +372,8 @@ def build():
     cagr_c = (eq_cut[-1] / eq_cut[0]) ** (1.0 / yrs_c) - 1.0
     pk_c = np.maximum.accumulate(eq_cut)
     mdd_c = float(np.min(eq_cut / pk_c - 1.0))
-    target = dict(cagr=cfg["metrics"]["full"]["cagr"], maxdd=abs(cfg["metrics"]["full"]["maxdd"]))
+    anchor = cfg["metrics"].get("anchor_1118", cfg["metrics"]["full"])
+    target = dict(cagr=anchor["cagr"], maxdd=abs(anchor["maxdd"]))
     actual = dict(cagr=round(cagr_c * 100.0, 4), maxdd=round(abs(mdd_c) * 100.0, 4))
     checks = dict(cagr=round(abs(actual["cagr"] - target["cagr"]), 4),
                   maxdd=round(abs(actual["maxdd"] - target["maxdd"]), 4))
