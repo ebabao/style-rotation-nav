@@ -307,7 +307,11 @@ function renderChart(){
      <div><span>点数</span><b>${S.dates.length}</b></div>`;
   $('#chartMeta').textContent = S.dates[0]+' → '+S.dates[S.dates.length-1]+' · '+S.dates.length+' 点';
 
-  const el=$('#chart'), W=1000, H=340, mL=52, mR=14, mT=14, mB=30;
+  const el=$('#chart');
+  // 与主看板 v1.4.2 一致：宽度自适应容器，避免固定 viewBox 在窄屏被缩放导致图变小
+  const W=Math.max(el.clientWidth||el.parentElement.clientWidth||1000, 300);
+  const H=W<520?250:340;
+  const mL=W<520?44:62, mR=W<520?10:16, mT=14, mB=W<520?28:34;
   const iw=W-mL-mR, ih=H-mT-mB;
   const all=[...S.c,...S.m,...S.s].filter(v=>v!=null&&isFinite(v));
   let lo=Math.min(...all), hi=Math.max(...all);
@@ -323,9 +327,10 @@ function renderChart(){
     ylab+=`<text x="${mL-8}" y="${(y+4).toFixed(1)}" text-anchor="end">${v.toFixed(2)}</text>`;
   }
   let xlab='';
-  for(let k=0;k<=4;k++){
-    const i=Math.round((S.c.length-1)*k/4), x=X(i);
-    xlab+=`<text x="${x.toFixed(1)}" y="${H-8}" text-anchor="${k===0?'start':k===4?'end':'middle'}">${S.dates[i]}</text>`;
+  const nTicks=W<520?3:5;
+  for(let k=0;k<=nTicks;k++){
+    const i=Math.round((S.c.length-1)*k/nTicks), x=X(i);
+    xlab+=`<text x="${x.toFixed(1)}" y="${H-8}" text-anchor="${k===0?'start':k===nTicks?'end':'middle'}">${S.dates[i]}</text>`;
   }
   el.innerHTML=`<svg viewBox="0 0 ${W} ${H}" width="100%" height="${H}" preserveAspectRatio="xMidYMid meet" role="img" aria-label="三策略净值对比曲线">
     <g class="grid">${grid}</g><g class="axis">${ylab}${xlab}</g>
@@ -416,6 +421,9 @@ document.querySelectorAll('#rangeSeg button').forEach(b=>b.addEventListener('cli
   document.querySelectorAll('#rangeSeg button').forEach(x=>x.classList.remove('on'));
   b.classList.add('on'); range=Number(b.dataset.r); renderChart();
 }));
+
+let _obsRT;
+window.addEventListener('resize',()=>{ clearTimeout(_obsRT); _obsRT=setTimeout(()=>renderChart(),140); });
 
 load();
 </script>
