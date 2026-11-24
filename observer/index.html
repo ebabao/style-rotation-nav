@@ -191,8 +191,10 @@
     <div class="controls">
       <div class="control"><span class="lab">区间</span>
         <div class="segment" id="rangeSeg">
-          <button data-r="1">1年</button><button data-r="3">3年</button>
-          <button data-r="5">5年</button><button data-r="0" class="on">全部</button>
+          <button data-r="5">近1周</button><button data-r="21">近1月</button>
+          <button data-r="63">近3月</button><button data-r="252">1年</button>
+          <button data-r="756">3年</button><button data-r="1260">5年</button>
+          <button data-r="0" class="on">全部</button>
         </div>
       </div>
     </div>
@@ -291,7 +293,7 @@ function renderMetrics(){
 function sliceByRange(){
   const n=D.dates.length;
   if(!range) return {a:0, dates:D.dates, c:D.combo_nav, m:D.main_nav, s:D.sat_nav, dd:D.combo_dd};
-  const a=Math.max(0, n-range*252);
+  const a=Math.max(0, n-range);  // range 现在直接是交易日数
   return {a, dates:D.dates.slice(a), c:D.combo_nav.slice(a), m:D.main_nav.slice(a), s:D.sat_nav.slice(a), dd:D.combo_dd.slice(a)};
 }
 
