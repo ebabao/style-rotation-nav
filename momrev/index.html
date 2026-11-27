@@ -1,0 +1,463 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>动量+反转双引擎组合 · 隔离观察版</title>
+<meta name="description" content="动量主仓 v1.4.2 80% + 反转腿 rev250 20% 双引擎隔离观察版：两引擎物理隔离、互不回写，净值对比与相关性证据。非执行信号。">
+<meta name="theme-color" content="#2b2150">
+<style>
+  :root{
+    --bg:#f4f6fb; --card:#fff; --ink:#111a33; --muted:#64708a; --line:#e4e9f2;
+    --navy:#2b2150; --navy2:#3b2f6b; --brand:#6d5ae0; --brand2:#9a86f5;
+    --gold:#d6ad55; --up:#d93025; --down:#0f9d58; --pos:#2563eb; --warn:#b26a00;
+    --combo:#7c3aed; --main:#2563eb; --sat:#e07a1f;
+    --ok:#0f9d58; --shadow:0 12px 34px rgba(16,28,62,.07); --radius:16px;
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth;scroll-padding-top:70px}
+  body{margin:0;background:var(--bg);color:var(--ink);
+       font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;
+       font-size:14px;line-height:1.6;-webkit-font-smoothing:antialiased;overflow-x:hidden}
+  a{color:var(--pos);text-decoration:none} a:hover{text-decoration:underline}
+  .wrap{max-width:1180px;margin:0 auto;padding:0 22px 56px}
+  .topnav{position:sticky;top:0;z-index:20;background:rgba(43,33,80,.96);backdrop-filter:blur(14px);
+          -webkit-backdrop-filter:blur(14px);border-bottom:1px solid rgba(255,255,255,.10)}
+  .topnav .wrap{display:flex;align-items:center;gap:16px;height:54px;padding-top:0;padding-bottom:0;flex-wrap:nowrap}
+  .brand{display:flex;align-items:center;gap:10px;color:#fff;font-weight:650;white-space:nowrap;letter-spacing:.3px;font-size:14px}
+  .brand .mark{width:26px;height:26px;border-radius:8px;background:linear-gradient(135deg,var(--gold),#f3dc9a);
+               display:grid;place-items:center;color:var(--navy);font-weight:800;font-size:12px;flex:none}
+  .brand .obs{font-size:10px;color:#f0d99a;border:1px solid rgba(240,217,154,.5);border-radius:6px;padding:1px 6px;margin-left:2px}
+  .backlink{margin-left:auto;color:#dbe4ff;font-size:12px;white-space:nowrap}
+  .backlink:hover{color:#fff}
+
+  .banner{margin:20px 0 0;border:1px solid #e6dcbd;background:linear-gradient(180deg,#fffaf0,#fffdf8);
+          border-radius:14px;padding:14px 18px;display:flex;gap:12px;align-items:flex-start}
+  .banner .ic{flex:0 0 30px;height:30px;border-radius:9px;background:#f3e2b4;color:#7a5a14;
+              display:grid;place-items:center;font-weight:800;font-size:15px}
+  .banner b{color:#6b4e12}
+  .banner p{margin:2px 0 0;color:#7a6637;font-size:12.5px;line-height:1.7}
+
+  .hero{margin:24px 0 6px}
+  .hero h1{font-size:23px;margin:0 0 6px;font-weight:700;letter-spacing:-.3px}
+  .hero .sub{color:var(--muted);font-size:13px}
+  .hero .formula{display:inline-flex;align-items:center;gap:8px;flex-wrap:wrap;margin-top:12px;
+                 font-size:12.5px;color:#475569}
+  .chip{display:inline-flex;align-items:center;gap:6px;background:#fff;border:1px solid var(--line);
+        border-radius:999px;padding:5px 12px;font-size:12px}
+  .chip i{width:9px;height:9px;border-radius:50%;display:inline-block}
+  .chip.main i{background:var(--main)} .chip.sat i{background:var(--sat)} .chip.combo i{background:var(--combo)}
+
+  .card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);
+        box-shadow:var(--shadow);overflow:hidden;margin-top:18px}
+  .card h3{font-size:16px;margin:0;padding:16px 20px;border-bottom:1px solid var(--line);font-weight:650;
+           display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+  .card h3 .hint{font-size:11.5px;color:var(--muted);font-weight:400;margin-left:auto}
+
+  /* 指标对比 */
+  .mgrid{display:grid;grid-template-columns:1.15fr 1fr 1fr}
+  .mcol{padding:18px 20px;border-right:1px solid var(--line)}
+  .mcol:last-child{border-right:0}
+  .mcol .mh{display:flex;align-items:center;gap:8px;font-weight:650;font-size:14px;margin-bottom:14px}
+  .mcol .mh i{width:10px;height:10px;border-radius:50%}
+  .mcol .mh .badge{margin-left:auto;font-size:10px;font-weight:500;color:var(--muted);
+                   border:1px solid var(--line);border-radius:6px;padding:1px 7px}
+  .mcol.combo{background:linear-gradient(180deg,#faf7ff,#fff)}
+  .kv{display:flex;justify-content:space-between;align-items:baseline;padding:8px 0;border-bottom:1px dashed var(--line)}
+  .kv:last-child{border-bottom:0}
+  .kv .k{color:var(--muted);font-size:12.5px}
+  .kv .v{font-size:17px;font-weight:680;letter-spacing:-.3px}
+  .kv .v small{font-size:11px;color:var(--muted);font-weight:400;margin-left:3px}
+  .gain{color:var(--up)} /* 提升=红(中国习惯) */
+
+  /* 图表 */
+  .controls{display:flex;gap:16px;align-items:center;padding:12px 20px 4px;flex-wrap:wrap}
+  .control{display:flex;align-items:center;gap:8px}
+  .control .lab{font-size:12px;color:var(--muted)}
+  .segment{display:flex;gap:3px;background:#f2f4f9;padding:3px;border-radius:10px;overflow-x:auto;scrollbar-width:none}
+  .segment::-webkit-scrollbar{display:none}
+  .segment button{border:0;background:transparent;color:var(--muted);border-radius:8px;padding:5px 12px;
+                  font-size:12px;cursor:pointer;white-space:nowrap;min-height:30px}
+  .segment button.on{background:#fff;color:var(--brand);font-weight:650;box-shadow:0 1px 5px rgba(20,30,60,.10)}
+  .legend{display:flex;gap:16px;flex-wrap:wrap;font-size:12px;color:var(--muted);padding:4px 20px 0}
+  .legend i{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:6px;vertical-align:-1px}
+  .chart{position:relative;padding:8px 12px 14px;min-height:320px}
+  .chart svg{display:block;width:100%;height:auto;touch-action:pan-y}
+  .grid line{stroke:var(--line);stroke-width:1}
+  .axis text{fill:var(--muted);font-size:11px}
+  .cross{stroke:#94a3b8;stroke-width:1;stroke-dasharray:4 4;display:none}
+  .marker{stroke:#fff;stroke-width:2;display:none}
+  .tip{position:absolute;pointer-events:none;background:rgba(43,33,80,.96);color:#fff;
+       padding:9px 11px;border-radius:8px;font-size:12px;line-height:1.6;display:none;z-index:5;
+       max-width:min(260px,80vw);box-shadow:0 8px 20px rgba(0,0,0,.2)}
+  .tip b{font-weight:650} .tip .muted{color:#c3bce0}
+  .stats{display:grid;grid-template-columns:repeat(4,1fr);border-bottom:1px solid var(--line);background:#fbfcff}
+  .stats div{padding:11px 20px;border-right:1px solid var(--line)}
+  .stats div:nth-child(4n){border-right:0}
+  .stats span{display:block;color:var(--muted);font-size:11px}
+  .stats b{font-size:15px;font-weight:680}
+
+  /* 相关性 */
+  .corrgrid{display:grid;grid-template-columns:minmax(0,.9fr) minmax(0,1.1fr)}
+  .corrgrid>div{padding:20px 22px}
+  .corrgrid>div+div{border-left:1px solid var(--line);background:#fafbfe}
+  .bignum{font-size:40px;font-weight:760;letter-spacing:-1.5px;color:var(--combo);line-height:1.1}
+  .bignum small{font-size:14px;color:var(--muted);font-weight:400;letter-spacing:0}
+  .corrdesc{color:#3d4860;font-size:12.5px;margin-top:10px;line-height:1.75}
+  .corrlabels{display:flex;gap:18px;flex-wrap:wrap;margin-top:14px}
+  .corrlabels div{font-size:12px;color:var(--muted)}
+  .corrlabels b{display:block;font-size:18px;color:var(--ink);font-weight:680;margin-top:2px}
+  .ybars{display:flex;align-items:flex-end;gap:3px;height:120px;padding-top:8px}
+  .ybar{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;height:100%;min-width:0}
+  .ybar .bar{width:100%;max-width:26px;background:var(--brand);border-radius:3px 3px 0 0;min-height:2px}
+  .ybar .yl{font-size:9px;color:var(--muted);margin-top:5px;transform:rotate(-40deg);transform-origin:center;white-space:nowrap}
+
+  /* 信号表 */
+  .tw{overflow-x:auto;-webkit-overflow-scrolling:touch}
+  table{width:100%;border-collapse:collapse;font-size:13px}
+  th,td{padding:11px 16px;border-bottom:1px solid var(--line);text-align:left;white-space:nowrap}
+  thead th{background:#f7f9fd;color:var(--muted);font-weight:600;font-size:12px}
+  tbody tr:last-child td{border-bottom:0}
+  .pill{display:inline-block;font-size:11px;border-radius:6px;padding:2px 8px}
+  .pill.ok{background:#f1fbf5;color:#0b6b39;border:1px solid #bfe6cf}
+  .pill.warn{background:#fffaef;color:#7a5a14;border:1px solid #f0dcae}
+  .flowtag{font-size:11px;color:#fff;border-radius:6px;padding:2px 8px;font-weight:600}
+  .flowtag.m{background:var(--main)} .flowtag.s{background:var(--sat)} .flowtag.c{background:var(--combo)}
+
+  .note{color:var(--muted);font-size:12px;line-height:1.8;padding:16px 20px}
+  .note strong{color:var(--ink)}
+  .riskbox{margin:0 20px 20px;border:1px solid #eadfbd;background:#fffaf0;border-radius:12px;
+           padding:12px 14px;color:#6b552e;font-size:12px;display:flex;gap:10px;align-items:flex-start}
+  .riskbox .ic{flex:0 0 20px;height:20px;border-radius:6px;background:#f2dfae;color:#7a5a14;
+               display:grid;place-items:center;font-weight:800;font-size:12px}
+  footer{color:var(--muted);font-size:12px;text-align:center;padding:26px 20px 0;border-top:1px solid var(--line);margin-top:30px}
+  .loading{padding:48px 20px;text-align:center;color:var(--muted)}
+
+  @media(max-width:860px){
+    .mgrid{grid-template-columns:1fr}
+    .mcol{border-right:0;border-bottom:1px solid var(--line)}
+    .mcol:last-child{border-bottom:0}
+    .corrgrid{grid-template-columns:1fr}
+    .corrgrid>div+div{border-left:0;border-top:1px solid var(--line)}
+    .stats{grid-template-columns:repeat(2,1fr)}
+    .stats div:nth-child(2n){border-right:0}
+    .stats div:nth-child(4n){border-right:0}
+    .hero h1{font-size:20px}
+    .backlink{font-size:11px}
+    .brand .obs{display:none}
+  }
+</style>
+</head>
+<body>
+<div class="topnav"><div class="wrap">
+  <div class="brand"><span class="mark">双</span>动量+反转观察版<span class="obs">OBS</span></div>
+  <a class="backlink" href="../index.html">← 返回策略主看板</a>
+</div></div>
+
+<div class="wrap">
+  <div class="banner">
+    <div class="ic">!</div>
+    <div>
+      <b>观察版 · 非执行信号 · 与线上主仓及进取版观察完全隔离</b>
+      <p>本页展示"动量+反转"双引擎组合（动量主仓 v1.4.2 80% + 反转腿 rev250 20%，每日再平衡）的回测与观察数据。
+         两个引擎<strong>资金与信号物理隔离、各自独立熔断/选券/计成本，互不回写</strong>，组合层只做净值加权。
+         <strong>它不改变线上 v1.4 的任何持仓或信号，也不构成任何交易指令。</strong>
+         历史段为固定参数回测；观察版启用（<span id="watchStart">—</span>）之后为跟踪观察。</p>
+    </div>
+  </div>
+
+  <div class="hero">
+    <h1>动量+反转双引擎组合 · 隔离观察</h1>
+    <div class="sub" id="heroSub">数据加载中…</div>
+    <div class="formula">
+      <span class="chip combo"><i></i>组合 80/20</span>
+      <span style="color:var(--muted)">=</span>
+      <span class="chip main"><i></i>动量主仓 v1.4.2 80%</span>
+      <span style="color:var(--muted)">+</span>
+      <span class="chip sat"><i></i>反转腿 rev250 20%</span>
+    </div>
+  </div>
+
+  <!-- 指标对比 -->
+  <div class="card">
+    <h3>绩效对比 <span class="hint">全样本固定参数回测 · 无前视 · 10bp 成本</span></h3>
+    <div class="mgrid" id="mgrid">
+      <div class="loading">加载中…</div>
+    </div>
+  </div>
+
+  <!-- 净值曲线 -->
+  <div class="card">
+    <h3>净值曲线对比 <span class="hint" id="chartMeta">—</span></h3>
+    <div class="controls">
+      <div class="control"><span class="lab">区间</span>
+        <div class="segment" id="rangeSeg">
+          <button data-r="5">近1周</button><button data-r="21">近1月</button>
+          <button data-r="63">近3月</button><button data-r="252">1年</button>
+          <button data-r="756">3年</button><button data-r="1260">5年</button>
+          <button data-r="0" class="on">全部</button>
+        </div>
+      </div>
+    </div>
+    <div class="legend">
+      <span><i style="background:var(--combo)"></i>组合 80/20</span>
+      <span><i style="background:var(--main)"></i>动量主仓 v1.4.2</span>
+      <span><i style="background:var(--sat)"></i>反转腿 rev250</span>
+    </div>
+    <div class="stats" id="stats"></div>
+    <div class="chart" id="chart"></div>
+  </div>
+
+  <!-- 相关性 -->
+  <div class="card">
+    <h3>双引擎分散证据 <span class="hint">动量主仓与反转腿日收益相关性 · 越低分散效果越强</span></h3>
+    <div class="corrgrid" id="corrgrid">
+      <div class="loading">加载中…</div>
+    </div>
+  </div>
+
+  <!-- 三段隔离 -->
+  <div class="card">
+    <h3>三段隔离检验 <span class="hint">固定参数回放 · 卡玛比率三段全部改善是本次叠加的核心证据</span></h3>
+    <div class="tw" id="segTable"><div class="loading">加载中…</div></div>
+  </div>
+
+  <!-- 双流信号 -->
+  <div class="card">
+    <h3>当前观察信号 <span class="hint" id="sigAsOf">—</span></h3>
+    <div class="tw" id="sigTable"><div class="loading">加载中…</div></div>
+    <div class="note" id="sigNote"></div>
+  </div>
+
+  <div class="card">
+    <div class="note" style="padding-bottom:6px">
+      <strong>口径说明</strong>：动量主仓为线上同款 v1.4.2（mom250 零杠杆单因子、每日熔断 18%/−0.95 恢复、走熊过滤），信号直接引用主看板；
+      反转腿为 250 日收益取负的长反转打分，叠加同样的 v1.4.2 风控骨架（vol_cap 25%、18% 熔断、走熊过滤），<strong>独立回放、互不回写</strong>。
+      组合按每日 80/20 再平衡回放，10bp 单边成本，起点净值归一化为 1。换手成本口径与主看板逐行一致。
+    </div>
+    <div class="riskbox">
+      <div class="ic">!</div>
+      <div>本组合改善的是<strong>风险调整收益而非绝对收益</strong>：每段年化都低于纯动量，换取的是更浅回撤（−15.0% vs −18.6%）与更高卡玛（1.48 vs 1.37，三段全改善）。
+      反转腿单独年化仅约 8%、回撤 −20.3%，<strong>不可独立使用</strong>，其价值只在与动量的分散。
+      两引擎共用熔断骨架、急跌时同步退国债，故日收益相关性约 +0.25（非负值），分散来自持仓不同步而非净值负相关。
+      稳健性依赖特定腿（长反转+走熊过滤）与 0.10~0.30 权重平台，仍属样本内发现；建议仅作隔离观察，跑实盘一段后再定去留，若卡玛/回撤优势消失即回退纯动量。</div>
+    </div>
+  </div>
+
+  <footer>
+    动量+反转双引擎观察版 · 研究线隔离产物 · 非执行信号<br>
+    数据来源：本地前复权收盘价固定参数回放 · 与主看板 v1.4.2、进取版观察及冻结 v2.1 完全隔离
+  </footer>
+</div>
+
+<script>
+const $ = s => document.querySelector(s);
+const COL = {combo:'#7c3aed', main:'#2563eb', sat:'#e07a1f'};  // sat 位置复用为反转腿 rev
+let D = null, range = 0;
+
+async function load(){
+  try{
+    const r = await fetch('data/combo.json?cb='+Date.now(), {cache:'no-store'});
+    if(!r.ok) throw new Error('HTTP '+r.status);
+    D = await r.json();
+    renderAll();
+  }catch(e){
+    document.querySelector('#heroSub').textContent='数据加载失败：'+e.message;
+  }
+}
+
+function fmtPct(x, d=2){ return (x==null?'—':(x>0?'+':'')+Number(x).toFixed(d)+'%'); }
+
+function renderAll(){
+  $('#watchStart').textContent = D.watch_start;
+  $('#heroSub').textContent = D.as_of+' 截至 · '+D.bars+' 个交易日 · 组合 = 动量主仓 80% + 反转腿 20%（每日再平衡）';
+  renderMetrics();
+  renderChart();
+  renderCorr();
+  renderSeg();
+  renderSignal();
+}
+
+function renderMetrics(){
+  const m=D.metrics, o=D.oos_metrics;
+  const col=(cls,name,badge,key,accent)=>{
+    const x=m[key], oo=o[key];
+    const gainCls = key==='combo'?'gain':'';
+    return `<div class="mcol ${key}">
+      <div class="mh"><i style="background:${accent}"></i>${name}<span class="badge">${badge}</span></div>
+      <div class="kv"><span class="k">年化收益</span><span class="v ${gainCls}">${x.cagr==null?'—':x.cagr.toFixed(2)+'%'}</span></div>
+      <div class="kv"><span class="k">最大回撤</span><span class="v">${x.mdd==null?'—':x.mdd.toFixed(2)+'%'}</span></div>
+      <div class="kv"><span class="k">夏普比率</span><span class="v ${gainCls}">${x.sharpe==null?'—':x.sharpe.toFixed(2)}</span></div>
+      <div class="kv"><span class="k">卡玛比率</span><span class="v ${gainCls}">${x.calmar==null?'—':x.calmar.toFixed(2)}</span></div>
+      <div class="kv"><span class="k">样本外年化 <small>2021+</small></span><span class="v" style="font-size:14px">${oo.cagr==null?'—':oo.cagr.toFixed(2)+'%'}</span></div>
+    </div>`;
+  };
+  $('#mgrid').innerHTML =
+    col('combo','双引擎组合','80/20','combo',COL.combo)+
+    col('','动量主仓','v1.4.2 线上同款','main',COL.main)+
+    col('','反转腿','rev250 独立','rev',COL.sat);
+}
+
+function sliceByRange(){
+  const n=D.dates.length;
+  if(!range) return {a:0, dates:D.dates, c:D.combo_nav, m:D.main_nav, s:D.rev_nav, dd:D.combo_dd};
+  const a=Math.max(0, n-range);  // range 现在直接是交易日数
+  return {a, dates:D.dates.slice(a), c:D.combo_nav.slice(a), m:D.main_nav.slice(a), s:D.rev_nav.slice(a), dd:D.combo_dd.slice(a)};
+}
+
+function renderChart(){
+  const S=sliceByRange();
+  const rM=(S.m[S.m.length-1]/S.m[0]-1)*100;
+  const rS=(S.s[S.s.length-1]/S.s[0]-1)*100;
+  const rC=(S.c[S.c.length-1]/S.c[0]-1)*100;
+  $('#stats').innerHTML=
+    `<div><span>组合区间收益</span><b style="color:var(--combo)">${fmtPct(rC)}</b></div>
+     <div><span>主仓区间收益</span><b style="color:var(--main)">${fmtPct(rM)}</b></div>
+     <div><span>反转腿区间收益</span><b style="color:var(--sat)">${fmtPct(rS)}</b></div>
+     <div><span>点数</span><b>${S.dates.length}</b></div>`;
+  $('#chartMeta').textContent = S.dates[0]+' → '+S.dates[S.dates.length-1]+' · '+S.dates.length+' 点';
+
+  const el=$('#chart');
+  // 与主看板 v1.4.2 一致：宽度自适应容器，避免固定 viewBox 在窄屏被缩放导致图变小
+  const W=Math.max(el.clientWidth||el.parentElement.clientWidth||1000, 300);
+  const H=W<520?250:340;
+  const mL=W<520?44:62, mR=W<520?10:16, mT=14, mB=W<520?28:34;
+  const iw=W-mL-mR, ih=H-mT-mB;
+  const all=[...S.c,...S.m,...S.s].filter(v=>v!=null&&isFinite(v));
+  let lo=Math.min(...all), hi=Math.max(...all);
+  const pad=(hi-lo)*0.08||0.1; lo-=pad; hi+=pad;
+  const X=i=>mL+iw*i/(S.c.length-1||1);
+  const Y=v=>mT+ih*(1-(v-lo)/(hi-lo));
+  const path=arr=>arr.map((v,i)=>(v==null||!isFinite(v))?'':`${i?'L':'M'}${X(i).toFixed(1)},${Y(v).toFixed(1)}`).join(' ');
+
+  let grid='', ylab='';
+  for(let k=0;k<=4;k++){
+    const v=lo+(hi-lo)*k/4, y=Y(v);
+    grid+=`<line x1="${mL}" y1="${y.toFixed(1)}" x2="${W-mR}" y2="${y.toFixed(1)}"/>`;
+    ylab+=`<text x="${mL-8}" y="${(y+4).toFixed(1)}" text-anchor="end">${v.toFixed(2)}</text>`;
+  }
+  let xlab='';
+  const nTicks=W<520?3:5;
+  for(let k=0;k<=nTicks;k++){
+    const i=Math.round((S.c.length-1)*k/nTicks), x=X(i);
+    xlab+=`<text x="${x.toFixed(1)}" y="${H-8}" text-anchor="${k===0?'start':k===nTicks?'end':'middle'}">${S.dates[i]}</text>`;
+  }
+  el.innerHTML=`<svg viewBox="0 0 ${W} ${H}" width="100%" height="${H}" preserveAspectRatio="xMidYMid meet" role="img" aria-label="三策略净值对比曲线">
+    <g class="grid">${grid}</g><g class="axis">${ylab}${xlab}</g>
+    <path d="${path(S.s)}" fill="none" stroke="${COL.sat}" stroke-width="1.7" opacity=".85"/>
+    <path d="${path(S.m)}" fill="none" stroke="${COL.main}" stroke-width="1.7" opacity=".9"/>
+    <path d="${path(S.c)}" fill="none" stroke="${COL.combo}" stroke-width="2.6"/>
+    <line class="cross" id="cross" x1="0" y1="${mT}" x2="0" y2="${mT+ih}"/>
+    <circle class="marker" id="mkC" r="4" fill="${COL.combo}"/>
+    <circle class="marker" id="mkM" r="3.5" fill="${COL.main}"/>
+    <circle class="marker" id="mkS" r="3.5" fill="${COL.sat}"/>
+  </svg><div class="tip" id="tip"></div>`;
+
+  const svg=el.querySelector('svg'), cross=el.querySelector('#cross'),
+        mkC=el.querySelector('#mkC'), mkM=el.querySelector('#mkM'), mkS=el.querySelector('#mkS'), tip=el.querySelector('#tip');
+  function hover(ev){
+    const rect=svg.getBoundingClientRect();
+    const cx=(ev.touches?ev.touches[0].clientX:ev.clientX)-rect.left;
+    const ii=Math.round(((cx*(W/rect.width))-mL)/iw*(S.c.length-1));
+    const idx=Number.isFinite(ii)?Math.max(0,Math.min(S.c.length-1,ii)):0;
+    const x=X(idx);
+    cross.setAttribute('x1',x); cross.setAttribute('x2',x); cross.style.display='';
+    [[mkC,S.c[idx]],[mkM,S.m[idx]],[mkS,S.s[idx]]].forEach(([mk,v])=>{
+      if(v!=null&&isFinite(v)){mk.setAttribute('cx',x);mk.setAttribute('cy',Y(v));mk.style.display='';}
+      else mk.style.display='none';
+    });
+    tip.style.display='';
+    tip.innerHTML=`<b>${S.dates[idx]}</b><br><span style="color:#c4b6f5">■</span> 组合 ${S.c[idx]?.toFixed(3)}<br>
+      <span style="color:#9dbcf5">■</span> 主仓 ${S.m[idx]?.toFixed(3)}<br>
+      <span style="color:#f0b483">■</span> 反转 ${S.s[idx]?.toFixed(3)}`;
+    const px=(x/W)*rect.width;
+    tip.style.left=Math.min(rect.width-tip.offsetWidth-4,Math.max(0,px+12))+'px';
+    tip.style.top='8px';
+  }
+  function out(){cross.style.display='none';[mkC,mkM,mkS].forEach(m=>m.style.display='none');tip.style.display='none';}
+  svg.addEventListener('mousemove',hover); svg.addEventListener('mouseleave',out);
+  svg.addEventListener('touchstart',hover,{passive:true}); svg.addEventListener('touchmove',hover,{passive:true}); svg.addEventListener('touchend',out);
+}
+
+function renderCorr(){
+  const c=D.correlation, ys=D.corr_yearly||[];
+  const maxAbs=Math.max(0.12,...ys.map(y=>Math.abs(y.corr)));
+  const bars=ys.map(y=>{
+    const h=Math.max(2,Math.abs(y.corr)/maxAbs*82);
+    const neg=y.corr<0;
+    return `<div class="ybar" title="${y.year}: ${y.corr}"><div class="bar" style="height:${h}px;background:${neg?'var(--down)':'var(--brand)'}"></div><div class="yl">${String(y.year).slice(2)}</div></div>`;
+  }).join('');
+  $('#corrgrid').innerHTML=`
+    <div>
+      <div class="bignum">${c.full==null?'—':c.full.toFixed(3)}</div>
+      <div class="corrdesc">全样本日收益相关性约 <strong>+0.25</strong>（非负值）：两引擎共用同一套熔断骨架、急跌时同步退国债，故净值同涨同跌；
+        但<strong>持仓选券不同步</strong>（动量买强、反转买超跌，重合仅约 6%），分散红利来自持仓层面而非净值负相关。
+        这是卡玛从 1.37 提升到 1.48、回撤从 −18.6% 收窄到 −15.0% 的来源。</div>
+      <div class="corrlabels">
+        <div>近60日<b>${c.last60?.toFixed(3)??'—'}</b></div>
+        <div>近120日<b>${c.last120?.toFixed(3)??'—'}</b></div>
+        <div>近250日<b>${c.last250?.toFixed(3)??'—'}</b></div>
+      </div>
+    </div>
+    <div>
+      <div style="font-size:12.5px;color:var(--muted);margin-bottom:2px">逐年相关性 <span style="font-size:11px">（绿=负相关，紫=正相关）</span></div>
+      <div class="ybars">${bars}</div>
+    </div>`;
+}
+
+function renderSeg(){
+  const sm=D.seg_metrics||{};
+  const labs=['段1(2014-18)','段2(2018-22)','段3(2022-26)'];
+  let tbl=`<table><thead><tr><th>区间</th><th>组合年化</th><th>动量年化</th><th>组合回撤</th><th>动量回撤</th><th>组合卡玛</th><th>动量卡玛</th><th>卡玛改善</th></tr></thead><tbody>`;
+  labs.forEach(l=>{
+    const c=sm[l].combo, m=sm[l].main;
+    const d=(c.calmar-m.calmar);
+    const up=d>0;
+    tbl+=`<tr><td><b>${l}</b></td>
+      <td>${c.cagr==null?'—':c.cagr.toFixed(2)+'%'}</td>
+      <td>${m.cagr==null?'—':m.cagr.toFixed(2)+'%'}</td>
+      <td>${c.mdd==null?'—':c.mdd.toFixed(2)+'%'}</td>
+      <td>${m.mdd==null?'—':m.mdd.toFixed(2)+'%'}</td>
+      <td><b style="color:var(--combo)">${c.calmar==null?'—':c.calmar.toFixed(2)}</b></td>
+      <td>${m.calmar==null?'—':m.calmar.toFixed(2)}</td>
+      <td><span class="pill ${up?'ok':'warn'}">${(d>0?'+':'')+d.toFixed(2)}</span></td></tr>`;
+  });
+  tbl+='</tbody></table>';
+  $('#segTable').innerHTML=tbl;
+}
+
+function renderSignal(){
+  const s=D.signal;
+  $('#sigAsOf').textContent='数据截至 '+(s.as_of||'—')+' · '+s.note;
+  const rows=[];
+  (s.main.current||[]).forEach(h=>rows.push(['m','动量主仓',h.name,h.weight,(s.main.exposure!=null?s.main.exposure+'% 敞口':'—'),s.main.as_of]));
+  const sh=s.rev.holdings||[];
+  if(sh.length) sh.forEach(h=>rows.push(['s','反转腿',h.name,h.weight,s.rev.exposure+'% 敞口',s.rev.as_of]));
+  else rows.push(['s','反转腿','国债ETF',100,'100% 敞口',s.rev.as_of]);
+  (s.combo.holdings||[]).forEach(h=>rows.push(['c','组合 80/20',h.name,h.weight,(s.combo.exposure_pct!=null?s.combo.exposure_pct+'% 组合敞口':'—'),'映射']));
+
+  let tbl=`<table><thead><tr><th>资金流</th><th>标的</th><th>权重</th><th>敞口</th><th>信号日期</th></tr></thead><tbody>`;
+  rows.forEach(([f,flow,name,w,exp,asof])=>{
+    tbl+=`<tr><td><span class="flowtag ${f}">${flow}</span></td><td>${name}</td>
+      <td><b>${w==null?'—':Number(w).toFixed(1)+'%'}</b></td><td>${exp}</td><td>${asof}</td></tr>`;
+  });
+  tbl+='</tbody></table>';
+  $('#sigTable').innerHTML=tbl;
+
+  const mainCircuit=s.main.circuit?'<span class="pill warn">主仓熔断·退国债</span>':'<span class="pill ok">主仓正常</span>';
+  $('#sigNote').innerHTML=`<strong>当前状态</strong>：${mainCircuit}　反转腿 ${s.rev.reason||'—'}（回撤 ${s.rev.drawdown??'—'}%）。
+    组合层的"权重"是两条流各自持仓按 80/20 叠加的映射结果，仅用于观察组合敞口分布，<strong>不是可执行的目标持仓</strong>。`;
+}
+
+document.querySelectorAll('#rangeSeg button').forEach(b=>b.addEventListener('click',()=>{
+  document.querySelectorAll('#rangeSeg button').forEach(x=>x.classList.remove('on'));
+  b.classList.add('on'); range=Number(b.dataset.r); renderChart();
+}));
+
+let _obsRT;
+window.addEventListener('resize',()=>{ clearTimeout(_obsRT); _obsRT=setTimeout(()=>renderChart(),140); });
+
+load();
+</script>
+</body>
+</html>
